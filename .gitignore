@@ -205,3 +205,52 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Environment variables
+.env
+.env.local
+
+# Data files (we'll store large files in GCS, not Git)
+data/raw/**/*.html
+data/raw/**/*.txt
+data/raw/**/metadata.json
+data/structured/
+data/payloads/
+
+# Keep structure but not content
+!data/raw/.gitkeep
+!data/structured/.gitkeep
+!data/payloads/.gitkeep
+
+# Airflow
+logs/
+airflow.db
+airflow.cfg
+airflow-webserver.pid
+standalone_admin_password.txt
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+
+# Notebooks (if you add any)
+*.ipynb_checkpoints/
