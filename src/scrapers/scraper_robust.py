@@ -63,18 +63,18 @@ class BulletproofScraper:
         self.session_name = f"{self.today}_initial"
     
     def safe_load_companies(self) -> List[Dict]:
-        """Safely load companies from seed file."""
+        """Safely load companies from seed file - Works on Mac & Windows."""
         try:
             print("\n" + "="*70)
             print("Loading companies")
             print("="*70)
-            
-            with open(self.seed_file, 'r') as f:
+        
+            with open(self.seed_file, 'rb') as f:
                 self.companies = json.load(f)
-            
+        
             print(f"✅ Loaded {len(self.companies)} companies")
             return self.companies
-            
+        
         except Exception as e:
             logger.error(f"Failed to load seed file: {e}")
             print(f"❌ Error loading seed file: {e}")
