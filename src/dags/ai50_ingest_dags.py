@@ -1,3 +1,315 @@
+"""
+DAG 1: AI50 Full Initial Ingest - ONE-TIME LOAD
+Orchestrates: forbes_scraper.py → scraper_robust.py → GCS Upload
+Schedule: @once (manual trigger only)
+
+SIMPLE FIX: Changed paths from /home/airflow/gcs/data/ to /home/airflow/data/
+(Your original scrapers use parents[2] which resolves to /home/airflow/data/)
+"""
+
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from datetime import datetime, timedelta
+import subprocess
+import json
+import logging
+from pathlib import Path
+from google.cloud import storage
+
+logger = logging.getLogger(__name__)
+
+# Configuration
+GCP_PROJECT_ID = 'orbit-ai50-intelligence'
+GCS_RAW_BUCKET = 'orbit-raw-data-group1-2025'
+GCS_PROCESSED_BUCKET = 'orbit-processed-data-group1-2025'
+
+default_args = {
+    'owner': 'orbit-team',
+    'depends_on_past': False,
+    'email_on_failure': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+
+def run_forbes_scraper(**context):
+    """Task 1: Run forbes_scraper.py to generate seed file."""
+    logger.info("="*70)
+    logger.info("TASK 1: Running Forbes Scraper")
+    logger.info("="*70)
+    
+    scraper_path = Path('/home/airflow/gcs/dags/forbes_scraper.py')
+    
+    try:
+        # Run the script with --fresh flag (no resume, clean start)
+        result = subprocess.run(
+            ['python3', str(scraper_path), '--fresh', '--no-validate'],
+            capture_output=True,
+            text=True,
+            timeout=1800  # 30 minutes max
+        )
+        
+        logger.info(f"Forbes scraper output:\n{result.stdout}")
+        
+        if result.returncode != 0:
+            logger.error(f"Forbes scraper failed:\n{result.stderr}")
+            raise Exception(f"Forbes scraper failed with code {result.returncode}")
+        
+        # Check seed file was created - FIXED PATH
+        seed_file = Path('/home/airflow/data/forbes_ai50_seed.json')
+        if not seed_file.exists():
+            raise Exception(f"Seed file not created at {seed_file}")
+        
+        # Validate it's valid JSON
+        with open(seed_file, 'r') as f:
+            companies = json.load(f)
+        
+        logger.info(f"✅ Forbes scraper completed: {len(companies)} companies")
+        logger.info(f"✅ Seed file saved at: {seed_file}")
+        
+        context['task_instance'].xcom_push(key='seed_file', value=str(seed_file))
+        context['task_instance'].xcom_push(key='company_count', value=len(companies))
+        
+        return len(companies)
+    
+    except Exception as e:
+        logger.error(f"Error running Forbes scraper: {e}")
+        raise
+
+
+def run_full_website_scraper(**context):
+    """Task 2: Run scraper_robust.py to scrape ALL pages."""
+    logger.info("="*70)
+    logger.info("TASK 2: Running Full Website Scraper")
+    logger.info("="*70)
+    
+    scraper_path = Path('/home/airflow/gcs/dags/scraper_robust.py')
+    
+    try:
+        # Run the script with BOTH inputs:
+        # 1st question: "Test with first 5 companies? (y/n):" → n
+        # 2nd question: "Proceed? (y/n):" → y
+        result = subprocess.run(
+            ['python3', str(scraper_path)],
+            input='n\ny\n',  # FIXED: Two answers!
+            capture_output=True,
+            text=True,
+            timeout=7200  # 2 hours max
+        )
+        
+        logger.info(f"Website scraper output:\n{result.stdout}")
+        
+        if result.returncode != 0:
+            logger.error(f"Website scraper failed:\n{result.stderr}")
+            raise Exception(f"Website scraper failed with code {result.returncode}")
+        
+        # Verify summary file was created - FIXED PATH
+        summary_file = Path('/home/airflow/data').glob('lab1_bulletproof_summary_*.json')
+        summary_files = list(summary_file)
+        
+        if summary_files:
+            logger.info(f"✅ Found summary file: {summary_files[0]}")
+        else:
+            logger.warning("⚠️ Summary file not found (but scraping may have completed)")
+        
+        logger.info("✅ Full website scraping completed")
+        return "success"
+    
+    except Exception as e:
+        logger.error(f"Error running website scraper: {e}")
+        raise
+
+
+def upload_all_to_gcs(**context):
+    """Task 3: Upload ALL scraped data to GCS (RAW + PROCESSED buckets)."""
+    logger.info("="*70)
+    logger.info("TASK 3: Uploading to GCS")
+    logger.info("="*70)
+    
+    client = storage.Client(project=GCP_PROJECT_ID)
+    raw_bucket = client.bucket(GCS_RAW_BUCKET)
+    processed_bucket = client.bucket(GCS_PROCESSED_BUCKET)
+    
+    upload_count = 0
+    
+    # 1. Upload seed file to BOTH buckets - FIXED PATH
+    seed_file = Path('/home/airflow/data/forbes_ai50_seed.json')
+    if seed_file.exists():
+        # RAW bucket
+        blob_raw = raw_bucket.blob('data/forbes_ai50_seed.json')
+        blob_raw.upload_from_filename(str(seed_file))
+        upload_count += 1
+        logger.info(f"✅ Uploaded seed to RAW: gs://{GCS_RAW_BUCKET}/data/forbes_ai50_seed.json")
+        
+        # PROCESSED bucket
+        blob_processed = processed_bucket.blob('data/forbes_ai50_seed.json')
+        blob_processed.upload_from_filename(str(seed_file))
+        upload_count += 1
+        logger.info(f"✅ Uploaded seed to PROCESSED: gs://{GCS_PROCESSED_BUCKET}/data/forbes_ai50_seed.json")
+    else:
+        logger.error(f"❌ Seed file not found at {seed_file}")
+    
+    # 2. Upload summary file to RAW bucket - FIXED PATH
+    data_dir = Path('/home/airflow/data')
+    for summary_file in data_dir.glob('lab1_bulletproof_summary_*.json'):
+        try:
+            blob_name = f"data/{summary_file.name}"
+            blob = raw_bucket.blob(blob_name)
+            blob.upload_from_filename(str(summary_file))
+            upload_count += 1
+            logger.info(f"✅ Uploaded summary: gs://{GCS_RAW_BUCKET}/{blob_name}")
+        except Exception as e:
+            logger.error(f"Error uploading summary: {e}")
+    
+    # 3. Upload ALL raw data (HTML, TXT, intelligence.json) to RAW bucket - FIXED PATH
+    raw_dir = Path('/home/airflow/data/raw')
+    if raw_dir.exists():
+        logger.info(f"📂 Uploading raw data from: {raw_dir}")
+        
+        for file_path in raw_dir.rglob('*'):
+            if file_path.is_file():
+                try:
+                    # Create relative path: raw/Abridge/2025-11-05_initial/homepage.html
+                    relative = file_path.relative_to(data_dir)
+                    blob_name = f"data/{relative}"
+                    
+                    blob = raw_bucket.blob(blob_name)
+                    blob.upload_from_filename(str(file_path))
+                    upload_count += 1
+                    
+                    # Progress indicator
+                    if upload_count % 50 == 0:
+                        logger.info(f"  📤 Uploaded {upload_count} files...")
+                    
+                except Exception as e:
+                    logger.error(f"Error uploading {file_path}: {e}")
+    else:
+        logger.warning(f"⚠️ Raw directory not found: {raw_dir}")
+    
+    logger.info("="*70)
+    logger.info(f"✅ UPLOAD COMPLETE: {upload_count} files total")
+    logger.info("="*70)
+    logger.info(f"📦 RAW bucket: gs://{GCS_RAW_BUCKET}/data/")
+    logger.info(f"   - forbes_ai50_seed.json")
+    logger.info(f"   - lab1_bulletproof_summary_*.json")
+    logger.info(f"   - raw/ (all company data)")
+    logger.info(f"📦 PROCESSED bucket: gs://{GCS_PROCESSED_BUCKET}/data/")
+    logger.info(f"   - forbes_ai50_seed.json (ONLY)")
+    
+    context['task_instance'].xcom_push(key='files_uploaded', value=upload_count)
+    return upload_count
+
+
+def generate_full_ingest_report(**context):
+    """Task 4: Generate comprehensive report."""
+    logger.info("="*70)
+    logger.info("TASK 4: Generating Report")
+    logger.info("="*70)
+    
+    company_count = context['task_instance'].xcom_pull(
+        key='company_count',
+        task_ids='run_forbes_scraper'
+    )
+    
+    files_uploaded = context['task_instance'].xcom_pull(
+        key='files_uploaded',
+        task_ids='upload_to_gcs'
+    )
+    
+    # Read the summary file for detailed stats - FIXED PATH
+    data_dir = Path('/home/airflow/data')
+    summary_files = list(data_dir.glob('lab1_bulletproof_summary_*.json'))
+    
+    summary_stats = {}
+    if summary_files:
+        try:
+            with open(summary_files[0], 'r') as f:
+                summary_data = json.load(f)
+                summary_stats = summary_data.get('statistics', {})
+        except Exception as e:
+            logger.warning(f"Could not read summary file: {e}")
+    
+    report = {
+        'dag_id': 'ai50_full_ingest_dag',
+        'execution_date': context['execution_date'].isoformat(),
+        'status': 'SUCCESS',
+        'companies_scraped': company_count,
+        'files_uploaded': files_uploaded,
+        'scraping_stats': summary_stats,
+        'data_locations': {
+            'raw_bucket': f"gs://{GCS_RAW_BUCKET}/data/",
+            'processed_bucket': f"gs://{GCS_PROCESSED_BUCKET}/data/forbes_ai50_seed.json",
+        },
+        'completed_at': datetime.now().isoformat(),
+    }
+    
+    # Save report to PROCESSED bucket
+    client = storage.Client(project=GCP_PROJECT_ID)
+    bucket = client.bucket(GCS_PROCESSED_BUCKET)
+    
+    report_name = f"reports/full_ingest_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    blob = bucket.blob(report_name)
+    blob.upload_from_string(json.dumps(report, indent=2))
+    
+    logger.info("="*70)
+    logger.info("📊 FINAL REPORT")
+    logger.info("="*70)
+    logger.info(f"✅ Report saved: gs://{GCS_PROCESSED_BUCKET}/{report_name}")
+    logger.info(f"📊 Companies: {company_count}")
+    logger.info(f"📁 Files uploaded: {files_uploaded}")
+    logger.info(f"📄 Pages scraped: {summary_stats.get('total_pages', 'N/A')}")
+    logger.info(f"💰 With pricing: {summary_stats.get('with_pricing', 'N/A')}")
+    logger.info(f"👥 With customers: {summary_stats.get('with_customers', 'N/A')}")
+    logger.info("="*70)
+    
+    return report
+
+
+# Define DAG
+with DAG(
+    dag_id='ai50_full_ingest_dag',
+    default_args=default_args,
+    description='Lab 2: Full initial load - Forbes scraper → Website scraper → GCS',
+    schedule_interval='@once',  # Manual trigger only
+    start_date=datetime(2025, 11, 3),
+    catchup=False,
+    tags=['orbit', 'lab2', 'full-load', 'initial', 'manual'],
+) as dag:
+    
+    # Task 1: Run Forbes scraper (generates seed file)
+    task1_forbes = PythonOperator(
+        task_id='run_forbes_scraper',
+        python_callable=run_forbes_scraper,
+        execution_timeout=timedelta(minutes=30),
+    )
+    
+    # Task 2: Run website scraper (reads seed, scrapes all sites)
+    task2_websites = PythonOperator(
+        task_id='run_website_scraper',
+        python_callable=run_full_website_scraper,
+        execution_timeout=timedelta(hours=2),
+    )
+    
+    # Task 3: Upload everything to GCS
+    task3_upload = PythonOperator(
+        task_id='upload_to_gcs',
+        python_callable=upload_all_to_gcs,
+        execution_timeout=timedelta(minutes=30),
+    )
+    
+    # Task 4: Generate final report
+    task4_report = PythonOperator(
+        task_id='generate_report',
+        python_callable=generate_full_ingest_report,
+    )
+    
+    # Execution order
+    task1_forbes >> task2_websites >> task3_upload >> task4_report
+
+
+
+
+
 # """
 # DAG 1: AI50 Full Ingest - Fully Automated
 # Scrapes Forbes → Generates Seed File → Scrapes Websites
@@ -449,261 +761,351 @@
     
 #     task_forbes >> task_websites >> task_upload >> task_report
 
-"""
-DAG 1: AI50 Full Initial Ingest - ONE-TIME LOAD
-Orchestrates: forbes_scraper.py → scraper_robust.py → GCS Upload
-Schedule: @once (manual trigger only)
-
-DEPLOYMENT:
-1. Upload this file: gsutil cp ai50_full_ingest_dag.py gs://us-central1-orbit-airflow-e-2044600e-bucket/dags/
-2. Upload scrapers: gsutil cp forbes_scraper.py scraper_robust.py gs://us-central1-orbit-airflow-e-2044600e-bucket/dags/
-3. Wait 2-3 minutes
-4. Trigger DAG in Airflow UI
-"""
-"""
-DAG 1: AI50 Full Initial Ingest - ONE-TIME LOAD
-Orchestrates: forbes_scraper.py → scraper_robust.py → GCS Upload
-Schedule: @once (manual trigger only)
-
-DEPLOYMENT:
-1. Upload this file: gsutil cp ai50_full_ingest_dag.py gs://us-central1-orbit-airflow-e-2044600e-bucket/dags/
-2. Upload scrapers: gsutil cp forbes_scraper.py scraper_robust.py gs://us-central1-orbit-airflow-e-2044600e-bucket/dags/
-3. Wait 2-3 minutes
-4. Trigger DAG in Airflow UI
-"""
-
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime, timedelta
-import subprocess
-import json
-import logging
-from pathlib import Path
-from google.cloud import storage
-
-logger = logging.getLogger(__name__)
-
-# Configuration
-GCP_PROJECT_ID = 'orbit-ai50-intelligence'
-GCS_RAW_BUCKET = 'orbit-raw-data-group1-2025'
-GCS_PROCESSED_BUCKET = 'orbit-processed-data-group1-2025'
-
-default_args = {
-    'owner': 'orbit-team',
-    'depends_on_past': False,
-    'email_on_failure': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-}
 
 
-def run_forbes_scraper(**context):
-    """Task 1: Run forbes_scraper.py to generate seed file."""
-    logger.info("="*70)
-    logger.info("TASK 1: Running Forbes Scraper")
-    logger.info("="*70)
+
+
+# """
+# DAG 1: AI50 Full Initial Ingest - ONE-TIME LOAD
+# Orchestrates: forbes_scraper.py → scraper_robust.py → GCS Upload
+# Schedule: @once (manual trigger only)
+
+# DEPLOYMENT:
+# 1. Upload this file: gsutil cp ai50_full_ingest_dag.py gs://us-central1-orbit-airflow-e-2044600e-bucket/dags/
+# 2. Upload scrapers: gsutil cp forbes_scraper.py scraper_robust.py gs://us-central1-orbit-airflow-e-2044600e-bucket/dags/
+# 3. Wait 2-3 minutes
+# 4. Trigger DAG in Airflow UI
+# """
+# """
+# DAG 1: AI50 Full Initial Ingest - ONE-TIME LOAD
+# Orchestrates: forbes_scraper.py → scraper_robust.py → GCS Upload
+# Schedule: @once (manual trigger only)
+
+# DEPLOYMENT:
+# 1. Upload this file: gsutil cp ai50_full_ingest_dag.py gs://us-central1-orbit-airflow-e-2044600e-bucket/dags/
+# 2. Upload scrapers: gsutil cp forbes_scraper.py scraper_robust.py gs://us-central1-orbit-airflow-e-2044600e-bucket/dags/
+# 3. Wait 2-3 minutes
+# 4. Trigger DAG in Airflow UI
+# """
+
+# from airflow import DAG
+# from airflow.operators.python import PythonOperator
+# from datetime import datetime, timedelta
+# import subprocess
+# import json
+# import logging
+# from pathlib import Path
+# from google.cloud import storage
+
+# logger = logging.getLogger(__name__)
+
+# # Configuration
+# GCP_PROJECT_ID = 'orbit-ai50-intelligence'
+# GCS_RAW_BUCKET = 'orbit-raw-data-group1-2025'
+# GCS_PROCESSED_BUCKET = 'orbit-processed-data-group1-2025'
+
+# default_args = {
+#     'owner': 'orbit-team',
+#     'depends_on_past': False,
+#     'email_on_failure': False,
+#     'retries': 1,
+#     'retry_delay': timedelta(minutes=5),
+# }
+
+
+# def run_forbes_scraper(**context):
+#     """Task 1: Run forbes_scraper.py to generate seed file."""
+#     logger.info("="*70)
+#     logger.info("TASK 1: Running Forbes Scraper")
+#     logger.info("="*70)
     
-    scraper_path = Path('/home/airflow/gcs/dags/forbes_scraper.py')
+#     scraper_path = Path('/home/airflow/gcs/dags/forbes_scraper.py')
     
-    try:
-        # Run the script
-        result = subprocess.run(
-            ['python3', str(scraper_path)],
-            capture_output=True,
-            text=True,
-            timeout=1800  # 30 minutes max
-        )
+#     try:
+#         # Run the script
+#         result = subprocess.run(
+#             ['python3', str(scraper_path)],
+#             capture_output=True,
+#             text=True,
+#             timeout=1800  # 30 minutes max
+#         )
         
-        logger.info(f"Forbes scraper output:\n{result.stdout}")
+#         logger.info(f"Forbes scraper output:\n{result.stdout}")
         
-        if result.returncode != 0:
-            logger.error(f"Forbes scraper failed:\n{result.stderr}")
-            raise Exception(f"Forbes scraper failed with code {result.returncode}")
+#         if result.returncode != 0:
+#             logger.error(f"Forbes scraper failed:\n{result.stderr}")
+#             raise Exception(f"Forbes scraper failed with code {result.returncode}")
         
-        # Check seed file
-        seed_file = Path('/home/airflow/gcs/data/forbes_ai50_seed.json')
-        if not seed_file.exists():
-            raise Exception("Seed file not created!")
+#         # Check seed file
+#         seed_file = Path('/home/airflow/gcs/data/forbes_ai50_seed.json')
+#         if not seed_file.exists():
+#             raise Exception("Seed file not created!")
         
-        with open(seed_file, 'r') as f:
-            companies = json.load(f)
+#         with open(seed_file, 'r') as f:
+#             companies = json.load(f)
         
-        logger.info(f"✅ Forbes scraper completed: {len(companies)} companies")
+#         logger.info(f"✅ Forbes scraper completed: {len(companies)} companies")
         
-        context['task_instance'].xcom_push(key='seed_file', value=str(seed_file))
-        context['task_instance'].xcom_push(key='company_count', value=len(companies))
+#         context['task_instance'].xcom_push(key='seed_file', value=str(seed_file))
+#         context['task_instance'].xcom_push(key='company_count', value=len(companies))
         
-        return len(companies)
+#         return len(companies)
     
-    except Exception as e:
-        logger.error(f"Error running Forbes scraper: {e}")
-        raise
+#     except Exception as e:
+#         logger.error(f"Error running Forbes scraper: {e}")
+#         raise
 
 
-def run_full_website_scraper(**context):
-    """Task 2: Run scraper_robust.py to scrape ALL pages."""
-    logger.info("="*70)
-    logger.info("TASK 2: Running Full Website Scraper")
-    logger.info("="*70)
+# def run_full_website_scraper(**context):
+#     """Task 2: Run scraper_robust.py to scrape ALL pages."""
+#     logger.info("="*70)
+#     logger.info("TASK 2: Running Full Website Scraper")
+#     logger.info("="*70)
     
-    scraper_path = Path('/home/airflow/gcs/dags/scraper_robust.py')
+#     scraper_path = Path('/home/airflow/gcs/dags/scraper_robust.py')
     
-    try:
-        # Run the script
-        result = subprocess.run(
-            ['python3', str(scraper_path)],
-            input='n\n',  # Answer 'n' to "test with 5 companies"
-            capture_output=True,
-            text=True,
-            timeout=7200  # 2 hours max
-        )
+#     try:
+#         # Run the script
+#         result = subprocess.run(
+#             ['python3', str(scraper_path)],
+#             input='n\n',  # Answer 'n' to "test with 5 companies"
+#             capture_output=True,
+#             text=True,
+#             timeout=7200  # 2 hours max
+#         )
         
-        logger.info(f"Website scraper output:\n{result.stdout}")
+#         logger.info(f"Website scraper output:\n{result.stdout}")
         
-        if result.returncode != 0:
-            logger.error(f"Website scraper failed:\n{result.stderr}")
-            raise Exception(f"Website scraper failed with code {result.returncode}")
+#         if result.returncode != 0:
+#             logger.error(f"Website scraper failed:\n{result.stderr}")
+#             raise Exception(f"Website scraper failed with code {result.returncode}")
         
-        logger.info("✅ Full website scraping completed")
-        return "success"
+#         logger.info("✅ Full website scraping completed")
+#         return "success"
     
-    except Exception as e:
-        logger.error(f"Error running website scraper: {e}")
-        raise
+#     except Exception as e:
+#         logger.error(f"Error running website scraper: {e}")
+#         raise
 
 
-def upload_all_to_gcs(**context):
-    """Task 3: Upload ALL scraped data to GCS (RAW + PROCESSED buckets)."""
-    logger.info("="*70)
-    logger.info("TASK 3: Uploading to GCS")
-    logger.info("="*70)
+# def upload_all_to_gcs(**context):
+#     """Task 3: Upload ALL scraped data to GCS (RAW + PROCESSED buckets)."""
+#     logger.info("="*70)
+#     logger.info("TASK 3: Uploading to GCS")
+#     logger.info("="*70)
     
-    client = storage.Client(project=GCP_PROJECT_ID)
-    raw_bucket = client.bucket(GCS_RAW_BUCKET)
-    processed_bucket = client.bucket(GCS_PROCESSED_BUCKET)
+#     client = storage.Client(project=GCP_PROJECT_ID)
+#     raw_bucket = client.bucket(GCS_RAW_BUCKET)
+#     processed_bucket = client.bucket(GCS_PROCESSED_BUCKET)
     
-    upload_count = 0
+#     upload_count = 0
     
-    # Upload seed file to BOTH raw and processed buckets
-    seed_file = Path('/home/airflow/gcs/data/forbes_ai50_seed.json')
-    if seed_file.exists():
-        # Upload to RAW bucket
-        blob_raw = raw_bucket.blob('data/forbes_ai50_seed.json')
-        blob_raw.upload_from_filename(str(seed_file))
-        upload_count += 1
-        logger.info("✅ Uploaded seed file to RAW bucket")
+#     # Upload seed file to BOTH raw and processed buckets
+#     seed_file = Path('/home/airflow/gcs/data/forbes_ai50_seed.json')
+#     if seed_file.exists():
+#         # Upload to RAW bucket
+#         blob_raw = raw_bucket.blob('data/forbes_ai50_seed.json')
+#         blob_raw.upload_from_filename(str(seed_file))
+#         upload_count += 1
+#         logger.info("✅ Uploaded seed file to RAW bucket")
         
-        # Upload to PROCESSED bucket
-        blob_processed = processed_bucket.blob('data/forbes_ai50_seed.json')
-        blob_processed.upload_from_filename(str(seed_file))
-        upload_count += 1
-        logger.info("✅ Uploaded seed file to PROCESSED bucket")
+#         # Upload to PROCESSED bucket
+#         blob_processed = processed_bucket.blob('data/forbes_ai50_seed.json')
+#         blob_processed.upload_from_filename(str(seed_file))
+#         upload_count += 1
+#         logger.info("✅ Uploaded seed file to PROCESSED bucket")
     
-    # Upload all raw data to RAW bucket
-    raw_dir = Path('/home/airflow/gcs/data/raw')
-    if raw_dir.exists():
-        for file_path in raw_dir.rglob('*'):
-            if file_path.is_file():
-                try:
-                    relative = file_path.relative_to(Path('/home/airflow/gcs/data'))
-                    blob_name = f"data/{relative}"
+#     # Upload all raw data to RAW bucket
+#     raw_dir = Path('/home/airflow/gcs/data/raw')
+#     if raw_dir.exists():
+#         for file_path in raw_dir.rglob('*'):
+#             if file_path.is_file():
+#                 try:
+#                     relative = file_path.relative_to(Path('/home/airflow/gcs/data'))
+#                     blob_name = f"data/{relative}"
                     
-                    blob = raw_bucket.blob(blob_name)
-                    blob.upload_from_filename(str(file_path))
-                    upload_count += 1
+#                     blob = raw_bucket.blob(blob_name)
+#                     blob.upload_from_filename(str(file_path))
+#                     upload_count += 1
                     
-                    if upload_count % 100 == 0:
-                        logger.info(f"  Uploaded {upload_count} files...")
+#                     if upload_count % 100 == 0:
+#                         logger.info(f"  Uploaded {upload_count} files...")
                     
-                except Exception as e:
-                    logger.error(f"Error uploading {file_path}: {e}")
+#                 except Exception as e:
+#                     logger.error(f"Error uploading {file_path}: {e}")
     
-    logger.info(f"✅ Uploaded {upload_count} files total")
-    logger.info(f"   RAW bucket: gs://{GCS_RAW_BUCKET}/")
-    logger.info(f"   PROCESSED bucket: gs://{GCS_PROCESSED_BUCKET}/data/forbes_ai50_seed.json")
+#     logger.info(f"✅ Uploaded {upload_count} files total")
+#     logger.info(f"   RAW bucket: gs://{GCS_RAW_BUCKET}/")
+#     logger.info(f"   PROCESSED bucket: gs://{GCS_PROCESSED_BUCKET}/data/forbes_ai50_seed.json")
     
-    context['task_instance'].xcom_push(key='files_uploaded', value=upload_count)
-    return upload_count
+#     context['task_instance'].xcom_push(key='files_uploaded', value=upload_count)
+#     return upload_count
 
 
-def generate_full_ingest_report(**context):
-    """Task 4: Generate comprehensive report."""
-    logger.info("="*70)
-    logger.info("TASK 4: Generating Report")
-    logger.info("="*70)
+# def generate_full_ingest_report(**context):
+#     """Task 4: Generate comprehensive report."""
+#     logger.info("="*70)
+#     logger.info("TASK 4: Generating Report")
+#     logger.info("="*70)
     
-    company_count = context['task_instance'].xcom_pull(
-        key='company_count',
-        task_ids='run_forbes_scraper'
-    )
+#     company_count = context['task_instance'].xcom_pull(
+#         key='company_count',
+#         task_ids='run_forbes_scraper'
+#     )
     
-    files_uploaded = context['task_instance'].xcom_pull(
-        key='files_uploaded',
-        task_ids='upload_to_gcs'
-    )
+#     files_uploaded = context['task_instance'].xcom_pull(
+#         key='files_uploaded',
+#         task_ids='upload_to_gcs'
+#     )
     
-    report = {
-        'dag_id': 'ai50_full_ingest_dag',
-        'execution_date': context['execution_date'].isoformat(),
-        'status': 'SUCCESS',
-        'companies_scraped': company_count,
-        'files_uploaded': files_uploaded,
-        'scraping_completed_at': datetime.now().isoformat(),
-        'data_location': f"gs://{GCS_RAW_BUCKET}/data/",
-    }
+#     report = {
+#         'dag_id': 'ai50_full_ingest_dag',
+#         'execution_date': context['execution_date'].isoformat(),
+#         'status': 'SUCCESS',
+#         'companies_scraped': company_count,
+#         'files_uploaded': files_uploaded,
+#         'scraping_completed_at': datetime.now().isoformat(),
+#         'data_location': f"gs://{GCS_RAW_BUCKET}/data/",
+#     }
     
-    # Save report to GCS
-    client = storage.Client(project=GCP_PROJECT_ID)
-    bucket = client.bucket(GCS_PROCESSED_BUCKET)
+#     # Save report to GCS
+#     client = storage.Client(project=GCP_PROJECT_ID)
+#     bucket = client.bucket(GCS_PROCESSED_BUCKET)
     
-    report_name = f"reports/full_ingest_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    blob = bucket.blob(report_name)
-    blob.upload_from_string(json.dumps(report, indent=2))
+#     report_name = f"reports/full_ingest_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+#     blob = bucket.blob(report_name)
+#     blob.upload_from_string(json.dumps(report, indent=2))
     
-    logger.info(f"✅ Report saved: gs://{GCS_PROCESSED_BUCKET}/{report_name}")
-    logger.info(f"   Companies: {company_count}")
-    logger.info(f"   Files uploaded: {files_uploaded}")
+#     logger.info(f"✅ Report saved: gs://{GCS_PROCESSED_BUCKET}/{report_name}")
+#     logger.info(f"   Companies: {company_count}")
+#     logger.info(f"   Files uploaded: {files_uploaded}")
     
-    return report
+#     return report
 
 
-# Define DAG
-with DAG(
-    dag_id='ai50_full_ingest_dag',
-    default_args=default_args,
-    description='Lab 2: Full initial load - Forbes scraper → Website scraper → GCS',
-    schedule_interval='@once',  # Manual trigger only
-    start_date=datetime(2025, 11, 3),
-    catchup=False,
-    tags=['orbit', 'lab2', 'full-load', 'initial', 'manual'],
-) as dag:
+# # Define DAG
+# with DAG(
+#     dag_id='ai50_full_ingest_dag',
+#     default_args=default_args,
+#     description='Lab 2: Full initial load - Forbes scraper → Website scraper → GCS',
+#     schedule_interval='@once',  # Manual trigger only
+#     start_date=datetime(2025, 11, 3),
+#     catchup=False,
+#     tags=['orbit', 'lab2', 'full-load', 'initial', 'manual'],
+# ) as dag:
     
-    # Task 1: Run Forbes scraper
-    task1_forbes = PythonOperator(
-        task_id='run_forbes_scraper',
-        python_callable=run_forbes_scraper,
-        execution_timeout=timedelta(minutes=30),
-    )
+#     # Task 1: Run Forbes scraper
+#     task1_forbes = PythonOperator(
+#         task_id='run_forbes_scraper',
+#         python_callable=run_forbes_scraper,
+#         execution_timeout=timedelta(minutes=30),
+#     )
     
-    # Task 2: Run website scraper
-    task2_websites = PythonOperator(
-        task_id='run_website_scraper',
-        python_callable=run_full_website_scraper,
-        execution_timeout=timedelta(hours=2),
-    )
+#     # Task 2: Run website scraper
+#     task2_websites = PythonOperator(
+#         task_id='run_website_scraper',
+#         python_callable=run_full_website_scraper,
+#         execution_timeout=timedelta(hours=2),
+#     )
     
-    # Task 3: Upload to GCS
-    task3_upload = PythonOperator(
-        task_id='upload_to_gcs',
-        python_callable=upload_all_to_gcs,
-        execution_timeout=timedelta(minutes=30),
-    )
+#     # Task 3: Upload to GCS
+#     task3_upload = PythonOperator(
+#         task_id='upload_to_gcs',
+#         python_callable=upload_all_to_gcs,
+#         execution_timeout=timedelta(minutes=30),
+#     )
     
-    # Task 4: Generate report
-    task4_report = PythonOperator(
-        task_id='generate_report',
-        python_callable=generate_full_ingest_report,
-    )
+#     # Task 4: Generate report
+#     task4_report = PythonOperator(
+#         task_id='generate_report',
+#         python_callable=generate_full_ingest_report,
+#     )
     
-    # Execution order
-    task1_forbes >> task2_websites >> task3_upload >> task4_report
+#     # Execution order
+#     task1_forbes >> task2_websites >> task3_upload >> task4_report
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
