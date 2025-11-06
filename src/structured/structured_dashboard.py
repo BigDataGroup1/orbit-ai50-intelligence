@@ -32,7 +32,7 @@ def generate_dashboard(company_id: str) -> dict:
     
     data_dir = project_root / "data"
     payload_file = data_dir / "payloads" / f"{company_id}.json"
-    prompt_file = src_dir / "prompts" / "dashboard_system.md"
+    prompt_file = src_dir / "prompts" / "dashboard_system_structured.md"
     
     # Load payload
     if not payload_file.exists():
