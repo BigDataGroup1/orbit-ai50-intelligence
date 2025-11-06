@@ -83,6 +83,8 @@ class SearchResult(BaseModel):
     page_type: str
     score: float
     tokens: int
+    session: str  # ← ADD THIS
+    is_daily_refresh: bool  # ← ADD THIS
 
 
 class SearchResponse(BaseModel):
@@ -175,17 +177,19 @@ async def search(request: SearchRequest):
     )
     
     # Format results
+    # Format results
     formatted_results = [
         SearchResult(
             text=r['text'],
             company_name=r['metadata']['company_name'],
             page_type=r['metadata']['page_type'],
             score=r['score'],
-            tokens=r['tokens']
+            tokens=r['tokens'],
+            session=r['metadata']['session'],  # ← ADD THIS
+            is_daily_refresh=r['metadata']['is_daily_refresh']  # ← ADD THIS
         )
         for r in results
     ]
-    
     return SearchResponse(
         results=formatted_results,
         query=request.query,

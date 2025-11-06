@@ -103,14 +103,15 @@ class VectorStore:
             point = PointStruct(
                 id=str(uuid.uuid4()),
                 vector=embedding.tolist(),
-                payload={
-                    'text': chunk['text'],
-                    'company_name': chunk['metadata']['company_name'],
-                    'page_type': chunk['metadata']['page_type'],
-                    'session': chunk['metadata']['session'],
-                    'source_file': chunk['metadata']['source_file'],
-                    'tokens': chunk['tokens']
-                }
+            payload={
+                'text': chunk['text'],
+                'company_name': chunk['metadata']['company_name'],
+                'page_type': chunk['metadata']['page_type'],
+                'session': chunk['metadata']['session'],
+                'source_file': chunk['metadata'].get('source_file', chunk['metadata'].get('source', 'gcs')),
+                'tokens': chunk['tokens'],
+                'is_daily_refresh': chunk['metadata'].get('is_daily_refresh', False)  # ← ADD THIS
+            }
             )
             points.append(point)
         
@@ -183,17 +184,18 @@ class VectorStore:
         # Format results
         results = []
         for hit in search_results:
-            results.append({
-                'text': hit.payload['text'],
-                'metadata': {
-                    'company_name': hit.payload['company_name'],
-                    'page_type': hit.payload['page_type'],
-                    'session': hit.payload['session'],
-                    'source_file': hit.payload['source_file']
-                },
-                'score': hit.score,
-                'tokens': hit.payload['tokens']
-            })
+         results.append({
+            'text': hit.payload['text'],
+            'metadata': {
+                'company_name': hit.payload['company_name'],
+                'page_type': hit.payload['page_type'],
+                'session': hit.payload['session'],
+                'source_file': hit.payload['source_file'],
+                'is_daily_refresh': hit.payload.get('is_daily_refresh', False)  # ← ADD THIS
+            },
+            'score': hit.score,
+            'tokens': hit.payload['tokens']
+        })
         
         return results
     

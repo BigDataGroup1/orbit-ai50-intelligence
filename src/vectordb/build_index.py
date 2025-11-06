@@ -1,48 +1,61 @@
 """
-Build Qdrant vector index from scraped data
+Build Qdrant vector index from scraped data (GCS or Local)
 """
 from pathlib import Path
 from chunker import TextChunker
 from embedder import VectorStore
 import sys
+from typing import List 
 
-
-def build_vector_index(use_docker: bool = False, clear_existing: bool = True):
+def build_vector_index(use_docker: bool = False, 
+                      clear_existing: bool = True,
+                      use_gcs: bool = True,
+                      bucket_name: str = "orbit-raw-data-group1-2025"):
     """
     Build complete vector index for all companies.
     
     Args:
         use_docker: Use Docker Qdrant (else in-memory with persistence)
         clear_existing: Clear existing data before building
+        use_gcs: Read from GCS bucket (else read from local data/raw/)
+        bucket_name: GCS bucket name for raw data
     """
-    
-    # Paths
-    data_dir = Path(__file__).resolve().parents[2] / "data"
-    raw_dir = data_dir / "raw"
-    
-    if not raw_dir.exists():
-        print(f"❌ Raw data directory not found: {raw_dir}")
-        print("   Run Lab 1 scraper first!")
-        return
     
     print("="*70)
     print("BUILDING QDRANT VECTOR INDEX - LAB 4")
     print("="*70)
     print(f"Mode: {'Docker' if use_docker else 'In-memory (persistent)'}")
+    print(f"Data source: {'GCS' if use_gcs else 'Local filesystem'}")
     print(f"Clear existing: {clear_existing}")
     
     # Initialize
     print("\nInitializing...")
-    chunker = TextChunker(chunk_size=800, overlap=100)
-    vector_store = VectorStore(use_docker=use_docker)  # Remove data_dir parameter
+    chunker = TextChunker(
+        bucket_name=bucket_name,
+        chunk_size=800, 
+        overlap=100,
+        use_gcs=use_gcs
+    )
+    vector_store = VectorStore(use_docker=use_docker)
     
     # Clear existing data if requested
     if clear_existing:
         vector_store.clear_collection()
     
-    # Get all companies
-    companies = sorted([d for d in raw_dir.iterdir() if d.is_dir()])
-    print(f"\nFound {len(companies)} companies in {raw_dir}")
+    # Get company list
+    if use_gcs:
+        companies = get_companies_from_gcs(chunker.bucket)
+    else:
+        data_dir = Path(__file__).resolve().parents[2] / "data"
+        raw_dir = data_dir / "raw"
+        
+        if not raw_dir.exists():
+            print(f"❌ Raw data directory not found: {raw_dir}")
+            return
+        
+        companies = sorted([d.name for d in raw_dir.iterdir() if d.is_dir()])
+    
+    print(f"\nFound {len(companies)} companies")
     print(f"\n{'='*70}")
     print("PROCESSING COMPANIES")
     print(f"{'='*70}\n")
@@ -51,14 +64,25 @@ def build_vector_index(use_docker: bool = False, clear_existing: bool = True):
     successful = 0
     
     # Process each company
-    for i, company_dir in enumerate(companies, 1):
-        company_name = company_dir.name.replace('_', ' ')
+    for i, company in enumerate(companies, 1):
+        if use_gcs:
+            # Company is string name
+            company_name = company
+            display_name = company.replace('_', ' ')
+        else:
+            # Company is Path object
+            company_dir = Path(__file__).resolve().parents[2] / "data" / "raw" / company
+            company_name = company
+            display_name = company.replace('_', ' ')
         
-        print(f"[{i:2d}/{len(companies)}] {company_name:30s}", end=" ")
+        print(f"[{i:2d}/{len(companies)}] {display_name:30s}", end=" ")
         
         try:
             # Chunk files
-            chunks = chunker.chunk_company_files(company_dir, company_name)
+            if use_gcs:
+                chunks = chunker.chunk_company_files(company_name)
+            else:
+                chunks = chunker.chunk_company_files(company_dir, display_name)
             
             if chunks:
                 # Add to vector store
@@ -71,6 +95,8 @@ def build_vector_index(use_docker: bool = False, clear_existing: bool = True):
         
         except Exception as e:
             print(f"❌ Error: {e}")
+            import traceback
+            traceback.print_exc()
     
     # Final statistics
     print(f"\n{'='*70}")
@@ -99,7 +125,6 @@ def build_vector_index(use_docker: bool = False, clear_existing: bool = True):
         ("funding and investors", None, None),
     ]
     
-    # Add company-specific test if Anthropic exists
     if 'Anthropic' in companies_in_index:
         test_queries.append(("Claude AI assistant", "Anthropic", None))
     
@@ -123,8 +148,8 @@ def build_vector_index(use_docker: bool = False, clear_existing: bool = True):
         if results:
             for i, result in enumerate(results, 1):
                 print(f"   {i}. {result['metadata']['company_name']} - {result['metadata']['page_type']}")
-                print(f"      Score: {result['score']:.4f} | Tokens: {result['tokens']}")
-                print(f"      Text: {result['text'][:120]}...")
+                print(f"      Score: {result['score']:.4f} | Session: {result['metadata']['session']}")
+                print(f"      Text: {result['text'][:100]}...")
         else:
             print("   No results found")
     
@@ -133,39 +158,69 @@ def build_vector_index(use_docker: bool = False, clear_existing: bool = True):
     print("✅ VECTOR INDEX BUILT SUCCESSFULLY!")
     print(f"{'='*70}")
     
-    if not use_docker:
-        print(f"\n📁 Storage location: {data_dir / 'qdrant_storage'}")
-        print(f"   This directory will persist across runs")
-    else:
-        print(f"\n🐳 Qdrant Dashboard: http://localhost:6333/dashboard")
+    data_dir = Path(__file__).resolve().parents[2] / "data"
+    print(f"\n📁 Storage location: {data_dir / 'qdrant_storage'}")
+    print(f"   This directory will persist across runs")
+    
+    if use_gcs:
+        print(f"\n☁️  Data source: gs://{bucket_name}/data/raw/")
     
     print(f"\n🚀 Next steps:")
     print(f"   1. cd ../api")
     print(f"   2. python main.py")
-    print(f"   3. Test endpoint: curl -X POST http://localhost:8000/rag/search \\")
-    print(f"        -H 'Content-Type: application/json' \\")
-    print(f"        -d '{{\"query\": \"pricing model\", \"k\": 5}}'")
+    print(f"   3. Test: http://localhost:8000/docs")
+
+
+def get_companies_from_gcs(bucket) -> List[str]:
+    """Get list of all company folders in GCS bucket."""
+    prefix = "data/raw/"
+    
+    # List all blobs
+    blobs = list(bucket.list_blobs(prefix=prefix))
+    
+    # Extract unique company names
+    companies = set()
+    for blob in blobs:
+        # blob.name = "data/raw/Anthropic/2025-11-03_initial/homepage.txt"
+        parts = blob.name.split('/')
+        if len(parts) >= 3:
+            company = parts[2]  # "Anthropic"
+            companies.add(company)
+    
+    return sorted(list(companies))
 
 
 if __name__ == "__main__":
-    # Check for flags
+    # Parse arguments
     use_docker = '--docker' in sys.argv
     no_clear = '--no-clear' in sys.argv
+    use_gcs = '--gcs' in sys.argv
+    use_local = '--local' in sys.argv
     
     if '--help' in sys.argv or '-h' in sys.argv:
         print("""
 Usage: python build_index.py [OPTIONS]
 
 Options:
+  --gcs         Read from GCS bucket (default for deployment)
+  --local       Read from local data/raw/ folder
   --docker      Use Docker Qdrant instance (default: in-memory)
   --no-clear    Don't clear existing data (default: clear and rebuild)
   -h, --help    Show this help message
 
 Examples:
-  python build_index.py              # In-memory, clear existing
-  python build_index.py --docker     # Docker, clear existing
-  python build_index.py --no-clear   # In-memory, append to existing
+  python build_index.py --gcs              # Read from GCS, build locally
+  python build_index.py --local            # Read from local files
+  python build_index.py --gcs --docker     # GCS + Docker Qdrant
         """)
         sys.exit(0)
     
-    build_vector_index(use_docker=use_docker, clear_existing=not no_clear)
+    # Default to GCS if not specified
+    if not use_local:
+        use_gcs = True
+    
+    build_vector_index(
+        use_docker=use_docker, 
+        clear_existing=not no_clear,
+        use_gcs=use_gcs
+    )

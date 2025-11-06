@@ -6,7 +6,9 @@ import sys
 from typing import Dict
 import os
 from openai import OpenAI
-from dotenv import load_dotenv  # ✅ ADD THIS
+from dotenv import load_dotenv
+import json
+from datetime import datetime
 
 # Add parent to path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -14,7 +16,7 @@ from vectordb.embedder import VectorStore
 from dashboard.context_assembler import ContextAssembler
 
 # Load environment variables from .env file
-load_dotenv()  # ✅ ADD THIS
+load_dotenv()
 
 
 class RAGDashboardGenerator:
@@ -88,6 +90,8 @@ class RAGDashboardGenerator:
         print(f"   Chunks: {context_result['chunks_used']}")
         print(f"   Page types: {', '.join(context_result['page_types'])}")
         print(f"   Avg relevance: {context_result.get('avg_score', 0):.3f}")
+        print(f"   Daily chunks: {context_result.get('daily_chunks', 0)}")
+        print(f"   Initial chunks: {context_result.get('initial_chunks', 0)}")
         
         # Step 2: Fill prompt template
         full_prompt = self.prompt_template.replace('{context}', context)
@@ -97,7 +101,7 @@ class RAGDashboardGenerator:
         
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o-mini",  # or "gpt-4o" for better quality
+                model="gpt-4o-mini",
                 messages=[
                     {
                         "role": "system",
@@ -108,7 +112,7 @@ class RAGDashboardGenerator:
                         "content": full_prompt
                     }
                 ],
-                temperature=0.3,  # Low temperature for factual output
+                temperature=0.3,
                 max_tokens=2000
             )
             
@@ -116,6 +120,47 @@ class RAGDashboardGenerator:
             
             print(f"✅ Dashboard generated ({len(dashboard)} chars)")
             
+            # Step 4: Save evaluation JSON
+            output_dir = Path(__file__).resolve().parents[2] / "data" / "dashboards" / "rag"
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            eval_data = {
+                'company_name': company_name,
+                'pipeline_type': 'RAG',
+                'generated_at': datetime.now().isoformat(),
+                
+                'metadata': {
+                    'chunks_used': context_result['chunks_used'],
+                    'daily_chunks': context_result.get('daily_chunks', 0),
+                    'initial_chunks': context_result.get('initial_chunks', 0),
+                    'page_types': context_result['page_types'],
+                    'avg_score': context_result.get('avg_score', 0),
+                    'sources_breakdown': context_result.get('sources_breakdown', {}),
+                    'model': 'gpt-4o-mini',
+                    'prompt_tokens': response.usage.prompt_tokens,
+                    'completion_tokens': response.usage.completion_tokens
+                },
+                
+                'auto_evaluation': {
+                    'has_8_sections': dashboard.count('## ') >= 8,
+                    'uses_not_disclosed': dashboard.count('Not disclosed'),
+                    'has_disclosure_gaps': '## 8. Disclosure Gaps' in dashboard
+                },
+                
+                'manual_scores': {
+                    'factual_correctness': None,
+                    'hallucination_control': None,
+                    'readability': None
+                }
+            }
+            
+            eval_file = output_dir / f"{company_name.replace(' ', '_')}_eval.json"
+            with open(eval_file, 'w', encoding='utf-8') as f:
+                json.dump(eval_data, f, indent=2)
+            
+            print(f"💾 Evaluation JSON: {eval_file.name}")
+            
+            # Step 5: Return result
             return {
                 'company_name': company_name,
                 'dashboard': dashboard,
@@ -124,6 +169,9 @@ class RAGDashboardGenerator:
                     'chunks_used': context_result['chunks_used'],
                     'page_types': context_result['page_types'],
                     'avg_score': context_result.get('avg_score', 0),
+                    'daily_chunks': context_result.get('daily_chunks', 0),
+                    'initial_chunks': context_result.get('initial_chunks', 0),
+                    'data_freshness': f"{context_result.get('daily_chunks', 0)}/{context_result['chunks_used']} from daily refresh",
                     'model': 'gpt-4o-mini',
                     'prompt_tokens': response.usage.prompt_tokens,
                     'completion_tokens': response.usage.completion_tokens,
@@ -180,6 +228,12 @@ def test_generator():
                 f.write(result['dashboard'])
             
             print(f"\n💾 Saved to: {output_file}")
+            
+            # Show metadata
+            print(f"\n📊 Metadata:")
+            print(f"   Daily chunks: {result['metadata']['daily_chunks']}")
+            print(f"   Initial chunks: {result['metadata']['initial_chunks']}")
+            print(f"   Data freshness: {result['metadata']['data_freshness']}")
         else:
             print(f"\n❌ Failed to generate dashboard for {company}")
         

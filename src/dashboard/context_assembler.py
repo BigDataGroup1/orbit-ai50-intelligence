@@ -93,12 +93,31 @@ class ContextAssembler:
         
         context = "\n\n".join(context_parts)
         
+        # Track sources breakdown
+        sources_breakdown = {}
+        daily_chunks = 0
+        initial_chunks = 0
+
+        for chunk in all_chunks:
+            page_type = chunk['metadata']['page_type']
+            is_daily = chunk['metadata'].get('is_daily_refresh', False)
+            
+            sources_breakdown[page_type] = sources_breakdown.get(page_type, 0) + 1
+            
+            if is_daily:
+                daily_chunks += 1
+            else:
+                initial_chunks += 1
+
         return {
             'context': context,
             'chunks_used': len(all_chunks),
             'page_types': sorted(list(page_types)),
             'avg_score': sum(c['score'] for c in all_chunks) / len(all_chunks),
-            'success': True
+            'success': True,
+            'sources_breakdown': sources_breakdown,
+            'daily_chunks': daily_chunks,
+            'initial_chunks': initial_chunks
         }
 
 
