@@ -2,7 +2,32 @@
 __pycache__/
 *.py[codz]
 *$py.class
+# GCP Credentials - NEVER PUSH!
+gcp-credentials.json
 
+# Environment variables
+.env
+
+# Data folders (too large, auto-generated)
+data/raw/
+data/structured/
+data/payloads/
+data/dashboards/
+data/backups/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Virtual environment
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
 # C extensions
 *.so
 /data
