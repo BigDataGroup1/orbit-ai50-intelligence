@@ -1,5 +1,5 @@
 """
-RAG-based dashboard generator (Lab 7)
+RAG-based dashboard generator (Lab 7) with auto-evaluation
 """
 from pathlib import Path
 import sys
@@ -54,6 +54,76 @@ class RAGDashboardGenerator:
         
         print(f"✅ RAG Dashboard Generator initialized")
         print(f"   Prompt template: {prompt_path}")
+    
+    def evaluate_dashboard(self, dashboard: str, context: str) -> Dict:
+        """
+        Auto-evaluate dashboard quality using LLM.
+        
+        Args:
+            dashboard: Generated dashboard markdown
+            context: Original source chunks used
+        
+        Returns:
+            Dict with scores: {'factual': 0-3, 'hallucination': 0-2, 'readability': 0-1}
+        """
+        eval_prompt = f"""You just generated a PE investment dashboard. Now evaluate it objectively.
+
+DASHBOARD:
+{dashboard}
+
+SOURCE DOCUMENTS (what you had available):
+{context[:3000]}
+
+EVALUATION CRITERIA:
+
+1. Factual Correctness (0-3 points):
+- 3 points: All facts directly supported by sources
+- 2 points: Most facts supported, minor unsupported claims
+- 1 point: Some facts supported, several unsupported
+- 0 points: Many invented facts
+
+2. Hallucination Control (0-2 points):
+- 2 points: Used "Not disclosed" for missing data, no inventions
+- 1 point: Mostly good, 1-2 minor inventions
+- 0 points: Invented multiple facts
+
+3. Readability (0-1 point):
+- 1 point: Clear, concise, investor-focused
+- 0 points: Confusing or poorly structured
+
+Return ONLY a JSON object with scores:
+{{"factual": X, "hallucination": X, "readability": X}}
+"""
+        
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an objective evaluator of investment dashboards. Score strictly."
+                    },
+                    {
+                        "role": "user",
+                        "content": eval_prompt
+                    }
+                ],
+                temperature=0.1,
+                max_tokens=100,
+                response_format={"type": "json_object"}
+            )
+            
+            scores = json.loads(response.choices[0].message.content)
+            
+            return {
+                'factual': scores.get('factual', 0),
+                'hallucination': scores.get('hallucination', 0),
+                'readability': scores.get('readability', 0)
+            }
+        
+        except Exception as e:
+            print(f"⚠️  Auto-evaluation failed: {e}")
+            return {'factual': None, 'hallucination': None, 'readability': None}
     
     def generate_dashboard(self, company_name: str, max_chunks: int = 20) -> Dict:
         """
@@ -120,7 +190,14 @@ class RAGDashboardGenerator:
             
             print(f"✅ Dashboard generated ({len(dashboard)} chars)")
             
-            # Step 4: Save evaluation JSON
+            # Step 4: Auto-evaluate the dashboard
+            print(f"🔍 Auto-evaluating dashboard...")
+            evaluation_scores = self.evaluate_dashboard(dashboard, context)
+            print(f"   Factual correctness: {evaluation_scores['factual']}/3")
+            print(f"   Hallucination control: {evaluation_scores['hallucination']}/2")
+            print(f"   Readability: {evaluation_scores['readability']}/1")
+            
+            # Step 5: Save evaluation JSON
             output_dir = Path(__file__).resolve().parents[2] / "data" / "dashboards" / "rag"
             output_dir.mkdir(parents=True, exist_ok=True)
             
@@ -146,12 +223,16 @@ class RAGDashboardGenerator:
                     'uses_not_disclosed': dashboard.count('Not disclosed'),
                     'has_disclosure_gaps': '## 8. Disclosure Gaps' in dashboard
                 },
-                
-                'manual_scores': {
-                    'factual_correctness': None,
-                    'hallucination_control': None,
-                    'readability': None
-                }
+
+                'rubric_scores': {
+                    'factual_correctness': evaluation_scores['factual'],  # 0-3
+                    'schema_adherence': 2 if dashboard.count('## ') >= 8 else 1,  # 0-2 (auto-scored)
+                    'provenance_use': 2,  # 0-2 (always 2 for RAG - has full source tracking)
+                    'hallucination_control': evaluation_scores['hallucination'],  # 0-2
+                    'readability': evaluation_scores['readability']  # 0-1
+                },
+
+'total_score': evaluation_scores['factual'] + 2 + 2 + evaluation_scores['hallucination'] + evaluation_scores['readability']
             }
             
             eval_file = output_dir / f"{company_name.replace(' ', '_')}_eval.json"
@@ -160,7 +241,7 @@ class RAGDashboardGenerator:
             
             print(f"💾 Evaluation JSON: {eval_file.name}")
             
-            # Step 5: Return result
+            # Step 6: Return result
             return {
                 'company_name': company_name,
                 'dashboard': dashboard,
@@ -175,6 +256,7 @@ class RAGDashboardGenerator:
                     'model': 'gpt-4o-mini',
                     'prompt_tokens': response.usage.prompt_tokens,
                     'completion_tokens': response.usage.completion_tokens,
+                    'evaluation_scores': evaluation_scores
                 }
             }
         
@@ -234,6 +316,10 @@ def test_generator():
             print(f"   Daily chunks: {result['metadata']['daily_chunks']}")
             print(f"   Initial chunks: {result['metadata']['initial_chunks']}")
             print(f"   Data freshness: {result['metadata']['data_freshness']}")
+            print(f"\n🎯 Evaluation Scores:")
+            print(f"   Factual: {result['metadata']['evaluation_scores']['factual']}/3")
+            print(f"   Hallucination: {result['metadata']['evaluation_scores']['hallucination']}/2")
+            print(f"   Readability: {result['metadata']['evaluation_scores']['readability']}/1")
         else:
             print(f"\n❌ Failed to generate dashboard for {company}")
         

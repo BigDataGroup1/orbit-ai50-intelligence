@@ -16,7 +16,8 @@ EVAL_COMPANIES = [
     "Anthropic", 
     "Anysphere",
     "Baseten",
-    "Clay"
+    "Clay",
+    "Coactive_AI"
 ]
 
 
@@ -40,7 +41,7 @@ def main():
     successful = 0
     
     for i, company in enumerate(EVAL_COMPANIES, 1):
-        print(f"\n[{i}/5] Generating: {company}")
+        print(f"\n[{i}/6] Generating: {company}")
         
         result = generator.generate_dashboard(company, max_chunks=20)
         
@@ -51,7 +52,7 @@ def main():
             print(f"❌ Failed: {result.get('error')}")
     
     print(f"\n{'='*70}")
-    print(f"COMPLETE: {successful}/5 dashboards generated")
+    print(f"COMPLETE: {successful}/6 dashboards generated")
     print(f"{'='*70}")
     
     output_dir = Path(__file__).resolve().parents[2] / "data" / "dashboards" / "rag"
@@ -61,7 +62,7 @@ def main():
     print(f"   - <company>_eval.json (evaluation metadata)")
     
     print(f"\n🤝 Coordinate with teammate:")
-    print(f"   They should generate structured dashboards for these same 5 companies")
+    print(f"   They should generate structured dashboards for these same 6 companies")
 
 
 if __name__ == "__main__":
