@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Virtual environments
+.env
+.venv
+venv/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+*.log
+
+# Airflow (not needed in container)
+dags/
+airflow.cfg
+airflow.db
+
+# Large data files (keep only processed data)
+data/raw/
+*.csv
+*.xlsx
+*.pdf
+
+# Credentials
+credentials/
+*.json
+*.pem
+*.key
+
+# Tests
+tests/
+pytest.ini
+.pytest_cache/
