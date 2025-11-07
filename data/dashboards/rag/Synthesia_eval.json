@@ -1,0 +1,41 @@
+{
+  "company_name": "Synthesia",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:14:42.535703",
+  "metadata": {
+    "chunks_used": 7,
+    "daily_chunks": 1,
+    "initial_chunks": 6,
+    "page_types": [
+      "about",
+      "customers",
+      "homepage",
+      "news",
+      "product"
+    ],
+    "avg_score": 0.363266438700754,
+    "sources_breakdown": {
+      "about": 3,
+      "homepage": 1,
+      "news": 1,
+      "customers": 1,
+      "product": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 4042,
+    "completion_tokens": 578
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 6,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 8
+}

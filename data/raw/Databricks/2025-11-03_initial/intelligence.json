@@ -1,0 +1,149 @@
+{
+  "company_name": "Databricks",
+  "website": "https://www.databricks.com",
+  "scraped_at": "2025-11-03T16:23:35.044431",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Databricks",
+    "forbes_url": "https://www.forbes.com/companies/databricks/?list=ai50",
+    "ceo": "Ali Ghodsi",
+    "founded_year": 2013,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": 8000,
+    "industry": "Data and AI platform",
+    "description": "Why IPO when you can continue raising money? That appears to be Databricks' motto. In December 2024, the data infrastructure company raised a $10 billion Series J round for a whopping $62 billion valuation\u2013and it's currently raising a series K that may value it over $100 billion. Under the leadership of CEO Ali Ghodsi, one of seven academics from the University of California, Berkeley who cofounded the company in 2013, the startup\u2014which has more than 15,000 customers\u2014now plans to achieve $3.7 billion in annualized revenue by July. The company's data warehousing product, Databricks SQL, is forecast to hit $1 billion in revenue run rate by the end of the fiscal month of January 2026, and in the past year, the company\u2014which supports AI and machine learning app development\u2014has announced seven new offices around the globe, including offices in Mexico, Saudi Arabia and London. Databricks has also announced strategic partnerships with defense software company Palantir and generative AI company Anthropic, maker of ChatGPT competitor Claude.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://www.databricks.com",
+    "website_source": "manual",
+    "linkedin": "https://www.linkedin.com/company/databricks/",
+    "category": "coding_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://www.databricks.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:23:35.044481",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 780615
+    },
+    "about": {
+      "url": "https://www.databricks.com/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:23:39.244527",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 730671
+    },
+    "pricing": {
+      "url": "https://www.databricks.com/pricing",
+      "page_type": "pricing",
+      "scraped_at": "2025-11-03T16:23:43.478928",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 698683
+    },
+    "product": {
+      "url": "https://www.databricks.com/product",
+      "page_type": "product",
+      "scraped_at": "2025-11-03T16:23:47.810141",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 759915
+    },
+    "careers": {
+      "url": "https://www.databricks.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:23:51.950167",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 750555
+    },
+    "blog": {
+      "url": "https://www.databricks.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:23:56.015009",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 730435
+    },
+    "customers": {
+      "url": "https://www.databricks.com/customers",
+      "page_type": "customers",
+      "scraped_at": "2025-11-03T16:24:00.071310",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 694863
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Usage-based",
+      "tiers": [
+        "Free"
+      ],
+      "free_tier": true,
+      "enterprise_tier": false,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Intel",
+        "Microsoft",
+        "Mit"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": 15000
+    },
+    "integrations": [
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Sales",
+        "Marketing",
+        "Product",
+        "Design"
+      ],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Real-time processing",
+        "Integrations",
+        "Analytics",
+        "Automation",
+        "Security"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Microsoft"
+    ],
+    "funding_signals": {
+      "funding_mentioned": false,
+      "latest_round": null,
+      "investors_mentioned": [
+        "Accel"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

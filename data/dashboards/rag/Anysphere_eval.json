@@ -1,0 +1,41 @@
+{
+  "company_name": "Anysphere",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:02:07.641795",
+  "metadata": {
+    "chunks_used": 8,
+    "daily_chunks": 2,
+    "initial_chunks": 6,
+    "page_types": [
+      "blog",
+      "careers",
+      "customers",
+      "homepage",
+      "pricing"
+    ],
+    "avg_score": 0.20539280503518437,
+    "sources_breakdown": {
+      "pricing": 2,
+      "blog": 1,
+      "careers": 1,
+      "customers": 2,
+      "homepage": 2
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 5952,
+    "completion_tokens": 674
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 6,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 8
+}

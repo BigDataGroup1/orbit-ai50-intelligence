@@ -1,0 +1,39 @@
+{
+  "company_name": "Coactive_AI",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:03:53.638175",
+  "metadata": {
+    "chunks_used": 5,
+    "daily_chunks": 2,
+    "initial_chunks": 3,
+    "page_types": [
+      "about",
+      "blog",
+      "careers",
+      "homepage"
+    ],
+    "avg_score": 0.3312457761096474,
+    "sources_breakdown": {
+      "about": 2,
+      "blog": 1,
+      "homepage": 1,
+      "careers": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 2617,
+    "completion_tokens": 537
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 10,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 8
+}

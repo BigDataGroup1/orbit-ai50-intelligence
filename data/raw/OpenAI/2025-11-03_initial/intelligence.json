@@ -1,0 +1,63 @@
+{
+  "company_name": "OpenAI",
+  "website": "https://www.openai.com",
+  "scraped_at": "2025-11-03T16:33:15.358731",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "OpenAI",
+    "forbes_url": "https://www.forbes.com/companies/openai/?list=ai50",
+    "ceo": "Sam Altman",
+    "founded_year": 2015,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": 5000,
+    "industry": "AI research and products",
+    "description": "OpenAI is running up against the clock. The ChatGPT maker has until the end of the year to complete a complicated transition from a non-profit to a for-profit entity in order to get its hands on a majority of its late March $40 billion funding round\u2013the largest private tech fundraise to date. The restructuring has been challenged by former cofounder-turned-rival Elon Musk, who has asked authorities to block the transition and at one point offered to buy the nonprofit that controls OpenAI. But the $300 billion-valued behemoth continues to grow: 500 million people now use conversational bot ChatGPT weekly and it has some 2 million paying enterprise users. In March, the AI juggernaut added more advanced image generation capabilities to ChatGPT, setting off a viral and controversial trend where people created thousands of images in the style of Japanese animator Studio Ghibli, whose cofounder Hayao Miyazaki famously called AI-generated art \u201can insult to life itself.\u201d",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://www.openai.com",
+    "website_source": "manual",
+    "linkedin": "https://www.linkedin.com/company/openai/",
+    "category": "video_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://www.openai.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:33:15.358803",
+      "status_code": 403,
+      "success": false,
+      "error": "HTTP 403"
+    },
+    "about": {
+      "found": false
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "found": false
+    },
+    "blog": {
+      "found": false
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": null,
+    "customers": null,
+    "integrations": [],
+    "careers": null,
+    "product_features": null,
+    "competitors": [],
+    "funding_signals": null,
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

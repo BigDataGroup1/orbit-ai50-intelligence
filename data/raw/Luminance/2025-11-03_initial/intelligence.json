@@ -1,0 +1,142 @@
+{
+  "company_name": "Luminance",
+  "website": "https://luminance.com",
+  "scraped_at": "2025-11-03T16:29:41.208461",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Luminance",
+    "forbes_url": "https://www.forbes.com/companies/luminance/?list=ai50",
+    "ceo": "Eleanor Lightbody",
+    "founded_year": 2015,
+    "hq_city": "Cambridge",
+    "hq_country": "United Kingdom",
+    "employees": null,
+    "industry": "Enterprise contract automation",
+    "description": "Luminance sits at the intersection of AI and the legal world. Founded in 2015 by mathematicians Adam Guthrie and Graham Sills, the startup's AI helps businesses with contract generation, negotiation and contract analysis. The Cambridge-based company has raised a total of $165 million in funding, and its most recent Series C round brought in $75 million in February. Luminance\u2014valued at $400 million, according to PitchBook\u2014boasts over 700 customers in over 70 countries, including AMD, National Grid, Rolls-Royce and Lamborghini. In December, Luminance launched Lumi Go, a product that sends draft agreements to contract counterparties and can automatically negotiate on the sender's behalf.",
+    "total_funding": "$165M",
+    "valuation": "$400M",
+    "website": "https://luminance.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/luminance/",
+    "category": "legal_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://luminance.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:29:41.208569",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 149415
+    },
+    "about": {
+      "url": "https://luminance.com/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:29:47.722502",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 130839
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "url": "https://luminance.com/product",
+      "page_type": "product",
+      "scraped_at": "2025-11-03T16:30:01.850398",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 69468
+    },
+    "careers": {
+      "url": "https://luminance.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:30:08.821383",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 50505
+    },
+    "blog": {
+      "url": "https://luminance.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:30:15.265829",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 118884
+    },
+    "customers": {
+      "url": "https://luminance.com/customers",
+      "page_type": "customers",
+      "scraped_at": "2025-11-03T16:30:21.354492",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 94173
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Tiered subscription",
+      "tiers": [
+        "Team",
+        "Business",
+        "Enterprise"
+      ],
+      "free_tier": false,
+      "enterprise_tier": true,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Adobe",
+        "Intel",
+        "Microsoft",
+        "Mit",
+        "Spotify",
+        "Target"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": 700
+    },
+    "integrations": [
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Integrations",
+        "Analytics",
+        "Automation",
+        "Compliance"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Microsoft"
+    ],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": "Series C",
+      "investors_mentioned": [
+        "Accel",
+        "Benchmark"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

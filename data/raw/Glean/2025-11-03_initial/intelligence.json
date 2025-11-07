@@ -1,0 +1,166 @@
+{
+  "company_name": "Glean",
+  "website": "https://glean.com",
+  "scraped_at": "2025-11-03T16:27:04.601292",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Glean",
+    "forbes_url": "https://www.forbes.com/companies/glean/?list=ai50",
+    "ceo": "Arvind Jain",
+    "founded_year": 2019,
+    "hq_city": "Palo Alto",
+    "hq_country": "United States",
+    "employees": 850,
+    "industry": "Enterprise AI platform",
+    "description": "Think of Glean like a ChatGPT for your workplace\u2014one that can tell you everything from how many vacation days you have left, to that obscure employee discount you'd forgotten. The AI-powered search tool\u2014used by over 1 million employees on teams at companies like Booking.com, Deutsche Telekom and Duolingo\u2014is trained on a company's entire database, allowing employees to get quick access to their pressing questions by pinging customizable AI agents in Slack, Teams and Zendesk. In February, the unicorn company claimed it had $100 million in annualized revenue, and in June, the company secured $150 million in a Series F funding round led by Wellington Management\u2014upping its valuation to $7.2 billion. Glean Agents, which the company introduced in May, allows employees to create and scale agents without coding.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://glean.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/glean/",
+    "category": "customer_service_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://glean.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:27:04.601365",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 345025
+    },
+    "about": {
+      "url": "https://glean.com/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:27:11.090557",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 238195
+    },
+    "pricing": {
+      "url": "https://glean.com/pricing",
+      "page_type": "pricing",
+      "scraped_at": "2025-11-03T16:27:17.283524",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 345025
+    },
+    "product": {
+      "url": "https://glean.com/solutions",
+      "page_type": "product",
+      "scraped_at": "2025-11-03T16:27:29.919261",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 345025
+    },
+    "careers": {
+      "url": "https://glean.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:27:36.829640",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 150656
+    },
+    "blog": {
+      "url": "https://glean.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:27:43.208963",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 442270
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Per-seat subscription",
+      "tiers": [
+        "Free",
+        "Team",
+        "Business",
+        "Enterprise",
+        "Scale"
+      ],
+      "free_tier": true,
+      "enterprise_tier": true,
+      "pricing_mentioned": false
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Adobe",
+        "Amazon",
+        "Google",
+        "Intel",
+        "Microsoft",
+        "Mit",
+        "Netflix",
+        "Nvidia",
+        "Salesforce",
+        "Stanford",
+        "Stripe",
+        "Zoom"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Confluence",
+      "Gmail",
+      "Jira",
+      "Outlook",
+      "Salesforce",
+      "Slack",
+      "Snowflake",
+      "Stripe",
+      "Teams",
+      "Zendesk",
+      "Zoom"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Product"
+      ],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": "greenhouse"
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Real-time processing",
+        "Integrations",
+        "Analytics",
+        "Automation",
+        "Security",
+        "Compliance"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Anthropic",
+      "Google",
+      "Microsoft",
+      "Openai"
+    ],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": "Series F",
+      "investors_mentioned": [
+        "Accel"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

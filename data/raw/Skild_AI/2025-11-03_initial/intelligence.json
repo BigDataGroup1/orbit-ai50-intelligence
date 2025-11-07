@@ -1,0 +1,85 @@
+{
+  "company_name": "Skild AI",
+  "website": "https://skild.ai",
+  "scraped_at": "2025-11-03T16:37:26.685678",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Skild AI",
+    "forbes_url": "https://www.forbes.com/companies/skild-ai/?list=ai50",
+    "ceo": "Deepak Pathak",
+    "founded_year": 2023,
+    "hq_city": "Pittsburgh",
+    "hq_country": "United States",
+    "employees": null,
+    "industry": "AI systems for robotics",
+    "description": "Founded by former Carnegie Mellon University professors Abhinav Gupta and Deepak Pathak, Skild AI is building a one-size-fits-all AI model that can be slotted into robots of different shapes and sizes. The $1.5 billion-valued startup's secret sauce is training its AI model with 1000 times more data than its rivals, cofounders Gupta and Pathak claim. Even though the company has said little about who its customers are, it has picked up $300 million in venture funding from top investors including Lightspeed Ventures, Coatue and billionaire Jeff Bezos.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://skild.ai",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/skild-ai/",
+    "category": "data_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://skild.ai",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:37:26.685812",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 23247
+    },
+    "about": {
+      "found": false
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "found": false
+    },
+    "blog": {
+      "found": false
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Not found",
+      "tiers": [],
+      "free_tier": false,
+      "enterprise_tier": false,
+      "pricing_mentioned": false
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Mit"
+      ],
+      "has_customer_section": false,
+      "customer_count_claim": null
+    },
+    "integrations": [],
+    "careers": null,
+    "product_features": {
+      "mentioned_features": [
+        "API access"
+      ],
+      "use_cases": []
+    },
+    "competitors": [],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": null,
+      "investors_mentioned": []
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

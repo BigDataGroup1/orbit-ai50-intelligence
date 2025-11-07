@@ -1,0 +1,43 @@
+{
+  "company_name": "Writer",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:16:00.665538",
+  "metadata": {
+    "chunks_used": 9,
+    "daily_chunks": 4,
+    "initial_chunks": 5,
+    "page_types": [
+      "about",
+      "blog",
+      "customers",
+      "homepage",
+      "news",
+      "pricing"
+    ],
+    "avg_score": 0.42653300235542013,
+    "sources_breakdown": {
+      "customers": 2,
+      "news": 3,
+      "about": 1,
+      "homepage": 1,
+      "pricing": 1,
+      "blog": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 5912,
+    "completion_tokens": 756
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 2,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 2,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 9
+}

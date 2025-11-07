@@ -1,0 +1,63 @@
+{
+  "company_name": "Midjourney",
+  "website": "https://www.midjourney.com",
+  "scraped_at": "2025-11-03T16:31:22.691733",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Midjourney",
+    "forbes_url": "https://www.forbes.com/companies/midjourney/?list=ai50",
+    "ceo": "David Holz",
+    "founded_year": 2021,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": 20,
+    "industry": "AI research and products",
+    "description": "Describe it, design it. That's how people are using Midjourney's popular AI image generation tool, which is available via Discord and web app. CEO David Holz\u2014a former NASA researcher who previously founded Leap Motion\u2014started the San Francisco-based business in 2021. It has since been used to create everything from floral typography and watercolor-style art to realistic-looking images of Pope Francis or U.S. President Donald Trump, tapping into video generation with the release of its V1 Video Model in June. Midjourney\u2014which brought in $300 million in total revenue in the 2024 fiscal year, according to PitchBook\u2014has so far shunned any outside funding, but it did announce a technology licensing partnership with Meta in August. Midjourney was also hit with a lawsuit this June, with Disney and Universal suing for copyright infringement. In August, Midjourney pushed back and argued fair use for AI model training, writing that \u201cCopyright law does not confer absolute control over the use of copyrighted works.\u201d",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://www.midjourney.com",
+    "website_source": "manual",
+    "linkedin": "https://www.linkedin.com/company/midjourney/",
+    "category": "legal_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://www.midjourney.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:31:22.691821",
+      "status_code": 403,
+      "success": false,
+      "error": "HTTP 403"
+    },
+    "about": {
+      "found": false
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "found": false
+    },
+    "blog": {
+      "found": false
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": null,
+    "customers": null,
+    "integrations": [],
+    "careers": null,
+    "product_features": null,
+    "competitors": [],
+    "funding_signals": null,
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

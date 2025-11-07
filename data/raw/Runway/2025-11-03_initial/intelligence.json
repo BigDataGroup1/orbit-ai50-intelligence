@@ -1,0 +1,141 @@
+{
+  "company_name": "Runway",
+  "website": "https://runway.com",
+  "scraped_at": "2025-11-03T16:35:54.692635",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Runway",
+    "forbes_url": "https://www.forbes.com/companies/runway/?list=ai50",
+    "ceo": "Crist\u00f3bal Valenzuela",
+    "founded_year": 2018,
+    "hq_city": "New York",
+    "hq_country": "United States",
+    "employees": 115,
+    "industry": "Generative video",
+    "description": "Lights, camera, Runway. Imagine cutting your video editing time from five hours to five minutes. That's exactly what the graphics team at The Late Show with Stephen Colbert has done with Runway\u2014a startup valued $3.3 billion. Founded by Crist\u00f3bal Valenzuela, Anastasis Germanidis and Alejandro Matamala in 2018, Runway's AI image and video tools allow users to conjure up images and videos on the fly\u2014from location changes and lighting adjustments to recasts of a character. Visual effects artist Evan Halleck used Runway to assist with the rock scene in the Oscar-winning film Everything Everywhere All at Once. This year, the New York City-based startup raised $308M in Series D funding and announced partnerships with Lionsgate, AMC Networks and Netflix.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://runway.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/runway/",
+    "category": "video_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://runway.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:35:54.692715",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 135510
+    },
+    "about": {
+      "url": "https://runway.com/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:35:57.733329",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 96022
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://runway.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:36:04.257828",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 91597
+    },
+    "blog": {
+      "url": "https://runway.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:36:07.244809",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 91585
+    },
+    "customers": {
+      "url": "https://runway.com/customers",
+      "page_type": "customers",
+      "scraped_at": "2025-11-03T16:36:10.440208",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 112891
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Tiered subscription",
+      "tiers": [
+        "Team",
+        "Business",
+        "Scale"
+      ],
+      "free_tier": false,
+      "enterprise_tier": true,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Mit",
+        "Stripe"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Hubspot",
+      "Notion",
+      "Slack",
+      "Stripe",
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Sales",
+        "Marketing",
+        "Product",
+        "Design"
+      ],
+      "locations": [
+        "Remote"
+      ],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [
+        "Real-time processing",
+        "Integrations",
+        "Analytics",
+        "Security"
+      ],
+      "use_cases": []
+    },
+    "competitors": [],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": null,
+      "investors_mentioned": [
+        "A16Z",
+        "Accel"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}
