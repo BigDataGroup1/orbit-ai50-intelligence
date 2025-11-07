@@ -1,0 +1,36 @@
+{
+  "company_name": "Decagon",
+  "website": "Not available",
+  "scraped_at": "2025-11-03T16:24:11.386213",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Decagon",
+    "forbes_url": "https://www.forbes.com/companies/decagon/?list=ai50",
+    "ceo": "Jesse Zhang",
+    "founded_year": 2023,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": null,
+    "industry": "AI agents for customer service",
+    "description": "\u201cWe think AI agents can be 10x employees,\u201d says Jesse Zhang, cofounder and CEO of Decagon. That's why Zhang, 27, named his company, which builds customer service bots, after the 10-sided geometric shape. The startup's pitch to corporate clients, which include public companies like Duolingo and Hertz alongside buzzy startups such as Notion and Rippling, is that its AI can help consumers return products, cancel subscriptions or order replacement credit cards. Zhang says his secret sauce is that Decagon's bots can appear to empathize with frustrated users\u2014which is more than can be said of the average call center employee. \u201cWe give a very, very personalized experience.\u201d",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "Not available",
+    "website_source": "failed",
+    "linkedin": "https://www.linkedin.com/company/decagon/",
+    "category": "customer_service_ai"
+  },
+  "pages": {},
+  "extracted_intelligence": {
+    "pricing": null,
+    "customers": null,
+    "integrations": [],
+    "careers": null,
+    "product_features": null,
+    "competitors": [],
+    "funding_signals": null,
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

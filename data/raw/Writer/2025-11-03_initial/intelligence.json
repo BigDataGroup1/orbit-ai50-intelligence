@@ -1,0 +1,166 @@
+{
+  "company_name": "Writer",
+  "website": "https://writer.com",
+  "scraped_at": "2025-11-03T16:45:48.763397",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Writer",
+    "forbes_url": "https://www.forbes.com/companies/writer/?list=ai50",
+    "ceo": "May Habib",
+    "founded_year": 2020,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": 145,
+    "industry": "Enterprise AI software",
+    "description": "Around 300 enterprises, including the likes of Uber, Intuit and Salesforce, use Writer's generative AI software to create marketing materials and other documents in the company's style and voice. Writer's AI models can ingest and process everything from text to spreadsheets and databases and use that information to generate blogs, social media posts and email campaigns. Founded by May Habib and Waseem AlShikh, it has raised a total of $326 million following its most recent Series C in November 2024, which valued the company at $1.9 billion. Now it's releasing 70-plus ready to use AI agents that can autonomously carry out rote tasks across HR, sales, customer support and other areas.",
+    "total_funding": "$326M",
+    "valuation": "Not available",
+    "website": "https://writer.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/writer/",
+    "category": "customer_service_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://writer.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:45:48.763466",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 282361
+    },
+    "about": {
+      "url": "https://writer.com/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:45:51.966971",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 346302
+    },
+    "pricing": {
+      "url": "https://writer.com/pricing",
+      "page_type": "pricing",
+      "scraped_at": "2025-11-03T16:45:55.566040",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 286801
+    },
+    "product": {
+      "url": "https://writer.com/platform",
+      "page_type": "product",
+      "scraped_at": "2025-11-03T16:46:02.688810",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 282361
+    },
+    "careers": {
+      "url": "https://writer.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:46:05.893739",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 210976
+    },
+    "blog": {
+      "url": "https://writer.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:46:09.065756",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 253097
+    },
+    "customers": {
+      "url": "https://writer.com/customers",
+      "page_type": "customers",
+      "scraped_at": "2025-11-03T16:46:12.318362",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 310824
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Per-seat subscription",
+      "tiers": [
+        "Free",
+        "Starter",
+        "Basic",
+        "Plus",
+        "Team",
+        "Business",
+        "Enterprise",
+        "Scale"
+      ],
+      "free_tier": true,
+      "enterprise_tier": true,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Google",
+        "Ibm",
+        "Intel",
+        "Meta",
+        "Microsoft",
+        "Mit",
+        "Salesforce",
+        "Uber"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Hubspot",
+      "Salesforce",
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Sales",
+        "Marketing",
+        "Product"
+      ],
+      "locations": [
+        "Remote"
+      ],
+      "hiring_focus": [],
+      "job_board_detected": "ashby"
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Integrations",
+        "Analytics",
+        "Security",
+        "Compliance"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Google",
+      "Meta",
+      "Microsoft"
+    ],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": null,
+      "investors_mentioned": [
+        "Accel",
+        "Benchmark"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

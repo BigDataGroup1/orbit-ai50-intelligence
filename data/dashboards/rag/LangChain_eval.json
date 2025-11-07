@@ -1,0 +1,41 @@
+{
+  "company_name": "LangChain",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:09:04.308025",
+  "metadata": {
+    "chunks_used": 7,
+    "daily_chunks": 1,
+    "initial_chunks": 6,
+    "page_types": [
+      "about",
+      "careers",
+      "customers",
+      "homepage",
+      "pricing"
+    ],
+    "avg_score": 0.33386949091961143,
+    "sources_breakdown": {
+      "about": 1,
+      "homepage": 2,
+      "customers": 1,
+      "careers": 1,
+      "pricing": 2
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 3545,
+    "completion_tokens": 659
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 4,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 2,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 9
+}

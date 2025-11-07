@@ -1,0 +1,125 @@
+{
+  "company_name": "Speak",
+  "website": "https://speak.com",
+  "scraped_at": "2025-11-03T16:39:17.503456",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Speak",
+    "forbes_url": "https://www.forbes.com/companies/speak/?list=ai50",
+    "ceo": "Connor Zwick",
+    "founded_year": 2016,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": null,
+    "industry": "AI language tutor",
+    "description": "It's nearly impossible to truly master a language without human interaction or in-person tutoring. Speak wants to change that by offering an AI tutor for users to converse with, helping them achieve fluency in English and Spanish. In December of 2024, its valuation doubled to $1 billion, after raising $78 million from OpenAI, Khosla Ventures and Y Combinator. Its founders are certainly fluent in entrepreneurship: CEO Connor Zwick previously founded video game company Coco Controller as a Harvard dropout-turned-member of the Thiel Fellowship. That was after starting online learning tool Flashcards+, which education firm Chegg acquired in 2013. Speak cofounder and CTO Andrew Hsu also dropped out of his Stanford neuroscience PhD program to be an inaugural member of the Thiel Fellowship and pursue his ed-tech startup Airy Labs.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://speak.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/speak/",
+    "category": "video_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://speak.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:39:17.503572",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 86851
+    },
+    "about": {
+      "found": false
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://speak.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:39:53.186996",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 89842
+    },
+    "blog": {
+      "url": "https://speak.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:39:59.669295",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 61546
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Freemium",
+      "tiers": [
+        "Free",
+        "Premium",
+        "Team"
+      ],
+      "free_tier": true,
+      "enterprise_tier": false,
+      "pricing_mentioned": false
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Apple",
+        "Google",
+        "Meta",
+        "Mit"
+      ],
+      "has_customer_section": false,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Slack",
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Marketing",
+        "Product",
+        "Design"
+      ],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": "ashby"
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Google",
+      "Meta",
+      "Openai"
+    ],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": "Series C",
+      "investors_mentioned": [
+        "Accel"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

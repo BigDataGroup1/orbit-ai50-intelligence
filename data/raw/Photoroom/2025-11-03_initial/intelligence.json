@@ -1,0 +1,143 @@
+{
+  "company_name": "Photoroom",
+  "website": "https://photoroom.com",
+  "scraped_at": "2025-11-03T16:34:33.572930",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Photoroom",
+    "forbes_url": "https://www.forbes.com/companies/photoroom/?list=ai50",
+    "ceo": "Matthieu Rouif",
+    "founded_year": 2019,
+    "hq_city": "Paris",
+    "hq_country": "France",
+    "employees": 50,
+    "industry": "Photo editing app",
+    "description": "No photo studio? No problem. Without any access to professional photographers and studios during the Covid-19 pandemic, small business owners and side hustlers turned to photo editing app Photoroom, which uses AI to spruce up product shots. With more than 20 million monthly users and over 200 million app downloads, the company is positioning itself as a photo editing app for the masses. The $500 million valued company allows users to level up their designs and create product pictures and logos. Warner Bros., Lionsgate and Sony Japan have used the app for film promotion, and Netflix partnered with the startup to create cover photos for the dystopian Black Mirror series. Apart from entertainment companies, it's also been used by Amazon, Klarna, Daiso and Bulgari.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://photoroom.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/photoroom/",
+    "category": "video_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://photoroom.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:34:33.573011",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 361926
+    },
+    "about": {
+      "url": "https://photoroom.com/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:34:39.608485",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 212378
+    },
+    "pricing": {
+      "url": "https://photoroom.com/pricing",
+      "page_type": "pricing",
+      "scraped_at": "2025-11-03T16:34:45.326020",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 367583
+    },
+    "product": {
+      "url": "https://photoroom.com/solutions",
+      "page_type": "product",
+      "scraped_at": "2025-11-03T16:34:56.753977",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 223733
+    },
+    "careers": {
+      "url": "https://photoroom.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:35:03.524071",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 38176
+    },
+    "blog": {
+      "url": "https://photoroom.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:35:10.140758",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 630434
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Enterprise/Custom",
+      "tiers": [
+        "Free",
+        "Basic",
+        "Plus",
+        "Pro",
+        "Professional",
+        "Team",
+        "Enterprise",
+        "Scale"
+      ],
+      "free_tier": true,
+      "enterprise_tier": true,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Amazon",
+        "Apple",
+        "Google",
+        "Meta",
+        "Mit"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Slack",
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": "ashby"
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Integrations",
+        "Automation"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Google",
+      "Meta"
+    ],
+    "funding_signals": {
+      "funding_mentioned": false,
+      "latest_round": "Seed",
+      "investors_mentioned": []
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

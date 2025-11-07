@@ -1,0 +1,43 @@
+{
+  "company_name": "Databricks",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:04:43.498771",
+  "metadata": {
+    "chunks_used": 6,
+    "daily_chunks": 2,
+    "initial_chunks": 4,
+    "page_types": [
+      "about",
+      "careers",
+      "customers",
+      "homepage",
+      "news",
+      "pricing"
+    ],
+    "avg_score": 0.567039899456836,
+    "sources_breakdown": {
+      "careers": 1,
+      "about": 1,
+      "news": 1,
+      "customers": 1,
+      "pricing": 1,
+      "homepage": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 3257,
+    "completion_tokens": 590
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 5,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 8
+}

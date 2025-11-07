@@ -1,0 +1,41 @@
+{
+  "company_name": "Baseten",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:02:31.304755",
+  "metadata": {
+    "chunks_used": 7,
+    "daily_chunks": 1,
+    "initial_chunks": 6,
+    "page_types": [
+      "about",
+      "careers",
+      "customers",
+      "homepage",
+      "pricing"
+    ],
+    "avg_score": 0.3972691278253396,
+    "sources_breakdown": {
+      "pricing": 2,
+      "homepage": 1,
+      "customers": 2,
+      "about": 1,
+      "careers": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 4580,
+    "completion_tokens": 541
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 14,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 8
+}

@@ -1,0 +1,117 @@
+{
+  "company_name": "Figure AI",
+  "website": "https://figure.ai",
+  "scraped_at": "2025-11-03T16:25:34.246767",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Figure AI",
+    "forbes_url": "https://www.forbes.com/companies/figure-ai/?list=ai50",
+    "ceo": "Brett Adcock",
+    "founded_year": 2022,
+    "hq_city": "San Jose",
+    "hq_country": "United States",
+    "employees": 80,
+    "industry": "Humanoid robots",
+    "description": "Figure AI wants robots to take our jobs. Or at least the jobs that have labor shortages, like those in warehouses and retail. The company's bipedal humanoid robots, which currently stand at 5 feet 6 inches and weigh 154 pounds, are perfectly suited to take over the jobs that humans don't want, according to CEO Brett Adcock, who founded the company in 2022. In a world where Tesla and other companies are starting to build their own androids, Figure AI's pitch has been compelling enough to land customers like BMW, which plans to use the robots in their factories, and investors including Jeff Bezos, OpenAI's startup fund, Microsoft and Nvidia. In February 2024, the company raised $754 million at a valuation of $2.6 billion.",
+    "total_funding": "Not available",
+    "valuation": "$2.6B",
+    "website": "https://figure.ai",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/figure-ai/",
+    "category": "robotics_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://figure.ai",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:25:34.246839",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 39097
+    },
+    "about": {
+      "url": "https://figure.ai/company",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:25:44.964085",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 55900
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://figure.ai/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:26:06.798495",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 38813
+    },
+    "blog": {
+      "url": "https://figure.ai/news",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:26:14.638245",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 40949
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Not found",
+      "tiers": [],
+      "free_tier": false,
+      "enterprise_tier": false,
+      "pricing_mentioned": false
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Google",
+        "Intel",
+        "Mit"
+      ],
+      "has_customer_section": false,
+      "customer_count_claim": null
+    },
+    "integrations": [],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Design"
+      ],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [],
+      "use_cases": []
+    },
+    "competitors": [
+      "Google"
+    ],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": "Series C",
+      "investors_mentioned": [
+        "Accel"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

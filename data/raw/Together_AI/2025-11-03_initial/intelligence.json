@@ -1,0 +1,164 @@
+{
+  "company_name": "Together AI",
+  "website": "https://together.ai",
+  "scraped_at": "2025-11-03T16:42:59.806111",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Together AI",
+    "forbes_url": "https://www.forbes.com/companies/together-ai/?list=ai50",
+    "ceo": "Vipul Ved Prakash",
+    "founded_year": 2022,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": 200,
+    "industry": "AI cloud provider",
+    "description": "San Francisco-based Together AI provides cloud computing services and software to 700,000 AI developers and enterprises like Zoom, Salesforce and Quora to train, fine tune and run AI models. The company is also a staunch advocate for open-source AI technology and hosts 200 open source models for video, image and text generation. Since its founding in 2022, it's become one of the largest resources for open source data to train large language models, thanks to its dataset named RedPajama-V2 that contains more than 30 trillion units of data. Earlier this year, the company reached a valuation of $3.3 billion after closing a $305 million round led by General Catalyst, and acquired Refuel.ai in May.",
+    "total_funding": "Not available",
+    "valuation": "$3.3B",
+    "website": "https://together.ai",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/together-ai/",
+    "category": "coding_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://together.ai",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:42:59.806212",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 444711
+    },
+    "about": {
+      "url": "https://together.ai/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:43:06.258223",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 406505
+    },
+    "pricing": {
+      "url": "https://together.ai/pricing",
+      "page_type": "pricing",
+      "scraped_at": "2025-11-03T16:43:11.633711",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 360290
+    },
+    "product": {
+      "url": "https://together.ai/products",
+      "page_type": "product",
+      "scraped_at": "2025-11-03T16:43:17.821957",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 244610
+    },
+    "careers": {
+      "url": "https://together.ai/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:43:22.953688",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 406505
+    },
+    "blog": {
+      "url": "https://together.ai/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:43:27.394968",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 256038
+    },
+    "customers": {
+      "url": "https://together.ai/customers",
+      "page_type": "customers",
+      "scraped_at": "2025-11-03T16:43:31.635155",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 230423
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Token/API-based",
+      "tiers": [
+        "Free",
+        "Plus",
+        "Pro",
+        "Team",
+        "Scale"
+      ],
+      "free_tier": true,
+      "enterprise_tier": false,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Google",
+        "Intel",
+        "Mit",
+        "Nvidia",
+        "Salesforce",
+        "Stripe",
+        "Uber",
+        "Zoom"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Salesforce",
+      "Stripe",
+      "Teams",
+      "Zoom"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Sales",
+        "Marketing",
+        "Product"
+      ],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Real-time processing",
+        "Integrations",
+        "Security",
+        "Compliance"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Cohere",
+      "Google",
+      "Openai",
+      "Perplexity",
+      "Scale Ai"
+    ],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": "Seed",
+      "investors_mentioned": [
+        "Accel",
+        "Benchmark"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

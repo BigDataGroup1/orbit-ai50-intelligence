@@ -1,0 +1,43 @@
+{
+  "company_name": "Hugging_Face",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:08:32.393715",
+  "metadata": {
+    "chunks_used": 8,
+    "daily_chunks": 3,
+    "initial_chunks": 5,
+    "page_types": [
+      "blog",
+      "customers",
+      "homepage",
+      "news",
+      "pricing",
+      "product"
+    ],
+    "avg_score": 0.2884942354044937,
+    "sources_breakdown": {
+      "news": 1,
+      "blog": 2,
+      "product": 1,
+      "customers": 1,
+      "homepage": 2,
+      "pricing": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 4307,
+    "completion_tokens": 638
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 9,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 8
+}

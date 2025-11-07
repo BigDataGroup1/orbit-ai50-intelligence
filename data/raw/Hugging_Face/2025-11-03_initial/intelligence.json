@@ -1,0 +1,153 @@
+{
+  "company_name": "Hugging Face",
+  "website": "https://huggingface.co",
+  "scraped_at": "2025-11-03T16:28:54.820493",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Hugging Face",
+    "forbes_url": "https://www.forbes.com/companies/hugging-face/?list=ai50",
+    "ceo": "Cl\u00e9ment Delangue",
+    "founded_year": 2016,
+    "hq_city": "Brooklyn",
+    "hq_country": "United States",
+    "employees": 250,
+    "industry": "AI research and products",
+    "description": "What started as an AI chatbot for teens in 2016 has become an open-source platform worth $4.5 billion. Founded by Clement Delangue, Julien Chaumond and Thomas Wolf, Hugging Face has some 10 million users who use it to share code and collaborate on models, datasets and apps. The platform hosts a library of models and datasets from 215,000 firms including Meta and Microsoft as well as government organizations like France's Ministry of Culture, Poland's Ministry of Digital Affairs and UNESCO. The company has raised a total of $395.2 million in funding from tech heavyweights like Amazon, Google and Nvidia. It acquired Pollen Robotics in April and launched its first-ever robotics product, Reachy Mini, which gathered over $1 million in sales in less than a week.",
+    "total_funding": "$395.2M",
+    "valuation": "Not available",
+    "website": "https://huggingface.co",
+    "website_source": "manual",
+    "linkedin": "https://www.linkedin.com/company/hugging-face/",
+    "category": "customer_service_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://huggingface.co",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:28:54.820603",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 132653
+    },
+    "about": {
+      "url": "https://huggingface.co/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:28:58.748436",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 40792
+    },
+    "pricing": {
+      "url": "https://huggingface.co/pricing",
+      "page_type": "pricing",
+      "scraped_at": "2025-11-03T16:29:02.630871",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 103789
+    },
+    "product": {
+      "url": "https://huggingface.co/product",
+      "page_type": "product",
+      "scraped_at": "2025-11-03T16:29:06.563803",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 38380
+    },
+    "careers": {
+      "url": "https://huggingface.co/jobs",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:29:12.435505",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 5717
+    },
+    "blog": {
+      "url": "https://huggingface.co/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:29:18.327871",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 257247
+    },
+    "customers": {
+      "url": "https://huggingface.co/customers",
+      "page_type": "customers",
+      "scraped_at": "2025-11-03T16:29:22.869369",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 52531
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Per-seat subscription",
+      "tiers": [
+        "Free",
+        "Basic",
+        "Pro",
+        "Team",
+        "Enterprise"
+      ],
+      "free_tier": true,
+      "enterprise_tier": true,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Amazon",
+        "Apple",
+        "Google",
+        "Ibm",
+        "Intel",
+        "Meta",
+        "Microsoft",
+        "Mit",
+        "Nvidia"
+      ],
+      "has_customer_section": false,
+      "customer_count_claim": 50000
+    },
+    "integrations": [
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Analytics",
+        "Security",
+        "Compliance"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Google",
+      "Meta",
+      "Microsoft"
+    ],
+    "funding_signals": {
+      "funding_mentioned": false,
+      "latest_round": null,
+      "investors_mentioned": [
+        "Accel"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

@@ -1,0 +1,41 @@
+{
+  "company_name": "SambaNova",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:12:43.643966",
+  "metadata": {
+    "chunks_used": 6,
+    "daily_chunks": 3,
+    "initial_chunks": 3,
+    "page_types": [
+      "about",
+      "careers",
+      "homepage",
+      "news",
+      "product"
+    ],
+    "avg_score": 0.4695733399273258,
+    "sources_breakdown": {
+      "careers": 2,
+      "about": 1,
+      "homepage": 1,
+      "product": 1,
+      "news": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 3688,
+    "completion_tokens": 574
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 10,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 2,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 9
+}

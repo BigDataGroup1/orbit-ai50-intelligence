@@ -1,0 +1,145 @@
+{
+  "company_name": "ElevenLabs",
+  "website": "https://elevenlabs.io",
+  "scraped_at": "2025-11-03T16:24:52.861390",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "ElevenLabs",
+    "forbes_url": "https://www.forbes.com/companies/elevenlabs/?list=ai50",
+    "ceo": "Mati Staniszewski",
+    "founded_year": 2022,
+    "hq_city": "London",
+    "hq_country": "United Kingdom",
+    "employees": 175,
+    "industry": "AI research and products",
+    "description": "Changing the sound of your voice, cloning your voice, or even making yourself sound like you're speaking in a different language is all possible with ElevenLabs' software. The generative AI audio company has 45 pre-made voices for dubbing podcasts, narrating audiobooks and creating voiceovers. CEO Mati Staniszewski started the company with childhood friend Piotr Dabkowski in 2022 after being frustrated by poorly dubbed films. The Polish duo landed on the Forbes 30 Under 30 Europe list last year and have raised $281 million for their company at a valuation of $3.3 billion. But it has also taken heat from voice actors, who have sued the company for allegedly cloning their voices without permission (ElevenLabs has asked for the claims to be dismissed due to a lack of evidence). The software was also used to create a fake robocall that imitated Biden's voice, urging voters in New Hampshire not to vote. In response, ElevenLabs reportedly suspended the account behind the deepfake for violating its policies. In August, the company launched Eleven Music, which uses text prompts to generate songs and is available for commercial use.",
+    "total_funding": "Not available",
+    "valuation": "$3.3B",
+    "website": "https://elevenlabs.io",
+    "website_source": "manual",
+    "linkedin": "https://www.linkedin.com/company/elevenlabs/",
+    "category": "coding_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://elevenlabs.io",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:24:52.861465",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 1230143
+    },
+    "about": {
+      "url": "https://elevenlabs.io/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:24:57.307001",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 910624
+    },
+    "pricing": {
+      "url": "https://elevenlabs.io/pricing",
+      "page_type": "pricing",
+      "scraped_at": "2025-11-03T16:25:01.712714",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 893735
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://elevenlabs.io/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:25:10.928849",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 1007639
+    },
+    "blog": {
+      "url": "https://elevenlabs.io/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:25:15.349083",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 921542
+    },
+    "customers": {
+      "url": "https://elevenlabs.io/customers",
+      "page_type": "customers",
+      "scraped_at": "2025-11-03T16:25:19.605186",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 921542
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Usage-based",
+      "tiers": [
+        "Free",
+        "Starter",
+        "Plus",
+        "Pro",
+        "Professional",
+        "Premium",
+        "Business",
+        "Scale"
+      ],
+      "free_tier": true,
+      "enterprise_tier": true,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Apple",
+        "Google",
+        "Mit",
+        "Uber"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Marketing",
+        "Product"
+      ],
+      "locations": [
+        "Remote"
+      ],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Real-time processing",
+        "Security"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Google"
+    ],
+    "funding_signals": {
+      "funding_mentioned": false,
+      "latest_round": null,
+      "investors_mentioned": []
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

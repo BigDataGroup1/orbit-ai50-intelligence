@@ -1,0 +1,45 @@
+{
+  "company_name": "Luminance",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:09:34.310655",
+  "metadata": {
+    "chunks_used": 11,
+    "daily_chunks": 3,
+    "initial_chunks": 8,
+    "page_types": [
+      "about",
+      "blog",
+      "careers",
+      "customers",
+      "homepage",
+      "news",
+      "product"
+    ],
+    "avg_score": 0.4353084434504682,
+    "sources_breakdown": {
+      "homepage": 1,
+      "about": 4,
+      "customers": 1,
+      "news": 1,
+      "product": 2,
+      "blog": 1,
+      "careers": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 6053,
+    "completion_tokens": 617
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 4,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 2,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 9
+}
