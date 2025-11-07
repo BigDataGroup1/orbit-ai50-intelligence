@@ -1,11 +1,12 @@
 """
 Streamlit Dashboard Viewer for Project ORBIT
-Lab 10 - Dashboard Deployment
+Lab 10 - Dashboard Deployment (Cloud Run Compatible)
 """
 import streamlit as st
 import requests
 from pathlib import Path
 import sys
+import os
 
 # Add parent to path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -14,6 +15,12 @@ from app.utils import (
     DashboardLoader, 
     format_score_display, 
     compare_dashboards
+)
+
+# API Configuration - use environment variable or default
+API_URL = os.getenv(
+    'API_URL',
+    'http://localhost:8000'  # Default for local, replace with Cloud Run URL after deployment
 )
 
 # Page config
@@ -46,18 +53,22 @@ st.markdown("""
         border-radius: 0.5rem;
         margin: 0.5rem 0;
     }
-    .score-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-weight: bold;
-        margin: 0.25rem;
+    .api-status {
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin: 0.5rem 0;
     }
-    .score-high { background-color: #d4edda; color: #155724; }
-    .score-medium { background-color: #fff3cd; color: #856404; }
-    .score-low { background-color: #f8d7da; color: #721c24; }
 </style>
 """, unsafe_allow_html=True)
+
+
+def test_api_connection():
+    """Test if API is reachable"""
+    try:
+        response = requests.get(f"{API_URL}/health", timeout=5)
+        return response.status_code == 200, response.json()
+    except Exception as e:
+        return False, {"error": str(e)}
 
 
 def main():
@@ -73,6 +84,24 @@ def main():
     # Sidebar
     with st.sidebar:
         st.image("https://via.placeholder.com/200x80/1f77b4/ffffff?text=ORBIT", width=200)
+        
+        st.markdown("---")
+        
+        # API Status Check
+        api_online, api_data = test_api_connection()
+        
+        if api_online:
+            st.success("✅ API Connected")
+            st.caption(f"Endpoint: {API_URL}")
+            if 'vector_store' in api_data:
+                with st.expander("API Info"):
+                    st.json(api_data)
+        else:
+            st.error("❌ API Disconnected")
+            st.caption("Using file-based mode")
+            if 'error' in api_data:
+                with st.expander("Error Details"):
+                    st.error(api_data['error'])
         
         st.markdown("---")
         
@@ -113,22 +142,6 @@ def main():
             st.success("✅ Structured")
         else:
             st.warning("⚠️ Structured - not available")
-        
-        st.markdown("---")
-        
-        # API status (optional)
-        with st.expander("🔌 API Status"):
-            try:
-                response = requests.get("http://localhost:8000/", timeout=2)
-                if response.status_code == 200:
-                    st.success("✅ API Online")
-                    data = response.json()
-                    st.caption(f"Version: {data.get('version', 'Unknown')}")
-                else:
-                    st.error("❌ API Error")
-            except:
-                st.warning("⚠️ API Offline")
-                st.caption("File-based mode active")
     
     # Main content area
     if mode == "Dashboard Viewer":
@@ -330,16 +343,16 @@ def show_comparison_mode(loader, company_name, availability):
                     st.write(f"Structured: {struct_score}/{max_score}")
                     
                     if rag_score > struct_score:
-                        st.success("↑ Unstructured")
+                        st.success("→ Unstructured")
                     elif struct_score > rag_score:
-                        st.info("↑ Structured")
+                        st.info("→ Structured")
                     else:
                         st.write("= Tie")
     
     # Content comparison
     comparison = compare_dashboards(rag_dashboard, struct_dashboard)
     
-    with st.expander("📝 Content Comparison"):
+    with st.expander("🔍 Content Comparison"):
         col1, col2 = st.columns(2)
         
         with col1:

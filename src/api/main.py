@@ -1,6 +1,7 @@
 """
-FastAPI app for RAG search + Structured dashboards - Lab 4 + Lab 7 + Lab 8
+FastAPI app for RAG search + Structured dashboards - Cloud Run Deployment
 """
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -15,13 +16,14 @@ from vectordb.embedder import VectorStore
 from dashboard.rag_generator import RAGDashboardGenerator
 from structured.structured_dashboard import generate_dashboard as generate_structured_dashboard
 
+# Initialize FastAPI
 app = FastAPI(
-    title="PE Dashboard API - RAG + Structured",
-    description="Complete API for Forbes AI 50 companies (RAG and Structured pipelines)",
+    title="ORBIT AI50 Intelligence API",
+    description="RAG-powered API for Forbes AI 50 company intelligence",
     version="2.0.0"
 )
 
-# Enable CORS (for Streamlit)
+# CORS - allow all origins for Streamlit
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,16 +38,16 @@ dashboard_generator = None
 
 
 @app.on_event("startup")
-async def load_vector_store():
-    """Load Qdrant vector store and dashboard generator on startup."""
+async def startup_event():
+    """Initialize vector store and dashboard generator on startup."""
     global vector_store, dashboard_generator
     
     try:
         print("\n" + "="*70)
-        print("STARTING PE DASHBOARD API")
+        print("🚀 STARTING ORBIT API ON CLOUD RUN")
         print("="*70)
         
-        print("\n📦 Loading vector store...")
+        print("\n📦 Initializing Vector Store...")
         vector_store = VectorStore(use_docker=False)
         
         stats = vector_store.get_stats()
@@ -60,33 +62,20 @@ async def load_vector_store():
         print(f"✅ RAG generator ready")
         
         print("\n" + "="*70)
-        print("🚀 API READY!")
-        print("="*70)
-        print(f"📍 Docs: http://localhost:8000/docs")
-        print(f"📍 RAG endpoint: POST /dashboard/rag")
-        print(f"📍 Structured endpoint: POST /dashboard/structured")
+        print("✅ API READY AND HEALTHY!")
         print("="*70 + "\n")
         
     except Exception as e:
-        print(f"❌ Error loading: {e}")
-        print("   Make sure you've run: python src/vectordb/build_index.py")
+        print(f"❌ Startup Error: {e}")
+        # Don't fail startup, but log the error
 
 
+# Pydantic models
 class SearchRequest(BaseModel):
     query: str
     k: int = 5
     company_name: Optional[str] = None
     page_type: Optional[str] = None
-    
-    class Config:
-        schema_extra = {
-            "example": {
-                "query": "What is the pricing model?",
-                "k": 5,
-                "company_name": "Anthropic",
-                "page_type": "pricing"
-            }
-        }
 
 
 class SearchResult(BaseModel):
@@ -96,6 +85,7 @@ class SearchResult(BaseModel):
     score: float
     tokens: int
     session: str
+    source_file: str
     is_daily_refresh: bool
 
 
@@ -121,33 +111,46 @@ class DashboardResponse(BaseModel):
 
 @app.get("/")
 async def root():
-    """Health check and API info."""
+    """Health check and API info - required for Cloud Run"""
     if vector_store:
         stats = vector_store.get_stats()
         companies = vector_store.get_companies()
         
         return {
-            "status": "ok",
-            "message": "PE Dashboard API - RAG + Structured",
+            "status": "healthy",
+            "message": "ORBIT AI50 Intelligence API",
             "version": "2.0.0",
+            "environment": "Cloud Run",
             "vector_store": {
                 "total_chunks": stats['total_chunks'],
                 "total_companies": len(companies),
-                "vector_dimension": stats['vector_dimension'],
-                "distance_metric": stats['distance_metric']
+                "vector_dimension": stats['vector_dimension']
             },
             "endpoints": {
-                "search": "POST /rag/search",
-                "companies": "GET /companies",
-                "stats": "GET /stats",
-                "rag_dashboard": "POST /dashboard/rag",
-                "structured_dashboard": "POST /dashboard/structured"
+                "health": "/health",
+                "docs": "/docs",
+                "search": "/rag/search",
+                "companies": "/companies",
+                "rag_dashboard": "/dashboard/rag",
+                "structured_dashboard": "/dashboard/structured"
             }
         }
     
     return {
-        "status": "error",
-        "message": "Vector store not loaded. Run build_index.py first."
+        "status": "initializing",
+        "message": "Vector store loading..."
+    }
+
+
+@app.get("/health")
+async def health_check():
+    """Detailed health check for Cloud Run"""
+    return {
+        "status": "ok",
+        "vector_store_initialized": vector_store is not None,
+        "dashboard_generator_initialized": dashboard_generator is not None,
+        "service": "orbit-api",
+        "version": "2.0.0"
     }
 
 
@@ -156,16 +159,7 @@ async def search(request: SearchRequest):
     """
     Search vector store for relevant chunks.
     
-    **Query Parameters:**
-    - `query`: Search query text
-    - `k`: Number of results (default: 5)
-    - `company_name`: Optional filter by company
-    - `page_type`: Optional filter by page type
-    
-    **Page Types:**
-    - homepage, about, pricing, product, careers, blog, customers
-    
-    **Example:**
+    Example:
 ```json
     {
       "query": "What is the pricing?",
@@ -178,55 +172,54 @@ async def search(request: SearchRequest):
     if vector_store is None:
         raise HTTPException(
             status_code=503, 
-            detail="Vector store not loaded. Run build_index.py first."
+            detail="Vector store not initialized"
         )
     
-    # Search
-    results = vector_store.search(
-        query=request.query,
-        k=request.k,
-        company_name=request.company_name,
-        page_type=request.page_type
-    )
-    
-    # Format results
-    formatted_results = [
-        SearchResult(
-            text=r['text'],
-            company_name=r['metadata']['company_name'],
-            page_type=r['metadata']['page_type'],
-            score=r['score'],
-            tokens=r['tokens'],
-            session=r['metadata']['session'],
-            is_daily_refresh=r['metadata']['is_daily_refresh']
+    try:
+        # Search
+        results = vector_store.search(
+            query=request.query,
+            k=request.k,
+            company_name=request.company_name,
+            page_type=request.page_type
         )
-        for r in results
-    ]
+        
+        # Format results
+        formatted_results = [
+            SearchResult(
+                text=r['text'],
+                company_name=r['metadata']['company_name'],
+                page_type=r['metadata']['page_type'],
+                score=r['score'],
+                tokens=r['tokens'],
+                session=r['metadata']['session'],
+                source_file=r['metadata']['source_file'],
+                is_daily_refresh=r['metadata'].get('is_daily_refresh', False)
+            )
+            for r in results
+        ]
+        
+        return SearchResponse(
+            results=formatted_results,
+            query=request.query,
+            num_results=len(formatted_results),
+            filters={
+                "company_name": request.company_name,
+                "page_type": request.page_type
+            }
+        )
     
-    return SearchResponse(
-        results=formatted_results,
-        query=request.query,
-        num_results=len(formatted_results),
-        filters={
-            "company_name": request.company_name,
-            "page_type": request.page_type
-        }
-    )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Search failed: {str(e)}"
+        )
 
 
 @app.post("/dashboard/rag", response_model=DashboardResponse)
 async def generate_rag_dashboard(request: DashboardRequest):
     """
     Generate PE dashboard using RAG pipeline.
-    
-    **Lab 7 Endpoint**
-    
-    Args:
-        company_name: Company to generate dashboard for
-        max_chunks: Maximum context chunks to use (default: 20)
-    
-    Returns:
-        Markdown dashboard with 8 sections
     
     Example:
 ```json
@@ -239,30 +232,29 @@ async def generate_rag_dashboard(request: DashboardRequest):
     if dashboard_generator is None:
         raise HTTPException(
             status_code=503,
-            detail="Dashboard generator not loaded. Check API startup logs."
+            detail="Dashboard generator not initialized"
         )
     
-    # Generate dashboard
-    result = dashboard_generator.generate_dashboard(
-        company_name=request.company_name,
-        max_chunks=request.max_chunks
-    )
+    try:
+        # Generate dashboard
+        result = dashboard_generator.generate_dashboard(
+            company_name=request.company_name,
+            max_chunks=request.max_chunks
+        )
+        
+        return DashboardResponse(**result)
     
-    return DashboardResponse(**result)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Dashboard generation failed: {str(e)}"
+        )
 
 
 @app.post("/dashboard/structured", response_model=DashboardResponse)
 async def generate_structured_dashboard_endpoint(request: DashboardRequest):
     """
     Generate PE dashboard using Structured pipeline.
-    
-    **Lab 8 Endpoint**
-    
-    Args:
-        company_name: Company ID (lowercase, e.g., "anthropic", "cohere")
-    
-    Returns:
-        Markdown dashboard from structured payload
     
     Example:
 ```json
@@ -297,7 +289,7 @@ async def generate_structured_dashboard_endpoint(request: DashboardRequest):
     except FileNotFoundError as e:
         raise HTTPException(
             status_code=404,
-            detail=f"Payload not found for {request.company_name}. Run Lab 5-6 first."
+            detail=f"Payload not found for {request.company_name}"
         )
     except Exception as e:
         raise HTTPException(
@@ -312,7 +304,7 @@ async def get_companies():
     if vector_store is None:
         raise HTTPException(
             status_code=503,
-            detail="Vector store not loaded"
+            detail="Vector store not initialized"
         )
     
     companies = vector_store.get_companies()
@@ -333,7 +325,7 @@ async def get_stats():
     if vector_store is None:
         raise HTTPException(
             status_code=503,
-            detail="Vector store not loaded"
+            detail="Vector store not initialized"
         )
     
     stats = vector_store.get_stats()
@@ -348,16 +340,19 @@ async def get_stats():
     }
 
 
+# For local testing
 if __name__ == "__main__":
     import uvicorn
     
-    print("""
-╔═══════════════════════════════════════════════════════════════╗
-║     PE DASHBOARD API - RAG + STRUCTURED PIPELINES             ║
-╚═══════════════════════════════════════════════════════════════╝
+    port = int(os.getenv("PORT", 8000))
+    
+    print(f"""
+╔═══════════════════════════════════════════════════════════╗
+║     ORBIT API - RAG + STRUCTURED PIPELINES                ║
+╚═══════════════════════════════════════════════════════════╝
 
-Starting FastAPI server...
-API docs: http://localhost:8000/docs
+Starting FastAPI server on port {port}...
+API docs: http://localhost:{port}/docs
     """)
     
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=port)

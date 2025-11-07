@@ -1,4 +1,4 @@
-# Dockerfile for Project ORBIT - RAG + Structured Pipelines
+# Use Python 3.10 slim
 FROM python:3.10-slim
 
 # Set working directory
@@ -6,14 +6,16 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
     curl \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first (for caching)
+# Copy requirements
 COPY requirements.txt .
 
-# Install PyTorch CPU-only FIRST, then other dependencies
+# Install Python dependencies
+# Install torch CPU-only first, then other packages
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
     torch==2.1.0 \
@@ -22,17 +24,21 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Copy application code
 COPY src/ ./src/
-COPY data/ ./data/
+COPY data/qdrant_storage/ ./data/qdrant_storage/
 
 # Create necessary directories
-RUN mkdir -p data/dashboards/rag data/dashboards/structured data/qdrant_storage
+RUN mkdir -p data/payloads data/dashboards/rag data/dashboards/structured
 
-# Expose ports
-EXPOSE 8000 8501
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
+
+# Expose port (Cloud Run will set PORT env var)
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/ || exit 1
+  CMD curl -f http://localhost:${PORT}/ || exit 1
 
-# Default command (can be overridden in docker-compose)
-CMD ["python", "src/api/main.py"]
+# Start FastAPI
+CMD exec uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT} --workers 1

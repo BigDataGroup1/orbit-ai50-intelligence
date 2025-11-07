@@ -1,19 +1,16 @@
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
-venv/
-.venv/
-ENV/
+*.pyc
+.pytest_cache/
 
 # Virtual environments
-.env
-.venv
+env/
 venv/
 ENV/
+.venv/
 
 # IDEs
 .vscode/
@@ -21,40 +18,55 @@ ENV/
 *.swp
 *.swo
 
-# OS
-.DS_Store
-Thumbs.db
-
 # Git
 .git/
 .gitignore
+.gitattributes
 
-# Docker
+# Docker files (not needed in image)
 Dockerfile
 docker-compose.yml
 .dockerignore
+docker-*.sh
 
-# Logs
-*.log
-
-# Airflow (not needed in container)
+# Airflow (not needed in Cloud Run)
 dags/
 airflow.cfg
 airflow.db
+logs/
 
-# Large data files (keep only processed data)
+# Large data files (will be in qdrant_storage only)
+data/scraped/
 data/raw/
 *.csv
 *.xlsx
 *.pdf
 
-# Credentials
+# Credentials (use Cloud Run secrets instead)
 credentials/
-*.json
+gcp-service-account.json
 *.pem
 *.key
+.env
+.env.local
 
 # Tests
 tests/
 pytest.ini
-.pytest_cache/
+
+# Documentation
+README.md
+docs/
+*.md
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Keep only essential data
+!data/qdrant_storage/
