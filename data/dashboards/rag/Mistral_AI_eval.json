@@ -1,0 +1,43 @@
+{
+  "company_name": "Mistral_AI",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:10:27.355717",
+  "metadata": {
+    "chunks_used": 6,
+    "daily_chunks": 1,
+    "initial_chunks": 5,
+    "page_types": [
+      "about",
+      "blog",
+      "customers",
+      "homepage",
+      "pricing",
+      "product"
+    ],
+    "avg_score": 0.5499042740374992,
+    "sources_breakdown": {
+      "blog": 1,
+      "about": 1,
+      "product": 1,
+      "customers": 1,
+      "pricing": 1,
+      "homepage": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 3701,
+    "completion_tokens": 591
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 4,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 2,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 9
+}

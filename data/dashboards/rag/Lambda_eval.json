@@ -1,0 +1,39 @@
+{
+  "company_name": "Lambda",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:08:47.107692",
+  "metadata": {
+    "chunks_used": 7,
+    "daily_chunks": 5,
+    "initial_chunks": 2,
+    "page_types": [
+      "blog",
+      "careers",
+      "customers",
+      "homepage"
+    ],
+    "avg_score": 0.37969530439910726,
+    "sources_breakdown": {
+      "careers": 3,
+      "customers": 1,
+      "blog": 2,
+      "homepage": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 4694,
+    "completion_tokens": 611
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 5,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 8
+}

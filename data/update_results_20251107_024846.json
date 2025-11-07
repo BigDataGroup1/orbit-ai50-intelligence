@@ -1,0 +1,15 @@
+{
+  "started_at": "2025-11-07T02:48:41.524608",
+  "completed_tasks": 0,
+  "failed_tasks": 1,
+  "task_results": [
+    {
+      "task": "Extracting Structured Data",
+      "status": "failed",
+      "error": "Traceback (most recent call last):\n  File \"C:\\Users\\desai\\Desktop\\Big_data_Assign 4\\orbit-ai50-intelligence\\src\\structured\\structured_extract_gcp.py\", line 128, in <module>\n    main()\n    ~~~~^^\n  File \"C:\\Users\\desai\\Desktop\\Big_data_Assign 4\\orbit-ai50-intelligence\\src\\structured\\structured_extract_gcp.py\", line 63, in main\n    companies = list_companies_in_bucket(extractor.bucket_name)\n  File \"C:\\Users\\desai\\Desktop\\Big_data_Assign 4\\orbit-ai50-intelligence\\src\\utils\\gcp_storage.py\", line 24,",
+      "duration_seconds": 4.514719009399414
+    }
+  ],
+  "completed_at": "2025-11-07T02:48:46.041570",
+  "total_duration_seconds": 5.041592359542847
+}

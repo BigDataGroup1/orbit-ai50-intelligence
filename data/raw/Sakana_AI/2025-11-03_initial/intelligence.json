@@ -1,0 +1,117 @@
+{
+  "company_name": "Sakana AI",
+  "website": "https://sakana.ai",
+  "scraped_at": "2025-11-03T16:36:18.593060",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Sakana AI",
+    "forbes_url": "https://www.forbes.com/companies/sakana-ai/?list=ai50",
+    "ceo": "David Ha",
+    "founded_year": 2023,
+    "hq_city": "Tokyo",
+    "hq_country": "Japan",
+    "employees": null,
+    "industry": "AI models for science and research",
+    "description": "Headquartered in Tokyo, Sakana AI designs models by drawing inspiration from phenomena that occur in nature such as evolution and natural selection, combining the best aspects of different AI models to create an entirely new one that can perform well on a given task. Founded by former Google and Stability AI researchers David Ha, Llion Jones and Ren Ito in 2023, the startup\u2014valued at $1.5 billion\u2014builds open source models that are smaller in size and more cost efficient. Sakana has been backed by Nvidia, Khosla Ventures and Lux Capital among others, and in August 2024, the company released an \u201cAI scientist\u201d to perform experiments, conduct research and analyze data.",
+    "total_funding": "Not available",
+    "valuation": "$1.5B",
+    "website": "https://sakana.ai",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/sakana-ai/",
+    "category": "data_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://sakana.ai",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:36:18.593347",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 6694
+    },
+    "about": {
+      "found": false
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://sakana.ai/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:36:27.090255",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 33792
+    },
+    "blog": {
+      "url": "https://sakana.ai/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:36:30.210628",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 33851
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Not found",
+      "tiers": [],
+      "free_tier": false,
+      "enterprise_tier": false,
+      "pricing_mentioned": false
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Google",
+        "Intel",
+        "Meta",
+        "Mit"
+      ],
+      "has_customer_section": false,
+      "customer_count_claim": 60
+    },
+    "integrations": [],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Product",
+        "Design"
+      ],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Google",
+      "Meta"
+    ],
+    "funding_signals": {
+      "funding_mentioned": false,
+      "latest_round": null,
+      "investors_mentioned": [
+        "Accel",
+        "Benchmark"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

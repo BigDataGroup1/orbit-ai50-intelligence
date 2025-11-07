@@ -1,0 +1,104 @@
+{
+  "company_name": "Mercor",
+  "website": "https://mercor.com",
+  "scraped_at": "2025-11-03T16:30:31.332831",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Mercor",
+    "forbes_url": "https://www.forbes.com/companies/mercor/?list=ai50",
+    "ceo": "Brendan Foody",
+    "founded_year": 2023,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": 70,
+    "industry": "AI-powered hiring platform",
+    "description": "If this $2 billion (valuation) startup has its way, your next job interview might be conducted by a robot. Mercor uses AI to automate the employment application process, identifying standout candidates from reams of cover letters and r\u00e9sum\u00e9s and screening them via video calls with avatars. The idea is to make hiring less subjective, instead of the \u201cvery vibes-based assessment\u201d of traditional interviews, says CEO Brendan Foody. \u201cOur models are able to figure out the features on r\u00e9sum\u00e9s that are actually predictive.\u201d Foody and his cofounders, all age 21, dropped out of college to start Mercor. They're all Thiel Fellows, recipients of the $100,000 grants billionaire Peter Thiel gives to young entrepreneurs willing to skip school.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://mercor.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/mercor/",
+    "category": "video_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://mercor.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:30:31.332916",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 66413
+    },
+    "about": {
+      "found": false
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://mercor.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:31:02.280843",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 3736
+    },
+    "blog": {
+      "url": "https://mercor.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:31:08.007472",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 29911
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Not found",
+      "tiers": [],
+      "free_tier": false,
+      "enterprise_tier": false,
+      "pricing_mentioned": false
+    },
+    "customers": {
+      "mentioned_customers": [],
+      "has_customer_section": false,
+      "customer_count_claim": null
+    },
+    "integrations": [],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": null
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access"
+      ],
+      "use_cases": []
+    },
+    "competitors": [],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": "Series C",
+      "investors_mentioned": [
+        "Benchmark"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

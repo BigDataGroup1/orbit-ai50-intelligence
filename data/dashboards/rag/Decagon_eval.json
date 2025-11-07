@@ -1,0 +1,39 @@
+{
+  "company_name": "Decagon",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:05:18.413018",
+  "metadata": {
+    "chunks_used": 6,
+    "daily_chunks": 2,
+    "initial_chunks": 4,
+    "page_types": [
+      "about",
+      "blog",
+      "customers",
+      "homepage"
+    ],
+    "avg_score": 0.5024459995403592,
+    "sources_breakdown": {
+      "customers": 1,
+      "about": 1,
+      "blog": 2,
+      "homepage": 2
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 3347,
+    "completion_tokens": 634
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 3,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 1,
+    "readability": 1
+  },
+  "total_score": 7
+}

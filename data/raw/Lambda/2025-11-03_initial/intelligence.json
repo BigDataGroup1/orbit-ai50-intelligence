@@ -1,0 +1,36 @@
+{
+  "company_name": "Lambda",
+  "website": "Not available",
+  "scraped_at": "2025-11-03T16:29:31.195911",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Lambda",
+    "forbes_url": "https://www.forbes.com/companies/lambda/?list=ai50",
+    "ceo": "Stephen Balaban",
+    "founded_year": 2012,
+    "hq_city": "San Jose",
+    "hq_country": "United States",
+    "employees": 350,
+    "industry": "AI cloud provider",
+    "description": "Twin brothers Michael and Stephen Balaban founded Lambda as an AI photo editing app in 2012, but saw a bigger opportunity when their app ran up tens of thousands of dollars in compute bills from cloud provider Amazon Web Services. In 2017, they began building their own cluster of graphic processing units (GPUs) to sell to other companies. Since then, demand for the San Jose, California-based company's hardware and cloud computing services has skyrocketed with the AI boom. The unicorn\u2014 valued at $2.5 billion\u2014has become a top GPU cloud for developers at organizations like Intel, Microsoft and the Department of Defense, allowing them to build, test and deploy AI products at scale. Lambda boasts 15,000 paying customers and has raised over $863 million in investment to date, most recently a $480 million Series D co-led by Andra Capital and SGW in February 2025.",
+    "total_funding": "Not available",
+    "valuation": "$2.5B",
+    "website": "Not available",
+    "website_source": "failed",
+    "linkedin": "https://www.linkedin.com/company/lambda/",
+    "category": "coding_ai"
+  },
+  "pages": {},
+  "extracted_intelligence": {
+    "pricing": null,
+    "customers": null,
+    "integrations": [],
+    "careers": null,
+    "product_features": null,
+    "competitors": [],
+    "funding_signals": null,
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

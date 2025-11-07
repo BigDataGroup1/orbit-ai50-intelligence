@@ -1,0 +1,35 @@
+{
+  "company_name": "Mercor",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:09:50.491038",
+  "metadata": {
+    "chunks_used": 3,
+    "daily_chunks": 2,
+    "initial_chunks": 1,
+    "page_types": [
+      "blog",
+      "homepage"
+    ],
+    "avg_score": 0.36313218374468353,
+    "sources_breakdown": {
+      "blog": 2,
+      "homepage": 1
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 1818,
+    "completion_tokens": 498
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 8,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 2,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 9
+}

@@ -1,0 +1,116 @@
+{
+  "company_name": "Vannevar Labs",
+  "website": "https://vannevarlabs.com",
+  "scraped_at": "2025-11-03T16:43:41.200701",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Vannevar Labs",
+    "forbes_url": "https://www.forbes.com/companies/vannevar-labs/?list=ai50",
+    "ceo": "Brett Granberg",
+    "founded_year": 2019,
+    "hq_city": "Palo Alto",
+    "hq_country": "United States",
+    "employees": 111,
+    "industry": "Defense intelligence software",
+    "description": "CEO and cofounder Brett Granberg has described Vannevar Labs as the creator of the tools that will deter the next great conflict. Granberg, who previously worked with the CIA's venture arm, has spent the past six years building the startup into a go-to for national security operations, alongside cofounder Nini Moorhead, a former counterterrorism intelligence officer. Today, Vannevar Labs' artificial intelligence software Decrypt reaches military bases globally, where it is used to analyze documents, translate information and find patterns in battlefield information. The U.S. Air Force, for instance, is using it to analyze technical documents about Russia's anti-aircraft systems. With its most recent $75 million Series B in 2023, Vannevar Labs reached a valuation of $1.5 billion.",
+    "total_funding": "Not available",
+    "valuation": "$1.5B",
+    "website": "https://vannevarlabs.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/vannevar-labs/",
+    "category": "coding_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://vannevarlabs.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:43:41.200793",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 14056
+    },
+    "about": {
+      "url": "https://vannevarlabs.com/company",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:43:45.222320",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 14178
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://vannevarlabs.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:43:51.960197",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 11152
+    },
+    "blog": {
+      "url": "https://vannevarlabs.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:43:54.926848",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 17762
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Freemium",
+      "tiers": [
+        "Free",
+        "Team"
+      ],
+      "free_tier": true,
+      "enterprise_tier": false,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Intel",
+        "Mit"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": "greenhouse"
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access"
+      ],
+      "use_cases": []
+    },
+    "competitors": [],
+    "funding_signals": {
+      "funding_mentioned": false,
+      "latest_round": null,
+      "investors_mentioned": []
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

@@ -1,0 +1,148 @@
+{
+  "company_name": "Coactive AI",
+  "website": "https://coactive.ai",
+  "scraped_at": "2025-11-03T16:21:18.922119",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Coactive AI",
+    "forbes_url": "https://www.forbes.com/companies/coactive-ai/?list=ai50",
+    "ceo": "Cody Coleman",
+    "founded_year": 2021,
+    "hq_city": "San Jose",
+    "hq_country": "United States",
+    "employees": 14,
+    "industry": "Data labeling software",
+    "description": "Anyone who has ever selected the number of bicycles in an image to \u201cprove your humanity\u201d knows that deciphering a photo is an especially tricky task for machines. Enter Coactive AI, which builds a set of pre-trained AI models that can parse through large amounts of raw visual data without relying on a human to identify more than a couple of examples. One real world application is content moderation: Coactive can sort prohibited and accepted images and video automatically. Companies have also used it to make sense of mountains of photo assets. Led by Cody Coleman, a computer science alum from both Stanford and MIT, Coactive AI has raised $44 million in funding, reaching a valuation of $200 million after its Series B in May 2024. It's also been selected as one of Forbes' next billion-dollar startups.",
+    "total_funding": "Not available",
+    "valuation": "$200M",
+    "website": "https://coactive.ai",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/coactive-ai/",
+    "category": "coding_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://coactive.ai",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:21:18.922533",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 154320
+    },
+    "about": {
+      "url": "https://coactive.ai/company",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:21:31.670424",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 140378
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://coactive.ai/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:21:53.745195",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 150474
+    },
+    "blog": {
+      "url": "https://coactive.ai/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:22:01.539153",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 138183
+    },
+    "customers": {
+      "url": "https://coactive.ai/case-studies",
+      "page_type": "customers",
+      "scraped_at": "2025-11-03T16:22:10.930383",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 104833
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Tiered subscription",
+      "tiers": [
+        "Basic",
+        "Team",
+        "Business",
+        "Scale"
+      ],
+      "free_tier": false,
+      "enterprise_tier": true,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Google",
+        "Intel",
+        "Meta",
+        "Microsoft",
+        "Mit",
+        "Stanford",
+        "Target"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Hubspot",
+      "Snowflake",
+      "Teams"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Marketing",
+        "Product",
+        "Design"
+      ],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": "ashby"
+    },
+    "product_features": {
+      "mentioned_features": [
+        "Integrations",
+        "Analytics",
+        "Security"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Databricks",
+      "Google",
+      "Meta",
+      "Microsoft"
+    ],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": "Series B",
+      "investors_mentioned": [
+        "Sequoia",
+        "A16Z",
+        "Accel",
+        "Benchmark"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

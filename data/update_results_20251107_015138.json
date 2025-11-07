@@ -1,0 +1,14 @@
+{
+  "started_at": "2025-11-07T01:45:19.353414",
+  "completed_tasks": 1,
+  "failed_tasks": 2,
+  "task_results": [
+    {
+      "task": "Extracting Structured Data",
+      "status": "success",
+      "duration_seconds": 353.43594193458557
+    }
+  ],
+  "completed_at": "2025-11-07T01:51:38.210900",
+  "total_duration_seconds": 379.2109270095825
+}

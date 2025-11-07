@@ -1,0 +1,37 @@
+{
+  "company_name": "Sakana_AI",
+  "pipeline_type": "RAG",
+  "generated_at": "2025-11-07T00:12:27.776153",
+  "metadata": {
+    "chunks_used": 6,
+    "daily_chunks": 5,
+    "initial_chunks": 1,
+    "page_types": [
+      "blog",
+      "careers",
+      "homepage"
+    ],
+    "avg_score": 0.3665198312942914,
+    "sources_breakdown": {
+      "homepage": 1,
+      "careers": 3,
+      "blog": 2
+    },
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 3965,
+    "completion_tokens": 535
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 12,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 1,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 8
+}

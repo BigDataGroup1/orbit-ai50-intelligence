@@ -1,0 +1,128 @@
+{
+  "company_name": "DeepL",
+  "website": "https://www.deepl.com",
+  "scraped_at": "2025-11-03T16:24:16.391896",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "DeepL",
+    "forbes_url": "https://www.forbes.com/companies/deepl/?list=ai50",
+    "ceo": "Jaroslaw \u201cJarek\u201d Kutylowski",
+    "founded_year": 2017,
+    "hq_city": "Cologne",
+    "hq_country": "Germany",
+    "employees": 1000,
+    "industry": "AI translation service",
+    "description": "One of Google Translate's top rivals, DeepL was founded in 2017 by Polish entrepreneur Jaroslaw Kutylowski. Its AI-powered software enables users to translate text and files into 30 different languages, including Estonian, Japanese and Portuguese, or to make writing in another language sound more natural. DeepL's free basic service has been used by millions of people, and it claims to have more than 200,000 business users, including Zendesk, Coursera and Klarna. In May 2024, the Cologne, Germany-based company cracked a $2 billion valuation. It achieved HIPAA compliance earlier this year, which enables its translation services to be integrated into healthcare tools. In March, the company launched Clarify, an interactive feature to help users understand translation decisions.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://www.deepl.com",
+    "website_source": "manual",
+    "linkedin": "https://www.linkedin.com/company/deepl/",
+    "category": "healthcare_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://www.deepl.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:24:16.391978",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 206112
+    },
+    "about": {
+      "url": "https://www.deepl.com/about-us",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:24:21.839016",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 101417
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "url": "https://www.deepl.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:24:35.110296",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 104370
+    },
+    "blog": {
+      "url": "https://www.deepl.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:24:39.606794",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 129844
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Freemium",
+      "tiers": [
+        "Free",
+        "Pro",
+        "Business",
+        "Enterprise",
+        "Scale"
+      ],
+      "free_tier": true,
+      "enterprise_tier": true,
+      "pricing_mentioned": false
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Intel",
+        "Mit",
+        "Target",
+        "Zoom"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [
+      "Teams",
+      "Zoom"
+    ],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": "ashby"
+    },
+    "product_features": {
+      "mentioned_features": [
+        "API access",
+        "Real-time processing",
+        "Integrations",
+        "Security",
+        "Compliance"
+      ],
+      "use_cases": []
+    },
+    "competitors": [],
+    "funding_signals": {
+      "funding_mentioned": false,
+      "latest_round": null,
+      "investors_mentioned": [
+        "Accel"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

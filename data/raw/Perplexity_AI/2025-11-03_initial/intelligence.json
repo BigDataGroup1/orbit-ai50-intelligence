@@ -1,0 +1,36 @@
+{
+  "company_name": "Perplexity AI",
+  "website": "Not available",
+  "scraped_at": "2025-11-03T16:34:28.568377",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Perplexity AI",
+    "forbes_url": "https://www.forbes.com/companies/perplexity-ai/?list=ai50",
+    "ceo": "Aravind Srinivas",
+    "founded_year": 2022,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": 250,
+    "industry": "AI search engine",
+    "description": "Perplexity wants to make search engines without AI a thing of the past. Cofounded by Aravind Srinivas, Johnny Ho, Denis Yarats and Andy Konwinski in 2022, it uses a medley of AI models to answer users\u2019 questions on a wide range of topics, which it backs up with footnoted sources. Srinivas, the CEO and an ex-OpenAI researcher, told Forbes last year that Perplexity is \u201calmost like Wikipedia and ChatGPT had a kid.\u201d It has some $900 million in total funding from the likes of Softbank and Nvidia and a $9 billion valuation, per PitchBook. In March, the CEO Srinivas claimed it had reached more than $100 million in annualized revenue. The company has drawn criticism from Forbes and other media outlets for allegedly plagiarizing their reporting and redistributing it across multiple platforms. Srinivas acknowledged that its republishing product feature had \u201crough edges\u201d and that Perplexity was \u201cimproving it with more feedback.\u201d Forbes sent a cease-and-desist letter to Perplexity in June 2024, accusing it of infringing copyright, to which the company said the claims are meritless and that factual information is not protected by copyright law.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "Not available",
+    "website_source": "failed",
+    "linkedin": "https://www.linkedin.com/company/perplexity-ai/",
+    "category": "legal_ai"
+  },
+  "pages": {},
+  "extracted_intelligence": {
+    "pricing": null,
+    "customers": null,
+    "integrations": [],
+    "careers": null,
+    "product_features": null,
+    "competitors": [],
+    "funding_signals": null,
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

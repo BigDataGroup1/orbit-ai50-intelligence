@@ -1,0 +1,25 @@
+{
+  "company_name": "Abridge",
+  "pipeline_type": "Structured",
+  "generated_at": "2025-11-06T20:21:23.492067",
+  "metadata": {
+    "source": "Structured extraction (Pydantic schemas)",
+    "data_approach": "Pydantic extraction \u2192 Payload assembly \u2192 LLM generation",
+    "model": "gpt-4o-mini",
+    "prompt_tokens": 1012,
+    "completion_tokens": 500
+  },
+  "auto_evaluation": {
+    "has_8_sections": true,
+    "uses_not_disclosed": 0,
+    "has_disclosure_gaps": true
+  },
+  "rubric_scores": {
+    "factual_correctness": 2,
+    "schema_adherence": 2,
+    "provenance_use": 2,
+    "hallucination_control": 2,
+    "readability": 1
+  },
+  "total_score": 9
+}

@@ -1,0 +1,63 @@
+{
+  "company_name": "XAI",
+  "website": "https://x.ai",
+  "scraped_at": "2025-11-03T16:46:22.855893",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "XAI",
+    "forbes_url": "https://www.forbes.com/companies/xai/?list=ai50",
+    "ceo": "Not available",
+    "founded_year": 2023,
+    "hq_city": "Palo Alto",
+    "hq_country": "United States",
+    "employees": null,
+    "industry": "AI model developer",
+    "description": "Elon Musk's artificial intelligence company xAI claims its mission is to \u201cunderstand the true nature of the universe\u201d and \u201caccelerate human scientific discovery.\u201d In late March, the company made a notable acquisition: scooping up X (formerly Twitter) in an all-stock deal that valued the social media platform at $33 billion and the newly merged company at $80 billion. Musk, the world's richest person, owns both entities and said the deal would involve merging their data, models and talent. In June, xAI started building a massive datacenter in Memphis called Colossus that supports a cluster of 100,000 GPUs to train future xAI models. Three months later, part of the supercomputer was online. Not everyone in the city is thrilled about that: Forbes has reported that community members and environment advocates have criticized the speed and secrecy with which the facility was built.",
+    "total_funding": "Not available",
+    "valuation": "Not available",
+    "website": "https://x.ai",
+    "website_source": "manual",
+    "linkedin": "https://www.linkedin.com/company/xai/",
+    "category": "coding_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://x.ai",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:46:22.855962",
+      "status_code": 403,
+      "success": false,
+      "error": "HTTP 403"
+    },
+    "about": {
+      "found": false
+    },
+    "pricing": {
+      "found": false
+    },
+    "product": {
+      "found": false
+    },
+    "careers": {
+      "found": false
+    },
+    "blog": {
+      "found": false
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": null,
+    "customers": null,
+    "integrations": [],
+    "careers": null,
+    "product_features": null,
+    "competitors": [],
+    "funding_signals": null,
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

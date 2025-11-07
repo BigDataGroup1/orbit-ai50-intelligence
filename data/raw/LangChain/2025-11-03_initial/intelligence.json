@@ -1,0 +1,36 @@
+{
+  "company_name": "LangChain",
+  "website": "Not available",
+  "scraped_at": "2025-11-03T16:29:36.203917",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "LangChain",
+    "forbes_url": "https://www.forbes.com/companies/langchain/?list=ai50",
+    "ceo": "Harrison Chase",
+    "founded_year": 2023,
+    "hq_city": "San Francisco",
+    "hq_country": "United States",
+    "employees": 46,
+    "industry": "AI app development tools",
+    "description": "LangChain wants to make it easy to build apps powered by large language models like OpenAI's GPT-4. Harrison Chase and Ankush Gola founded the San Fransisco-based startup in 2023 with a goal of producing apps more quickly\u2013with as little as two dozen lines of code. Developers use LangChain to build generative AI-based applications, from legal document review to processing refunds to customers, going from idea to code in an afternoon. The startup has also launched LangSmith, which developers on over 40,000 teams use to evaluate, monitor and debug underlying LLMs. Teams at Uber, LinkedIn and GitLab use its tool, LangGraph, to build \u201cagents,\u201d systems that autonomously carry out specific actions. It has raised a total of $35 million from marquee investors like Benchmark and Sequoia Capital. Valued at $200 million, LangChain counts firms like TikTok parent Bytedance, Google, The Home Depot, Rakuten and Klarna among its customers.",
+    "total_funding": "$35M",
+    "valuation": "$200M",
+    "website": "Not available",
+    "website_source": "failed",
+    "linkedin": "https://www.linkedin.com/company/langchain/",
+    "category": "legal_ai"
+  },
+  "pages": {},
+  "extracted_intelligence": {
+    "pricing": null,
+    "customers": null,
+    "integrations": [],
+    "careers": null,
+    "product_features": null,
+    "competitors": [],
+    "funding_signals": null,
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}

@@ -9,11 +9,7 @@ gcp-credentials.json
 .env
 
 # Data folders (too large, auto-generated)
-data/raw/
-data/structured/
-data/payloads/
-data/dashboards/
-data/backups/
+
 
 # Python cache
 __pycache__/
@@ -30,7 +26,7 @@ venv/
 .idea/
 # C extensions
 *.so
-/data
+
 # Distribution / packaging
 .Python
 build/
@@ -95,7 +91,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-
+app.yaml
 # PyBuilder
 .pybuilder/
 target/

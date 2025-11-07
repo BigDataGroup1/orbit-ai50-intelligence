@@ -1,0 +1,138 @@
+{
+  "company_name": "Hebbia",
+  "website": "https://hebbia.com",
+  "scraped_at": "2025-11-03T16:28:06.081716",
+  "session": "2025-11-03_initial",
+  "seed_data": {
+    "company_name": "Hebbia",
+    "forbes_url": "https://www.forbes.com/companies/hebbia/?list=ai50",
+    "ceo": "George Sivulka",
+    "founded_year": 2020,
+    "hq_city": "New York",
+    "hq_country": "United States",
+    "employees": 45,
+    "industry": "General purpose AI for finance and legal",
+    "description": "Hebbia is on a mission to build a general purpose AI software that's more useful for business. The company's interface, called Matrix, enables lawyers, financial advisors and others to upload millions of pages of public and private documents, then query all that information for analysis and insights. Founder George Sivulka, a Forbes 30 Under 30 alumnus, dropped out of a fully-funded Stanford Ph.D. program at 23 to start the company. After raising a $130 million Series B last year led by Andreessen Horowitz, the company has a current valuation of $700 million.",
+    "total_funding": "Not available",
+    "valuation": "$700M",
+    "website": "https://hebbia.com",
+    "website_source": "inferred",
+    "linkedin": "https://www.linkedin.com/company/hebbia/",
+    "category": "legal_ai"
+  },
+  "pages": {
+    "homepage": {
+      "url": "https://hebbia.com",
+      "page_type": "homepage",
+      "scraped_at": "2025-11-03T16:28:06.081819",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 187479
+    },
+    "about": {
+      "url": "https://hebbia.com/about",
+      "page_type": "about",
+      "scraped_at": "2025-11-03T16:28:12.108128",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 119959
+    },
+    "pricing": {
+      "url": "https://hebbia.com/pricing",
+      "page_type": "pricing",
+      "scraped_at": "2025-11-03T16:28:17.973848",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 65788
+    },
+    "product": {
+      "url": "https://hebbia.com/product",
+      "page_type": "product",
+      "scraped_at": "2025-11-03T16:28:24.292311",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 123043
+    },
+    "careers": {
+      "url": "https://hebbia.com/careers",
+      "page_type": "careers",
+      "scraped_at": "2025-11-03T16:28:30.631903",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 344276
+    },
+    "blog": {
+      "url": "https://hebbia.com/blog",
+      "page_type": "blog",
+      "scraped_at": "2025-11-03T16:28:36.814359",
+      "status_code": 200,
+      "success": true,
+      "error": null,
+      "content_length": 216993
+    },
+    "customers": {
+      "found": false
+    }
+  },
+  "extracted_intelligence": {
+    "pricing": {
+      "pricing_model": "Tiered subscription",
+      "tiers": [
+        "Enterprise"
+      ],
+      "free_tier": false,
+      "enterprise_tier": true,
+      "pricing_mentioned": true
+    },
+    "customers": {
+      "mentioned_customers": [
+        "Google",
+        "Intel",
+        "Mit"
+      ],
+      "has_customer_section": true,
+      "customer_count_claim": null
+    },
+    "integrations": [],
+    "careers": {
+      "has_careers_page": true,
+      "open_positions": 0,
+      "departments": [
+        "Engineering",
+        "Sales",
+        "Marketing",
+        "Product",
+        "Design"
+      ],
+      "locations": [],
+      "hiring_focus": [],
+      "job_board_detected": "greenhouse"
+    },
+    "product_features": {
+      "mentioned_features": [
+        "Integrations",
+        "Compliance"
+      ],
+      "use_cases": []
+    },
+    "competitors": [
+      "Google"
+    ],
+    "funding_signals": {
+      "funding_mentioned": true,
+      "latest_round": "Series B",
+      "investors_mentioned": [
+        "A16Z",
+        "Benchmark"
+      ]
+    },
+    "github_stats": null,
+    "news": null
+  },
+  "errors": []
+}
