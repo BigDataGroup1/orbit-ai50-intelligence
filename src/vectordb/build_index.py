@@ -194,30 +194,35 @@ if __name__ == "__main__":
     # Parse arguments
     use_docker = '--docker' in sys.argv
     no_clear = '--no-clear' in sys.argv
-    use_gcs = '--gcs' in sys.argv
-    use_local = '--local' in sys.argv
+    use_local = '--local' in sys.argv  # Only use local if explicitly requested
+    
+    # ✅ DEFAULT TO GCS (production mode)
+    use_gcs = not use_local  # Changed: Default to GCS unless --local is specified
     
     if '--help' in sys.argv or '-h' in sys.argv:
         print("""
 Usage: python build_index.py [OPTIONS]
 
 Options:
-  --gcs         Read from GCS bucket (default for deployment)
-  --local       Read from local data/raw/ folder
+  --local       Read from local data/raw/ folder (DEVELOPMENT ONLY)
+  --gcs         Read from GCS bucket (DEFAULT - production mode)
   --docker      Use Docker Qdrant instance (default: in-memory)
   --no-clear    Don't clear existing data (default: clear and rebuild)
   -h, --help    Show this help message
 
 Examples:
-  python build_index.py --gcs              # Read from GCS, build locally
-  python build_index.py --local            # Read from local files
-  python build_index.py --gcs --docker     # GCS + Docker Qdrant
+  python build_index.py                # DEFAULT: Read from GCS, build locally
+  python build_index.py --local        # DEV: Read from local files
+  python build_index.py --gcs --docker # GCS + Docker Qdrant
+  
+NOTE: GCS mode requires GOOGLE_APPLICATION_CREDENTIALS in .env
         """)
         sys.exit(0)
     
-    # Default to GCS if not specified
-    if not use_local:
-        use_gcs = True
+    # Show what mode we're using
+    print(f"\n{'='*70}")
+    print(f"DATA SOURCE: {'GCS (Production)' if use_gcs else 'Local (Development)'}")
+    print(f"{'='*70}\n")
     
     build_vector_index(
         use_docker=use_docker, 

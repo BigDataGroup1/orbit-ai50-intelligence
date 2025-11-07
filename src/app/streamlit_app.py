@@ -72,7 +72,7 @@ def main():
     
     # Sidebar
     with st.sidebar:
-        st.image("https://via.placeholder.com/200x80/1f77b4/ffffff?text=ORBIT", use_container_width=True)
+        st.image("https://via.placeholder.com/200x80/1f77b4/ffffff?text=ORBIT", width=200)
         
         st.markdown("---")
         
@@ -105,14 +105,14 @@ def main():
         
         st.markdown("**Available Pipelines:**")
         if availability['rag']:
-            st.success("✅ RAG Pipeline")
+            st.success("✅ Unstructured (RAG)")
         else:
-            st.warning("⚠️ RAG Pipeline (not available)")
+            st.warning("⚠️ Unstructured (RAG) - not available")
         
         if availability['structured']:
-            st.success("✅ Structured Pipeline")
+            st.success("✅ Structured")
         else:
-            st.warning("⚠️ Structured Pipeline (not available)")
+            st.warning("⚠️ Structured - not available")
         
         st.markdown("---")
         
@@ -148,10 +148,15 @@ def show_dashboard_viewer(loader, company_name, availability):
     
     # Pipeline selector
     available_pipelines = []
+    pipeline_labels = {}
+    
     if availability['rag']:
-        available_pipelines.append("RAG")
+        available_pipelines.append("Unstructured (RAG)")
+        pipeline_labels["Unstructured (RAG)"] = "rag"
+    
     if availability['structured']:
         available_pipelines.append("Structured")
+        pipeline_labels["Structured"] = "structured"
     
     if not available_pipelines:
         st.error("No dashboards available for this company.")
@@ -172,7 +177,7 @@ def show_dashboard_viewer(loader, company_name, availability):
     with col3:
         show_scores = st.checkbox("Show Scores", value=True)
     
-    pipeline_key = selected_pipeline.lower()
+    pipeline_key = pipeline_labels[selected_pipeline]
     
     # Load dashboard
     dashboard = loader.load_dashboard(company_name, pipeline_key)
@@ -252,13 +257,18 @@ def show_dashboard_viewer(loader, company_name, availability):
 
 
 def show_comparison_mode(loader, company_name, availability):
-    """Side-by-side comparison of RAG vs Structured."""
+    """Side-by-side comparison of Unstructured (RAG) vs Structured."""
     
     st.markdown(f"## ⚖️ Comparison: {company_name}")
     
     if not (availability['rag'] and availability['structured']):
         st.warning("⚠️ Both pipelines needed for comparison.")
-        st.info("Available: " + ", ".join([k for k, v in availability.items() if v]))
+        available_list = []
+        if availability['rag']:
+            available_list.append("Unstructured (RAG)")
+        if availability['structured']:
+            available_list.append("Structured")
+        st.info("Available: " + ", ".join(available_list))
         return
     
     # Load both dashboards
@@ -275,7 +285,7 @@ def show_comparison_mode(loader, company_name, availability):
     
     with col1:
         rag_total = rag_eval.get('total_score', 0) if rag_eval else 0
-        st.metric("RAG Score", f"{rag_total}/10")
+        st.metric("Unstructured Score", f"{rag_total}/10")
     
     with col2:
         struct_total = struct_eval.get('total_score', 0) if struct_eval else 0
@@ -287,7 +297,7 @@ def show_comparison_mode(loader, company_name, availability):
     
     with col4:
         if rag_total > struct_total:
-            winner = "🏆 RAG"
+            winner = "🏆 Unstructured"
         elif struct_total > rag_total:
             winner = "🏆 Structured"
         else:
@@ -316,13 +326,13 @@ def show_comparison_mode(loader, company_name, availability):
                     rag_score = rag_scores.get(key, 0)
                     struct_score = struct_scores.get(key, 0)
                     
-                    st.write(f"RAG: {rag_score}/{max_score}")
-                    st.write(f"Struct: {struct_score}/{max_score}")
+                    st.write(f"Unstructured: {rag_score}/{max_score}")
+                    st.write(f"Structured: {struct_score}/{max_score}")
                     
                     if rag_score > struct_score:
-                        st.success("↑ RAG")
+                        st.success("↑ Unstructured")
                     elif struct_score > rag_score:
-                        st.info("↑ Struct")
+                        st.info("↑ Structured")
                     else:
                         st.write("= Tie")
     
@@ -333,7 +343,7 @@ def show_comparison_mode(loader, company_name, availability):
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("**RAG Dashboard**")
+            st.markdown("**Unstructured Dashboard**")
             st.write(f"Sections: {comparison['rag_sections']}")
             st.write(f"Length: {comparison['rag_length']} chars")
             st.write(f"'Not disclosed': {comparison['rag_not_disclosed']} times")
@@ -352,7 +362,7 @@ def show_comparison_mode(loader, company_name, availability):
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("#### RAG Pipeline")
+        st.markdown("#### Unstructured (RAG) Pipeline")
         st.markdown(rag_dashboard)
     
     with col2:
@@ -374,7 +384,7 @@ def show_statistics(loader):
         st.metric("Total Companies", stats['total_companies'])
     
     with col2:
-        st.metric("RAG Dashboards", stats['rag_dashboards'])
+        st.metric("Unstructured Dashboards", stats['rag_dashboards'])
     
     with col3:
         st.metric("Structured Dashboards", stats['structured_dashboards'])
@@ -391,7 +401,7 @@ def show_statistics(loader):
     col1, col2 = st.columns(2)
     
     with col1:
-        st.markdown("**RAG Pipeline**")
+        st.markdown("**Unstructured Pipeline**")
         st.progress(stats['rag_evaluated'] / max(1, stats['rag_dashboards']))
         st.write(f"{stats['rag_evaluated']}/{stats['rag_dashboards']} evaluated")
     
@@ -417,15 +427,15 @@ def show_statistics(loader):
         
         with col2:
             if availability['rag']:
-                st.success("✅ RAG")
+                st.success("✅ Unstructured")
             else:
-                st.error("❌ RAG")
+                st.error("❌ Unstructured")
         
         with col3:
             if availability['structured']:
-                st.success("✅ Struct")
+                st.success("✅ Structured")
             else:
-                st.error("❌ Struct")
+                st.error("❌ Structured")
 
 
 if __name__ == "__main__":

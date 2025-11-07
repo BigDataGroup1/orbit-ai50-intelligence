@@ -1,5 +1,63 @@
-version: '3.8'
 
+
+# services:
+#   # FastAPI Backend
+#   api:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: orbit-api
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       # Mount data directory for persistence
+#       - ./data:/app/data
+#       # Mount source for development (optional - remove for production)
+#       - ./src:/app/src
+#     environment:
+#       - PYTHONUNBUFFERED=1
+#       - OPENAI_API_KEY=${OPENAI_API_KEY}
+#     command: python src/api/main.py
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+#       interval: 30s
+#       timeout: 10s
+#       retries: 3
+#       start_period: 40s
+#     networks:
+#       - orbit-network
+#     restart: unless-stopped
+
+#   # Streamlit Frontend
+#   streamlit:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     container_name: orbit-streamlit
+#     ports:
+#       - "8501:8501"
+#     volumes:
+#       # Mount data directory for reading dashboards
+#       - ./data:/app/data
+#       # Mount source for development (optional - remove for production)
+#       - ./src:/app/src
+#     environment:
+#       - PYTHONUNBUFFERED=1
+#     command: streamlit run src/app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+#     depends_on:
+#       api:
+#         condition: service_healthy
+#     networks:
+#       - orbit-network
+#     restart: unless-stopped
+
+# networks:
+#   orbit-network:
+#     driver: bridge
+
+# volumes:
+#   data:
+#     driver: local
 services:
   # FastAPI Backend
   api:
@@ -10,13 +68,14 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Mount data directory for persistence
       - ./data:/app/data
-      # Mount source for development (optional - remove for production)
       - ./src:/app/src
+      - ./gcp-service-account.json:/app/gcp-service-account.json  # ✅ Mount GCP credentials
     environment:
       - PYTHONUNBUFFERED=1
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-service-account.json  # ✅ GCP auth
+      - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}  # ✅ Bucket name
     command: python src/api/main.py
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/"]
@@ -28,7 +87,7 @@ services:
       - orbit-network
     restart: unless-stopped
 
-  # Streamlit Frontend
+  # Streamlit Frontend (same updates)
   streamlit:
     build:
       context: .
@@ -37,12 +96,12 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      # Mount data directory for reading dashboards
       - ./data:/app/data
-      # Mount source for development (optional - remove for production)
       - ./src:/app/src
+      - ./gcp-service-account.json:/app/gcp-service-account.json  # ✅ Mount GCP credentials
     environment:
       - PYTHONUNBUFFERED=1
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-service-account.json  # ✅ GCP auth
     command: streamlit run src/app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
     depends_on:
       api:
@@ -54,7 +113,3 @@ services:
 networks:
   orbit-network:
     driver: bridge
-
-volumes:
-  data:
-    driver: local
