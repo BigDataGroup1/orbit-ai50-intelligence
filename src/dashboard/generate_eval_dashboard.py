@@ -11,15 +11,15 @@ from dashboard.rag_generator import RAGDashboardGenerator
 
 
 # THE 5 COMPANIES FOR EVALUATION
+# THE SAME 6 COMPANIES FOR EVALUATION (match Structured!)
 EVAL_COMPANIES = [
     "Abridge",
     "Anthropic", 
     "Anysphere",
     "Baseten",
     "Clay",
-    "Coactive_AI"
+    "Coactive AI"  # ✅ Fixed: was "Coactive_AI"
 ]
-
 
 def main():
     print("="*70)

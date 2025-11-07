@@ -73,7 +73,7 @@ services:
       - ./gcp-service-account.json:/app/gcp-service-account.json  # ✅ Mount GCP credentials
     environment:
       - PYTHONUNBUFFERED=1
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=$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
       - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-service-account.json  # ✅ GCP auth
       - GCP_BUCKET_NAME=${GCP_BUCKET_NAME}  # ✅ Bucket name
     command: python src/api/main.py
