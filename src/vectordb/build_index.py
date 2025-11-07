@@ -2,8 +2,11 @@
 Build Qdrant vector index from scraped data (GCS or Local)
 """
 from pathlib import Path
-from chunker import TextChunker
-from embedder import VectorStore
+from vectordb.chunker import TextChunker 
+# NOTE: This assumes chunker.py is inside src/vectordb.
+# Based on your file structure, chunker.py is in src/. 
+# The *safest* path is to revert to the absolute import without the '.' or '..'
+from vectordb.embedder import VectorStore
 import sys
 from typing import List 
 

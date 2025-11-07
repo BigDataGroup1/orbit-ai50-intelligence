@@ -1,0 +1,16 @@
+{
+  "dag_id": "ai50_daily_refresh_dag",
+  "execution_date": "2025-11-05T03:00:00+00:00",
+  "status": "SUCCESS",
+  "total_companies": 50,
+  "companies_with_updates": 42,
+  "pages_scraped": 105,
+  "pages_skipped_404": 42,
+  "page_breakdown": {
+    "careers": 40,
+    "blog": 40,
+    "news": 25
+  },
+  "files_uploaded": 252,
+  "completed_at": "2025-11-06T03:09:57.150829"
+}

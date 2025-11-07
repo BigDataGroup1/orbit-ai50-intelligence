@@ -1,44 +1,56 @@
-# Use Python 3.10 slim
+# Dockerfile for Cloud Run - ORBIT AI50 Intelligence (API + Streamlit)
 FROM python:3.10-slim
 
-# Set working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
     curl \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
+# Set environment variables (All variables consolidated here)
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8080
+# FIX: Set the Hugging Face cache directory to a writable location inside /app
+ENV HF_HOME=/app/hf_cache
+
+# Copy requirements (must be at the root of the source context)
 COPY requirements.txt .
 
-# Install Python dependencies
-# Install torch CPU-only first, then other packages
+# Install PyTorch CPU-only first, then other packages
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
-    torch==2.1.0 \
+    torch==2.3.0 \
     --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+
+# Dockerfile
+
+# ... (lines after pip install requirements.txt)
+
+# FIX: Pre-cache the embedding model into the HF_HOME location
+# The model will be available when the application starts
+RUN python -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='sentence-transformers/all-MiniLM-L6-v2', cache_dir='/app/hf_cache', allow_patterns=['*.json', '*.bin', '*.txt'])"
+
+# ... (lines before COPY src/)
+# Copy application code (recursively copies all of src/)
 COPY src/ ./src/
-COPY data/qdrant_storage/ ./data/qdrant_storage/
 
-# Create necessary directories
-RUN mkdir -p data/payloads data/dashboards/rag data/dashboards/structured
+# Copy all data directories recursively (The most robust method)
+# 1. Create the destination directory first
+RUN mkdir -p data/
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PORT=8080
+# 2. Copy the contents of the source 'data/' directory (data/.) 
+#    into the destination directory ('./data/')
+COPY data/. ./data/
 
-# Expose port (Cloud Run will set PORT env var)
+# Create other directories (vector store built at runtime from GCS)
+RUN mkdir -p data/qdrant_storage data/airflow_reports
+
+# Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:${PORT}/ || exit 1
-
-# Start FastAPI
+# Default command
 CMD exec uvicorn src.api.main:app --host 0.0.0.0 --port ${PORT} --workers 1
