@@ -1,5 +1,5 @@
 """
-FastAPI app for RAG search - Lab 4 + Lab 7
+FastAPI app for RAG search + Structured dashboards - Lab 4 + Lab 7 + Lab 8
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,14 +13,15 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from vectordb.embedder import VectorStore
 from dashboard.rag_generator import RAGDashboardGenerator
+from structured.structured_dashboard import generate_dashboard as generate_structured_dashboard
 
 app = FastAPI(
-    title="PE Dashboard RAG API",
-    description="Vector search API for Forbes AI 50 companies",
-    version="1.0.0"
+    title="PE Dashboard API - RAG + Structured",
+    description="Complete API for Forbes AI 50 companies (RAG and Structured pipelines)",
+    version="2.0.0"
 )
 
-# Enable CORS (for Streamlit later)
+# Enable CORS (for Streamlit)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -40,7 +41,11 @@ async def load_vector_store():
     global vector_store, dashboard_generator
     
     try:
-        print("\nLoading vector store...")
+        print("\n" + "="*70)
+        print("STARTING PE DASHBOARD API")
+        print("="*70)
+        
+        print("\n📦 Loading vector store...")
         vector_store = VectorStore(use_docker=False)
         
         stats = vector_store.get_stats()
@@ -49,11 +54,18 @@ async def load_vector_store():
         print(f"✅ Loaded Qdrant with {stats['total_chunks']} chunks")
         print(f"✅ {len(companies)} companies indexed")
         
-        # Initialize dashboard generator
-        print("Loading dashboard generator...")
+        # Initialize RAG dashboard generator
+        print("\n🤖 Loading RAG dashboard generator...")
         dashboard_generator = RAGDashboardGenerator(vector_store)
-        print(f"✅ Dashboard generator ready")
-        print(f"✅ API ready at http://localhost:8000\n")
+        print(f"✅ RAG generator ready")
+        
+        print("\n" + "="*70)
+        print("🚀 API READY!")
+        print("="*70)
+        print(f"📍 Docs: http://localhost:8000/docs")
+        print(f"📍 RAG endpoint: POST /dashboard/rag")
+        print(f"📍 Structured endpoint: POST /dashboard/structured")
+        print("="*70 + "\n")
         
     except Exception as e:
         print(f"❌ Error loading: {e}")
@@ -83,8 +95,8 @@ class SearchResult(BaseModel):
     page_type: str
     score: float
     tokens: int
-    session: str  # ← ADD THIS
-    is_daily_refresh: bool  # ← ADD THIS
+    session: str
+    is_daily_refresh: bool
 
 
 class SearchResponse(BaseModel):
@@ -116,8 +128,8 @@ async def root():
         
         return {
             "status": "ok",
-            "message": "PE Dashboard RAG API",
-            "version": "1.0.0",
+            "message": "PE Dashboard API - RAG + Structured",
+            "version": "2.0.0",
             "vector_store": {
                 "total_chunks": stats['total_chunks'],
                 "total_companies": len(companies),
@@ -128,7 +140,8 @@ async def root():
                 "search": "POST /rag/search",
                 "companies": "GET /companies",
                 "stats": "GET /stats",
-                "dashboard": "POST /dashboard/rag"
+                "rag_dashboard": "POST /dashboard/rag",
+                "structured_dashboard": "POST /dashboard/structured"
             }
         }
     
@@ -177,7 +190,6 @@ async def search(request: SearchRequest):
     )
     
     # Format results
-    # Format results
     formatted_results = [
         SearchResult(
             text=r['text'],
@@ -185,11 +197,12 @@ async def search(request: SearchRequest):
             page_type=r['metadata']['page_type'],
             score=r['score'],
             tokens=r['tokens'],
-            session=r['metadata']['session'],  # ← ADD THIS
-            is_daily_refresh=r['metadata']['is_daily_refresh']  # ← ADD THIS
+            session=r['metadata']['session'],
+            is_daily_refresh=r['metadata']['is_daily_refresh']
         )
         for r in results
     ]
+    
     return SearchResponse(
         results=formatted_results,
         query=request.query,
@@ -238,6 +251,61 @@ async def generate_rag_dashboard(request: DashboardRequest):
     return DashboardResponse(**result)
 
 
+@app.post("/dashboard/structured", response_model=DashboardResponse)
+async def generate_structured_dashboard_endpoint(request: DashboardRequest):
+    """
+    Generate PE dashboard using Structured pipeline.
+    
+    **Lab 8 Endpoint**
+    
+    Args:
+        company_name: Company ID (lowercase, e.g., "anthropic", "cohere")
+    
+    Returns:
+        Markdown dashboard from structured payload
+    
+    Example:
+```json
+    {
+      "company_name": "anthropic"
+    }
+```
+    """
+    try:
+        # Call structured pipeline
+        result = generate_structured_dashboard(request.company_name)
+        
+        if result['success']:
+            return DashboardResponse(
+                company_name=result['company_name'],
+                dashboard=result['markdown'],
+                success=True,
+                metadata={
+                    'tokens_used': result.get('tokens_used', 0),
+                    'pipeline': 'structured',
+                    'source': 'payload_assembly'
+                }
+            )
+        else:
+            return DashboardResponse(
+                company_name=request.company_name,
+                dashboard="",
+                success=False,
+                error=result.get('error', 'Unknown error')
+            )
+    
+    except FileNotFoundError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Payload not found for {request.company_name}. Run Lab 5-6 first."
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Structured dashboard generation failed: {str(e)}"
+        )
+
+
 @app.get("/companies")
 async def get_companies():
     """Get list of all companies in vector store."""
@@ -284,9 +352,9 @@ if __name__ == "__main__":
     import uvicorn
     
     print("""
-╔════════════════════════════════════════════════════════════════╗
-║         PE DASHBOARD RAG API - LAB 4 + LAB 7                   ║
-╚════════════════════════════════════════════════════════════════╝
+╔═══════════════════════════════════════════════════════════════╗
+║     PE DASHBOARD API - RAG + STRUCTURED PIPELINES             ║
+╚═══════════════════════════════════════════════════════════════╝
 
 Starting FastAPI server...
 API docs: http://localhost:8000/docs
