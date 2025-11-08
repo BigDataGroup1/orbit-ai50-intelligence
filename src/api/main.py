@@ -599,78 +599,72 @@ def check_gcs_access():
 #         print(f"❌ Startup error: {e}")
 #         import traceback
 #         traceback.print_exc()
+
+@app.on_event("startup")
 @app.on_event("startup")
 async def startup_event():
-    """Initialize vector store - DOWNLOAD PRE-BUILT INDEX FROM GCS"""
-    global vector_store, dashboard_generator, build_in_progress
+    """Initialize vector store - DOWNLOAD from GCS"""
+    global vector_store, dashboard_generator
     
     print("\n" + "="*70)
-    print("🚀 STARTING ORBIT API - FAST LOAD MODE")
-    print("="*70)
-    print(f"GCP Project: {GCP_PROJECT_ID}")
-    print(f"Strategy: Download pre-built index from GCS")
+    print("🚀 STARTING ORBIT API")
     print("="*70)
     
     try:
         qdrant_dir = Path("/tmp/qdrant_storage")
-        collection_dir = qdrant_dir / "collection" / "pe_companies"
         
-        # Check if index already exists in container
-        needs_download = not collection_dir.exists()
-        
-        if needs_download:
-            print("\n📥 Downloading pre-built vector index from GCS...")
+        # Download raw files from GCS
+        if not qdrant_dir.exists() or not list(qdrant_dir.glob("**/*.sqlite")):
+            print("\n📥 Downloading vector DB from GCS...")
             
             try:
-                from google.cloud import storage
-                client = storage.Client(project=GCP_PROJECT_ID)
+                client = get_gcs_client()
                 bucket = client.bucket(GCS_PROCESSED_BUCKET)
-                blob = bucket.blob("vector_index/qdrant_index.tar.gz")
                 
-                if blob.exists():
-                    print("   Downloading index archive...")
-                    blob.download_to_filename("/tmp/qdrant_index.tar.gz")
-                    print("   ✅ Downloaded!")
-                    
-                    # Extract to /tmp/qdrant_storage
-                    print("   📦 Extracting index...")
-                    import tarfile
-                    with tarfile.open("/tmp/qdrant_index.tar.gz", "r:gz") as tar:
-                        tar.extractall("/tmp/qdrant_storage")
-                    
-                    print("   ✅ Extracted to /tmp/qdrant_storage")
-                    
-                    # Clean up archive
-                    Path("/tmp/qdrant_index.tar.gz").unlink()
-                    
-                else:
-                    print("   ❌ Pre-built index not found in GCS!")
-                    print("   📝 Build locally first: python src/vectordb/build_index.py --gcs")
-                    print("   📤 Upload: gsutil cp data/qdrant_storage/qdrant_index.tar.gz gs://orbit-processed-data-group1-2025/vector_index/")
+                # Download all files from qdrant_index/ prefix
+                blobs = list(bucket.list_blobs(prefix="qdrant_index/"))
+                
+                if not blobs:
+                    print("❌ No vector DB found in GCS!")
                     return
+                
+                print(f"   Found {len(blobs)} files to download...")
+                
+                for blob in blobs:
+                    if blob.name.endswith('/'):
+                        continue  # Skip directory markers
                     
+                    # Remove 'qdrant_index/' prefix to get relative path
+                    relative_path = blob.name.replace('qdrant_index/', '')
+                    local_file = qdrant_dir / relative_path
+                    
+                    # Create parent directories
+                    local_file.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    # Download
+                    blob.download_to_filename(str(local_file))
+                    print(f"   ✓ {relative_path}")
+                
+                print(f"   ✅ Downloaded {len(blobs)} files")
+                
             except Exception as e:
                 print(f"   ❌ Download failed: {e}")
                 return
         
-        # Load vector store (fast - just loads existing data)
-        print("\n📦 Loading vector store from disk...")
-        vector_store = VectorStore(use_docker=False)
+        # Load vector store
+        print("\n📦 Loading vector store...")
+        vector_store = VectorStore(use_docker=False, data_dir=Path("/tmp/qdrant_storage"))
         
         stats = vector_store.get_stats()
-        companies = vector_store.get_companies()
+        companies = vector_store.get_companies()  # ← CORRECT!
         
-        print(f"✅ Loaded Qdrant with {stats['total_chunks']} chunks")
-        print(f"✅ {len(companies)} companies indexed")
+        print(f"✅ Loaded {stats['total_chunks']} chunks")
+        print(f"✅ {len(companies)} companies")
         
-        # Initialize RAG dashboard generator
-        print("\n🤖 Loading RAG dashboard generator...")
+        # Initialize dashboard generator
         dashboard_generator = RAGDashboardGenerator(vector_store)
-        print("✅ RAG generator ready")
         
-        print("\n" + "="*70)
-        print("🚀 API READY AND HEALTHY!")
-        print("="*70 + "\n")
+        print("\n✅ API READY!")
         
     except Exception as e:
         print(f"❌ Startup error: {e}")
