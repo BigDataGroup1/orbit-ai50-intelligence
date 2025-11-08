@@ -409,8 +409,9 @@
 #     uvicorn.run(app, host="0.0.0.0", port=port)
 
 """
-FastAPI app for RAG search + Structured dashboards - App Engine Deployment
+FastAPI app for RAG search + Structured dashboards - App Engine Standard Deployment
 Builds vector index from GCS on first startup
+Author: Tapas
 """
 import os
 from fastapi import FastAPI, HTTPException
@@ -465,118 +466,220 @@ def get_gcs_client():
     return storage_client
 
 
+def check_gcs_access():
+    """Verify GCS access on startup"""
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(GCS_RAW_BUCKET)
+        
+        if not bucket.exists():
+            print(f"⚠️  WARNING: Bucket {GCS_RAW_BUCKET} not accessible")
+            return False
+        
+        # Test read access
+        blobs = list(bucket.list_blobs(max_results=1))
+        file_count = len(list(bucket.list_blobs(max_results=100)))
+        print(f"✅ GCS Access OK - found {file_count} files in bucket")
+        return True
+    except Exception as e:
+        print(f"❌ GCS Access Error: {e}")
+        return False
+
+
+# @app.on_event("startup")
+# async def startup_event():
+#     """Initialize vector store - build from GCS if needed"""
+#     global vector_store, dashboard_generator, build_in_progress
+    
+#     print("\n" + "="*70)
+#     print("STARTING ORBIT API ON APP ENGINE STANDARD")
+#     print("="*70)
+#     print(f"GCP Project: {GCP_PROJECT_ID}")
+#     print(f"Raw Bucket: {GCS_RAW_BUCKET}")
+#     print(f"Processed Bucket: {GCS_PROCESSED_BUCKET}")
+#     print(f"Instance: {os.getenv('GAE_INSTANCE', 'local')}")
+#     print(f"Service: {os.getenv('GAE_SERVICE', 'default')}")
+#     print("="*70)
+    
+#     # Check GCS access
+#     if not check_gcs_access():
+#         print("⚠️  Continuing without GCS - vector search will fail")
+    
+#     try:
+#         # ✅ CRITICAL: App Engine Standard uses /tmp for temporary storage
+#         qdrant_dir = Path("/tmp/qdrant_storage")
+#         collection_dir = qdrant_dir / "collection" / "pe_companies"
+        
+#         needs_build = not collection_dir.exists() or not list(qdrant_dir.glob("*.sqlite"))
+        
+#         if needs_build:
+#             print("\n⚠️  Vector store not found - building from GCS...")
+#             print("This will take 10-15 minutes on first startup...")
+#             print("API will start serving, but vector search disabled until build completes")
+#             print("="*70)
+            
+#             # Run build in background thread
+#             def build_index():
+#                 global vector_store, dashboard_generator, build_in_progress
+                
+#                 try:
+#                     build_in_progress = True
+#                     print("🔨 Background build started...")
+                    
+#                     from vectordb.build_index import build_vector_index
+                    
+#                     build_vector_index(
+#                         use_docker=False,
+#                         clear_existing=True,
+#                         use_gcs=True,
+#                         bucket_name=GCS_RAW_BUCKET
+#                     )
+                    
+#                     print("✅ Vector index built successfully!")
+                    
+#                     # ✅ FIX: Wait for locks to release before loading
+#                     import time
+#                     print("⏳ Waiting 5 seconds for locks to release...")
+#                     time.sleep(5)
+                    
+#                     # ✅ Try loading with retry logic
+#                     max_retries = 3
+#                     for attempt in range(max_retries):
+#                         try:
+#                             print(f"📦 Loading vector store (attempt {attempt + 1}/{max_retries})...")
+#                             vector_store = VectorStore(use_docker=False)
+#                             dashboard_generator = RAGDashboardGenerator(vector_store)
+                            
+#                             build_in_progress = False
+                            
+#                             stats = vector_store.get_stats()
+#                             companies = vector_store.get_companies()
+                            
+#                             print(f"✅ SUCCESS: Loaded {len(companies)} companies, {stats['total_chunks']} chunks")
+#                             return  # Success!
+                            
+#                         except RuntimeError as e:
+#                             if "already accessed" in str(e) and attempt < max_retries - 1:
+#                                 print(f"⚠️ Lock conflict, waiting 5 seconds...")
+#                                 time.sleep(5)
+#                             else:
+#                                 raise
+                    
+#                 except Exception as e:
+#                     build_in_progress = False
+#                     print(f"❌ FAILED: Build error - {e}")
+#                     import traceback
+#                     traceback.print_exc()
+                    
+#             # Start background build
+#             build_thread = threading.Thread(target=build_index, daemon=True)
+#             build_thread.start()
+            
+#         else:
+#             print("\n📦 Loading existing vector store...")
+            
+#             vector_store = VectorStore(use_docker=False)
+            
+#             stats = vector_store.get_stats()
+#             companies = vector_store.get_companies()
+            
+#             print(f"✅ Loaded Qdrant with {stats['total_chunks']} chunks")
+#             print(f"✅ {len(companies)} companies indexed")
+            
+#             # Initialize RAG dashboard generator
+#             print("\n🤖 Loading RAG dashboard generator...")
+#             dashboard_generator = RAGDashboardGenerator(vector_store)
+#             print("✅ RAG generator ready")
+            
+#             print("\n" + "="*70)
+#             print("🚀 API READY AND HEALTHY!")
+#             print("="*70 + "\n")
+        
+#     except Exception as e:
+#         print(f"❌ Startup error: {e}")
+#         import traceback
+#         traceback.print_exc()
 @app.on_event("startup")
 async def startup_event():
-    """Initialize vector store - build from GCS if needed"""
+    """Initialize vector store - DOWNLOAD PRE-BUILT INDEX FROM GCS"""
     global vector_store, dashboard_generator, build_in_progress
     
     print("\n" + "="*70)
-    print("STARTING ORBIT API ON APP ENGINE")
+    print("🚀 STARTING ORBIT API - FAST LOAD MODE")
     print("="*70)
     print(f"GCP Project: {GCP_PROJECT_ID}")
-    print(f"Raw Bucket: {GCS_RAW_BUCKET}")
-    print(f"Processed Bucket: {GCS_PROCESSED_BUCKET}")
+    print(f"Strategy: Download pre-built index from GCS")
     print("="*70)
     
     try:
-        # Verify GCS access
-        try:
-            client = get_gcs_client()
-            raw_bucket = client.bucket(GCS_RAW_BUCKET)
-            processed_bucket = client.bucket(GCS_PROCESSED_BUCKET)
-            
-            if raw_bucket.exists():
-                print(f"✅ Connected to raw bucket: {GCS_RAW_BUCKET}")
-            else:
-                print(f"⚠️  Raw bucket not found: {GCS_RAW_BUCKET}")
-                
-            if processed_bucket.exists():
-                print(f"✅ Connected to processed bucket: {GCS_PROCESSED_BUCKET}")
-            else:
-                print(f"⚠️  Processed bucket not found: {GCS_PROCESSED_BUCKET}")
-        except Exception as e:
-            print(f"⚠️  GCS connection warning: {e}")
-        
-        # Check if vector store already exists
-        # App Engine uses /tmp for temporary storage
         qdrant_dir = Path("/tmp/qdrant_storage")
         collection_dir = qdrant_dir / "collection" / "pe_companies"
         
-        needs_build = not collection_dir.exists() or not list(qdrant_dir.glob("*.sqlite"))
+        # Check if index already exists in container
+        needs_download = not collection_dir.exists()
         
-        if needs_build:
-            print("\n⚠️  Vector store not found - building from GCS...")
-            print("This will take 10-15 minutes on first startup...")
-            print("API will start serving, but vector search disabled until build completes")
-            print("="*70)
+        if needs_download:
+            print("\n📥 Downloading pre-built vector index from GCS...")
             
-            # Run build in background thread
-            def build_index():
-                global vector_store, dashboard_generator, build_in_progress
+            try:
+                from google.cloud import storage
+                client = storage.Client(project=GCP_PROJECT_ID)
+                bucket = client.bucket(GCS_PROCESSED_BUCKET)
+                blob = bucket.blob("vector_index/qdrant_index.tar.gz")
                 
-                try:
-                    build_in_progress = True
-                    print("🔨 Background build started...")
+                if blob.exists():
+                    print("   Downloading index archive...")
+                    blob.download_to_filename("/tmp/qdrant_index.tar.gz")
+                    print("   ✅ Downloaded!")
                     
-                    from vectordb.build_index import build_vector_index
+                    # Extract to /tmp/qdrant_storage
+                    print("   📦 Extracting index...")
+                    import tarfile
+                    with tarfile.open("/tmp/qdrant_index.tar.gz", "r:gz") as tar:
+                        tar.extractall("/tmp/qdrant_storage")
                     
-                    build_vector_index(
-                        use_docker=False,
-                        clear_existing=True,
-                        use_gcs=True,
-                        bucket_name=GCS_RAW_BUCKET
-                    )
+                    print("   ✅ Extracted to /tmp/qdrant_storage")
                     
-                    print("✅ Vector index built! Loading into memory...")
+                    # Clean up archive
+                    Path("/tmp/qdrant_index.tar.gz").unlink()
                     
-                    # Load vector store
-                    vector_store = VectorStore(use_docker=False)
-                    dashboard_generator = RAGDashboardGenerator(vector_store)
+                else:
+                    print("   ❌ Pre-built index not found in GCS!")
+                    print("   📝 Build locally first: python src/vectordb/build_index.py --gcs")
+                    print("   📤 Upload: gsutil cp data/qdrant_storage/qdrant_index.tar.gz gs://orbit-processed-data-group1-2025/vector_index/")
+                    return
                     
-                    build_in_progress = False
-                    
-                    stats = vector_store.get_stats()
-                    companies = vector_store.get_companies()
-                    
-                    print(f"✅ SUCCESS: Loaded {len(companies)} companies, {stats['total_chunks']} chunks")
-                    
-                except Exception as e:
-                    build_in_progress = False
-                    print(f"❌ FAILED: Build error - {e}")
-                    import traceback
-                    traceback.print_exc()
-            
-            # Start background build
-            build_thread = threading.Thread(target=build_index, daemon=True)
-            build_thread.start()
-            
-        else:
-            print("\n📦 Loading existing vector store...")
-            
-            vector_store = VectorStore(use_docker=False)
-            
-            stats = vector_store.get_stats()
-            companies = vector_store.get_companies()
-            
-            print(f"✅ Loaded Qdrant with {stats['total_chunks']} chunks")
-            print(f"✅ {len(companies)} companies indexed")
-            
-            # Initialize RAG dashboard generator
-            print("\n🤖 Loading RAG dashboard generator...")
-            dashboard_generator = RAGDashboardGenerator(vector_store)
-            print("✅ RAG generator ready")
-            
-            print("\n" + "="*70)
-            print("🚀 API READY AND HEALTHY!")
-            print("="*70 + "\n")
+            except Exception as e:
+                print(f"   ❌ Download failed: {e}")
+                return
+        
+        # Load vector store (fast - just loads existing data)
+        print("\n📦 Loading vector store from disk...")
+        vector_store = VectorStore(use_docker=False)
+        
+        stats = vector_store.get_stats()
+        companies = vector_store.get_companies()
+        
+        print(f"✅ Loaded Qdrant with {stats['total_chunks']} chunks")
+        print(f"✅ {len(companies)} companies indexed")
+        
+        # Initialize RAG dashboard generator
+        print("\n🤖 Loading RAG dashboard generator...")
+        dashboard_generator = RAGDashboardGenerator(vector_store)
+        print("✅ RAG generator ready")
+        
+        print("\n" + "="*70)
+        print("🚀 API READY AND HEALTHY!")
+        print("="*70 + "\n")
         
     except Exception as e:
         print(f"❌ Startup error: {e}")
         import traceback
         traceback.print_exc()
+# ============================================================================
+# Pydantic Models
+# ============================================================================
 
-
-# Pydantic models
 class SearchRequest(BaseModel):
     query: str
     k: int = 5
@@ -615,9 +718,13 @@ class DashboardResponse(BaseModel):
     error: Optional[str] = None
 
 
+# ============================================================================
+# API Endpoints
+# ============================================================================
+
 @app.get("/")
 async def root():
-    """Health check - shows build status"""
+    """Root endpoint - shows API status and available endpoints"""
     if vector_store:
         stats = vector_store.get_stats()
         companies = vector_store.get_companies()
@@ -626,7 +733,7 @@ async def root():
             "status": "healthy",
             "message": "ORBIT AI50 Intelligence API",
             "version": "2.0.0",
-            "environment": "App Engine",
+            "environment": "App Engine Standard",
             "gcp": {
                 "project_id": GCP_PROJECT_ID,
                 "raw_bucket": GCS_RAW_BUCKET,
@@ -643,6 +750,7 @@ async def root():
                 "docs": "/docs",
                 "search": "/rag/search",
                 "companies": "/companies",
+                "stats": "/stats",
                 "rag_dashboard": "/dashboard/rag",
                 "structured_dashboard": "/dashboard/structured",
                 "gcs_buckets": "/gcs/buckets",
@@ -658,7 +766,7 @@ async def root():
         return {
             "status": "initializing",
             "message": status_msg,
-            "environment": "App Engine",
+            "environment": "App Engine Standard",
             "gcp": {
                 "project_id": GCP_PROJECT_ID,
                 "raw_bucket": GCS_RAW_BUCKET,
@@ -673,7 +781,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Detailed health check"""
+    """Detailed health check endpoint"""
     try:
         client = get_gcs_client()
         raw_bucket = client.bucket(GCS_RAW_BUCKET)
@@ -689,8 +797,9 @@ async def health_check():
         "gcs_status": gcs_status,
         "service": "orbit-api",
         "version": "2.0.0",
-        "environment": "App Engine",
-        "gcp_project": GCP_PROJECT_ID
+        "environment": "App Engine Standard",
+        "gcp_project": GCP_PROJECT_ID,
+        "instance": os.getenv('GAE_INSTANCE', 'local')
     }
 
 
@@ -730,8 +839,11 @@ async def get_buckets_info():
 async def get_bucket_files(bucket_type: str, prefix: str = "", max_results: int = 100):
     """
     List files in a bucket
-    bucket_type: 'raw' or 'processed'
-    prefix: optional prefix to filter files
+    
+    Args:
+        bucket_type: 'raw' or 'processed'
+        prefix: optional prefix to filter files (e.g., 'data/raw/')
+        max_results: maximum number of files to return
     """
     bucket_name = GCS_RAW_BUCKET if bucket_type == "raw" else GCS_PROCESSED_BUCKET
     
@@ -760,6 +872,10 @@ async def get_bucket_files(bucket_type: str, prefix: str = "", max_results: int 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error listing files: {str(e)}")
 
+
+# ============================================================================
+# Admin Endpoints
+# ============================================================================
 
 @app.post("/admin/reload-vector-store")
 async def reload_vector_store():
@@ -794,7 +910,7 @@ async def reload_vector_store():
 
 @app.get("/admin/status")
 async def admin_status():
-    """Check current system status"""
+    """Check current system status - for debugging"""
     # App Engine uses /tmp for temporary storage
     qdrant_dir = Path("/tmp/qdrant_storage")
     
@@ -820,15 +936,21 @@ async def admin_status():
         "companies_count": len(vector_store.get_companies()) if vector_store else 0,
         "gcp": {
             "project_id": GCP_PROJECT_ID,
-            "buckets": gcs_info
+            "buckets": gcs_info,
+            "instance": os.getenv('GAE_INSTANCE', 'local'),
+            "service": os.getenv('GAE_SERVICE', 'default')
         },
-        "environment": "App Engine"
+        "environment": "App Engine Standard"
     }
 
 
+# ============================================================================
+# RAG Pipeline Endpoints
+# ============================================================================
+
 @app.post("/rag/search", response_model=SearchResponse)
 async def search(request: SearchRequest):
-    """Search vector store"""
+    """Search vector store using RAG"""
     if vector_store is None:
         raise HTTPException(
             status_code=503, 
@@ -873,7 +995,7 @@ async def search(request: SearchRequest):
 
 @app.post("/dashboard/rag", response_model=DashboardResponse)
 async def generate_rag_dashboard(request: DashboardRequest):
-    """Generate RAG dashboard"""
+    """Generate RAG dashboard for a company"""
     if dashboard_generator is None:
         raise HTTPException(
             status_code=503,
@@ -891,9 +1013,13 @@ async def generate_rag_dashboard(request: DashboardRequest):
         raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
 
 
+# ============================================================================
+# Structured Pipeline Endpoints
+# ============================================================================
+
 @app.post("/dashboard/structured", response_model=DashboardResponse)
 async def generate_structured_dashboard_endpoint(request: DashboardRequest):
-    """Generate Structured dashboard"""
+    """Generate Structured dashboard for a company"""
     try:
         result = generate_structured_dashboard(request.company_name)
         
@@ -916,16 +1042,29 @@ async def generate_structured_dashboard_endpoint(request: DashboardRequest):
             )
     
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"Payload not found for {request.company_name}")
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Payload not found for {request.company_name}"
+        )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Generation failed: {str(e)}"
+        )
 
+
+# ============================================================================
+# Data Endpoints
+# ============================================================================
 
 @app.get("/companies")
 async def get_companies():
-    """Get companies list"""
+    """Get list of all companies in vector store"""
     if vector_store is None:
-        raise HTTPException(status_code=503, detail="Vector store not initialized")
+        raise HTTPException(
+            status_code=503, 
+            detail="Vector store not initialized"
+        )
     
     return {
         "companies": vector_store.get_companies(),
@@ -935,9 +1074,12 @@ async def get_companies():
 
 @app.get("/stats")
 async def get_stats():
-    """Get statistics"""
+    """Get vector store statistics"""
     if vector_store is None:
-        raise HTTPException(status_code=503, detail="Vector store not initialized")
+        raise HTTPException(
+            status_code=503, 
+            detail="Vector store not initialized"
+        )
     
     stats = vector_store.get_stats()
     
@@ -946,9 +1088,13 @@ async def get_stats():
         "total_companies": len(vector_store.get_companies()),
         "vector_dimension": stats['vector_dimension'],
         "gcp_project": GCP_PROJECT_ID,
-        "environment": "App Engine"
+        "environment": "App Engine Standard"
     }
 
+
+# ============================================================================
+# Main Entry Point (for local testing)
+# ============================================================================
 
 if __name__ == "__main__":
     import uvicorn
@@ -958,12 +1104,23 @@ if __name__ == "__main__":
     print(f"""
 ╔═══════════════════════════════════════════════════════════╗
 ║     ORBIT API - RAG + STRUCTURED PIPELINES                ║
-║     Environment: App Engine                               ║
+║     Environment: App Engine Standard                      ║
 ║     GCP Project: {GCP_PROJECT_ID:<39} ║
 ╚═══════════════════════════════════════════════════════════╝
 
 Starting FastAPI server on port {port}...
 API docs: http://localhost:{port}/docs
+
+Endpoints:
+  GET  /                    - API status
+  GET  /health              - Health check
+  GET  /docs                - Swagger UI
+  POST /rag/search          - Vector search
+  POST /dashboard/rag       - Generate RAG dashboard
+  POST /dashboard/structured - Generate structured dashboard
+  GET  /companies           - List companies
+  GET  /gcs/buckets         - GCS bucket info
+  GET  /admin/status        - System status
     """)
     
     uvicorn.run(app, host="0.0.0.0", port=port)

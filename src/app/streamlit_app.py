@@ -498,9 +498,8 @@ from app.utils import (
 # API Configuration - use environment variable or default
 API_URL = os.getenv(
     'API_URL',
-    'https://orbit-ai50-intelligence.uc.r.appspot.com'  # Your deployed App Engine URL
+    'https://orbit-api-aksh-823575734493.us-central1.run.app'  # ← YOUR NEW URL
 )
-
 # Page config
 st.set_page_config(
     page_title="ORBIT PE Dashboard",

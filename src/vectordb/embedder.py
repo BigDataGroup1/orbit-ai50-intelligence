@@ -1,5 +1,6 @@
 """
 Qdrant-based vector store for RAG pipeline
+FIXED FOR APP ENGINE: Uses /tmp storage + HF token
 """
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
@@ -10,6 +11,7 @@ from qdrant_client.models import (
 from typing import List, Dict, Optional
 from pathlib import Path
 import uuid
+import os
 
 
 class VectorStore:
@@ -28,7 +30,17 @@ class VectorStore:
             data_dir: Directory for persistent storage (in-memory mode only)
         """
         print(f"Loading embedding model: {model_name}...")
-        self.model = SentenceTransformer(model_name)
+        
+        # ✅ FIX #1: Use HuggingFace token to avoid rate limits
+        hf_token = os.getenv('HF_TOKEN')
+        
+        if hf_token:
+            print("   Using HuggingFace token for authentication")
+            self.model = SentenceTransformer(model_name, token=hf_token)
+        else:
+            print("   Warning: No HF_TOKEN - may hit rate limits")
+            self.model = SentenceTransformer(model_name)
+        
         self.dimension = 384  # all-MiniLM-L6-v2 dimension
         self.collection_name = "pe_companies"
         
@@ -38,9 +50,18 @@ class VectorStore:
             self.client = QdrantClient(host="localhost", port=6333)
             print("✅ Connected to Qdrant Docker instance")
         else:
-            # In-memory mode with persistent storage
+            # ✅ FIX #2: Use /tmp for App Engine (only writable directory)
             if data_dir is None:
-                data_dir = Path(__file__).resolve().parents[2] / "data" / "qdrant_storage"
+                # Check if running on App Engine
+                is_app_engine = os.getenv('GAE_ENV', '').startswith('standard')
+                
+                if is_app_engine:
+                    # App Engine: Use /tmp (only writable directory)
+                    data_dir = Path("/tmp/qdrant_storage")
+                    print("   App Engine detected - using /tmp/qdrant_storage")
+                else:
+                    # Local: Use project data directory
+                    data_dir = Path(__file__).resolve().parents[2] / "data" / "qdrant_storage"
             
             data_dir.mkdir(parents=True, exist_ok=True)
             self.client = QdrantClient(path=str(data_dir))
@@ -103,15 +124,15 @@ class VectorStore:
             point = PointStruct(
                 id=str(uuid.uuid4()),
                 vector=embedding.tolist(),
-            payload={
-                'text': chunk['text'],
-                'company_name': chunk['metadata']['company_name'],
-                'page_type': chunk['metadata']['page_type'],
-                'session': chunk['metadata']['session'],
-                'source_file': chunk['metadata'].get('source_file', chunk['metadata'].get('source', 'gcs')),
-                'tokens': chunk['tokens'],
-                'is_daily_refresh': chunk['metadata'].get('is_daily_refresh', False)  # ← ADD THIS
-            }
+                payload={
+                    'text': chunk['text'],
+                    'company_name': chunk['metadata']['company_name'],
+                    'page_type': chunk['metadata']['page_type'],
+                    'session': chunk['metadata']['session'],
+                    'source_file': chunk['metadata'].get('source_file', chunk['metadata'].get('source', 'gcs')),
+                    'tokens': chunk['tokens'],
+                    'is_daily_refresh': chunk['metadata'].get('is_daily_refresh', False)
+                }
             )
             points.append(point)
         
@@ -184,18 +205,18 @@ class VectorStore:
         # Format results
         results = []
         for hit in search_results:
-         results.append({
-            'text': hit.payload['text'],
-            'metadata': {
-                'company_name': hit.payload['company_name'],
-                'page_type': hit.payload['page_type'],
-                'session': hit.payload['session'],
-                'source_file': hit.payload['source_file'],
-                'is_daily_refresh': hit.payload.get('is_daily_refresh', False)  # ← ADD THIS
-            },
-            'score': hit.score,
-            'tokens': hit.payload['tokens']
-        })
+            results.append({
+                'text': hit.payload['text'],
+                'metadata': {
+                    'company_name': hit.payload['company_name'],
+                    'page_type': hit.payload['page_type'],
+                    'session': hit.payload['session'],
+                    'source_file': hit.payload['source_file'],
+                    'is_daily_refresh': hit.payload.get('is_daily_refresh', False)
+                },
+                'score': hit.score,
+                'tokens': hit.payload['tokens']
+            })
         
         return results
     
@@ -295,3 +316,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+# App Engine deployment - Fri Nov  7 19:43:26 EST 2025
