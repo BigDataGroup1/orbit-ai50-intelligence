@@ -9,7 +9,7 @@ A production-grade, cloud-native system that automatically scrapes, processes, a
 ## 📋 Project Resources
 
 * **Google Codelab**: [Project ORBIT Tutorial](https://codelabs-preview.appspot.com/?file_id=1J2wywiaEeSrTKwo606GT0mz2sGQO-gLPnByV4lKj4Fk)
-* **YouTube Demo**: [Coming soon]
+* **YouTube Demo**: https://youtu.be/ZOiY655wVBI
 * **GitHub Repository**: https://github.com/BigDataGroup1/orbit-ai50-intelligence
 
 ---
@@ -32,7 +32,7 @@ A production-grade, cloud-native system that automatically scrapes, processes, a
 
 ## 🏗️ Architecture Diagram
 
-![Architecture Flow](architecture_diagram.png)
+![Architecture Flow](diag.png)
 
 ---
 
@@ -273,10 +273,9 @@ gcloud run deploy orbit-streamlit \
 
 **Production URLs:**
 
-- **Streamlit Frontend:** https://orbit-streamlit-xxxxx.us-central1.run.app
-- **FastAPI Backend:** https://orbit-api-xxxxx.us-central1.run.app
-- **API Documentation:** https://orbit-api-xxxxx.us-central1.run.app/docs
-- **Health Check:** https://orbit-api-xxxxx.us-central1.run.app/health
+- **Streamlit Frontend:** https://orbit-streamlit-823575734493.us-central1.run.app
+- **FastAPI Backend:** https://orbit-api-aksh-823575734493.us-central1.run.app/health
+- **API Documentation:** https://orbit-api-aksh-823575734493.us-central1.run.app/docs
 - **Airflow Web UI:** Access via GCP Console → Cloud Composer → orbit-airflow-env
 
 **Cloud Infrastructure:**
@@ -509,8 +508,8 @@ python generate_all_dashboard.py    # For all 39 companies
 
 | **Name** | **Contribution** |
 |----------|------------------|
-| Swathi Jinka Radhakrishna | 33.3% - Vector DB, RAG pipeline, embeddings, Cloud Run deployment |
-| Aksh Ashish Talati | 33.3% - Airflow DAGs, web scraping, GCS orchestration, daily refresh |
+| Swathi Jinka Radhakrishna | 33.3% - Vector DB, RAG pipeline, embeddings, Cloud Run deployment, evaluation |
+| Aksh Ashish Talati | 33.3% - Airflow DAGs, web scraping, GCS orchestration, daily refresh,Cloud Run deployment |
 | Tapas Desai | 33.3% - Structured extraction, Pydantic schemas, payload assembly, evaluation |
 
 ---
