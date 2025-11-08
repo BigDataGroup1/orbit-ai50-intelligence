@@ -64,9 +64,33 @@ class VectorStore:
                     data_dir = Path(__file__).resolve().parents[2] / "data" / "qdrant_storage"
             
             data_dir.mkdir(parents=True, exist_ok=True)
-            self.client = QdrantClient(path=str(data_dir))
-            print(f"✅ Using Qdrant in-memory mode")
-            print(f"   Storage: {data_dir}")
+            
+            # Try to initialize QdrantClient - may fail if database format is incompatible
+            try:
+                self.client = QdrantClient(path=str(data_dir))
+                print(f"✅ Using Qdrant in-memory mode")
+                print(f"   Storage: {data_dir}")
+            except Exception as e:
+                error_str = str(e)
+                error_type = type(e).__name__
+                print(f"⚠️  Error loading Qdrant database: {error_type}")
+                print(f"   Error message: {error_str[:500]}")
+                
+                # Check if it's a Pydantic validation error (version incompatibility)
+                if "ValidationError" in error_str or "pydantic" in error_str.lower() or "model_type" in error_str.lower():
+                    print(f"⚠️  Database version incompatibility detected - removing old database...")
+                    # Fast fix: delete entire qdrant_storage and start fresh
+                    import shutil
+                    if data_dir.exists():
+                        shutil.rmtree(data_dir)
+                    data_dir.mkdir(parents=True, exist_ok=True)
+                    # Now create fresh client
+                    self.client = QdrantClient(path=str(data_dir))
+                    print(f"✅ Created fresh Qdrant database")
+                else:
+                    # Re-raise if it's a different error
+                    print(f"❌ Unexpected error - re-raising")
+                    raise
         
         self.ensure_collection()
     

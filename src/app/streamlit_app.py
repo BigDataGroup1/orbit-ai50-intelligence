@@ -618,8 +618,9 @@ def main():
                 else:
                     st.caption("⚠️ Vector Store: Not Loaded")
                 
-                with st.expander("API Details"):
-                    st.json(api_data)
+                # Show API details without nested expander
+                st.markdown("**API Details:**")
+                st.json(api_data)
             else:
                 st.warning("⚠️ API Offline")
                 st.caption("Using file-based mode")

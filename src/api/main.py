@@ -601,7 +601,6 @@ def check_gcs_access():
 #         traceback.print_exc()
 
 @app.on_event("startup")
-@app.on_event("startup")
 async def startup_event():
     """Initialize vector store - DOWNLOAD from GCS"""
     global vector_store, dashboard_generator
@@ -653,18 +652,24 @@ async def startup_event():
         
         # Load vector store
         print("\n📦 Loading vector store...")
-        vector_store = VectorStore(use_docker=False, data_dir=Path("/tmp/qdrant_storage"))
-        
-        stats = vector_store.get_stats()
-        companies = vector_store.get_companies()  # ← CORRECT!
-        
-        print(f"✅ Loaded {stats['total_chunks']} chunks")
-        print(f"✅ {len(companies)} companies")
-        
-        # Initialize dashboard generator
-        dashboard_generator = RAGDashboardGenerator(vector_store)
-        
-        print("\n✅ API READY!")
+        try:
+            vector_store = VectorStore(use_docker=False, data_dir=Path("/tmp/qdrant_storage"))
+            
+            stats = vector_store.get_stats()
+            companies = vector_store.get_companies()
+            
+            print(f"✅ Loaded {stats['total_chunks']} chunks")
+            print(f"✅ {len(companies)} companies")
+            
+            # Initialize dashboard generator
+            dashboard_generator = RAGDashboardGenerator(vector_store)
+            
+            print("\n✅ API READY!")
+        except Exception as vs_error:
+            print(f"❌ Failed to load vector store: {vs_error}")
+            print(f"   Vector store will not be available.")
+            vector_store = None
+            dashboard_generator = None
         
     except Exception as e:
         print(f"❌ Startup error: {e}")
@@ -879,7 +884,7 @@ async def reload_vector_store():
     try:
         print("♻️  Reloading vector store...")
         
-        vector_store = VectorStore(use_docker=False)
+        vector_store = VectorStore(use_docker=False, data_dir=Path("/tmp/qdrant_storage"))
         dashboard_generator = RAGDashboardGenerator(vector_store)
         
         stats = vector_store.get_stats()
