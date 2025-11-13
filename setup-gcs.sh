@@ -27,8 +27,8 @@ OPENAI_API_KEY=your-key-here
 
 # GCP Configuration
 GOOGLE_APPLICATION_CREDENTIALS=./gcp-service-account.json
-GCP_PROJECT_ID=orbit-ai50-intelligence
-GCP_BUCKET_NAME=orbit-raw-data-group1-2025
+GCP_PROJECT_ID=orbit-ai50-intelligence-477922
+GCP_BUCKET_NAME=orbit-raw-data-g1-2025
 EOF
     echo "⚠️  Please edit .env and add your OPENAI_API_KEY"
     exit 1

@@ -431,9 +431,9 @@ from dashboard.rag_generator import RAGDashboardGenerator
 from structured.structured_dashboard import generate_dashboard as generate_structured_dashboard
 
 # GCP Configuration
-GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "orbit-ai50-intelligence")
-GCS_RAW_BUCKET = os.getenv("GCS_RAW_BUCKET", "orbit-raw-data-group1-2025")
-GCS_PROCESSED_BUCKET = os.getenv("GCS_PROCESSED_BUCKET", "orbit-processed-data-group1-2025")
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "orbit-ai50-intelligence-477922")
+GCS_RAW_BUCKET = os.getenv("GCS_RAW_BUCKET", "orbit-raw-data-g1-2025")
+GCS_PROCESSED_BUCKET = os.getenv("GCS_PROCESSED_BUCKET", "orbit-processed-data-g1-2025")
 
 # Initialize FastAPI
 app = FastAPI(

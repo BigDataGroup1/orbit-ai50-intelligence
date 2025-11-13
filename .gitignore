@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 # GCP Credentials - NEVER PUSH!
 gcp-credentials.json
+gcp-service-account.json
 data/
 # Environment variables
 

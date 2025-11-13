@@ -11,7 +11,7 @@ from typing import List
 def build_vector_index(use_docker: bool = False, 
                       clear_existing: bool = True,
                       use_gcs: bool = True,
-                      bucket_name: str = "orbit-raw-data-group1-2025"):
+                      bucket_name: str = "orbit-raw-data-g1-2025"):
     """
     Build complete vector index for all companies.
     

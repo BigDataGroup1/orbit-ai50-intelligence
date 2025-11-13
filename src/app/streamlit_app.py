@@ -498,7 +498,7 @@ from app.utils import (
 # API Configuration - use environment variable or default
 API_URL = os.getenv(
     'API_URL',
-    'https://orbit-api-aksh-823575734493.us-central1.run.app'  # ← YOUR NEW URL
+    'https://orbit-api-477922.us-central1.run.app'  # ← UPDATE AFTER REDEPLOYING TO NEW PROJECT
 )
 # Page config
 st.set_page_config(
