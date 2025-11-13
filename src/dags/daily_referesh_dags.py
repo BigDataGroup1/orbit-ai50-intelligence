@@ -424,7 +424,7 @@ from google.cloud import storage
 logger = logging.getLogger(__name__)
 
 # Configuration
-GCP_PROJECT_ID = 'orbit-ai50-intelligence-477922'
+GCP_PROJECT_ID = 'orbit-ai50-intelligence'
 GCS_RAW_BUCKET = 'orbit-raw-data-g1-2025'
 GCS_PROCESSED_BUCKET = 'orbit-processed-data-g1-2025'
 
