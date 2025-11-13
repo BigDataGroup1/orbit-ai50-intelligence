@@ -1,0 +1,81 @@
+{
+  "company_record": {
+    "company_id": "elevenlabs",
+    "legal_name": "ElevenLabs",
+    "brand_name": null,
+    "website": "https://elevenlabs.io",
+    "hq_city": "London",
+    "hq_state": null,
+    "hq_country": "United Kingdom",
+    "founded_year": 2022,
+    "categories": [],
+    "related_companies": [],
+    "total_raised_usd": null,
+    "last_disclosed_valuation_usd": 3300000000.0,
+    "last_round_name": null,
+    "last_round_date": null,
+    "schema_version": "2.0.0",
+    "as_of": "2025-11-05",
+    "provenance": [
+      {
+        "source_url": "https://elevenlabs.io",
+        "crawled_at": "2025-11-05T19:29:34.682457",
+        "snippet": "Extracted from scraped pages"
+      }
+    ]
+  },
+  "events": [],
+  "snapshots": [
+    {
+      "company_id": "elevenlabs",
+      "as_of": "2025-11-05",
+      "headcount_total": null,
+      "job_openings_count": 0,
+      "engineering_openings": null,
+      "sales_openings": null,
+      "hiring_focus": [],
+      "pricing_tiers": [
+        "Free",
+        "Starter",
+        "Plus",
+        "Pro",
+        "Professional",
+        "Premium",
+        "Business",
+        "Scale"
+      ],
+      "active_products": [],
+      "geo_presence": [],
+      "confidence": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "products": [],
+  "leadership": [
+    {
+      "person_id": "person_elevenlabs_ceo",
+      "company_id": "elevenlabs",
+      "name": "Mati Staniszewski",
+      "role": "CEO",
+      "is_founder": true,
+      "previous_affiliation": null,
+      "education": null,
+      "linkedin": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "visibility": [
+    {
+      "company_id": "elevenlabs",
+      "as_of": "2025-11-05",
+      "news_mentions_30d": null,
+      "github_stars": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "notes": "Extracted 2025-11-05",
+  "provenance_policy": "Use only scraped sources. If missing: 'Not disclosed.'"
+}

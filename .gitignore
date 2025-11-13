@@ -11,7 +11,7 @@ gcp-credentials.json
 # Data folders (too large, auto-generated)
 data/raw/
 data/structured/
-data/payloads/
+
 data/dashboards/
 data/backups/
 
@@ -30,7 +30,7 @@ venv/
 .idea/
 # C extensions
 *.so
-/data
+
 # Distribution / packaging
 .Python
 build/
@@ -253,7 +253,7 @@ data/raw/**/*.html
 data/raw/**/*.txt
 data/raw/**/metadata.json
 data/structured/
-data/payloads/
+
 
 # Keep structure but not content
 !data/raw/.gitkeep

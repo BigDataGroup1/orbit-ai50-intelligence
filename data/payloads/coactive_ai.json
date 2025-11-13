@@ -1,0 +1,77 @@
+{
+  "company_record": {
+    "company_id": "coactive_ai",
+    "legal_name": "Coactive AI",
+    "brand_name": null,
+    "website": "https://coactive.ai",
+    "hq_city": "San Jose",
+    "hq_state": null,
+    "hq_country": "United States",
+    "founded_year": 2021,
+    "categories": [],
+    "related_companies": [],
+    "total_raised_usd": null,
+    "last_disclosed_valuation_usd": 200000000.0,
+    "last_round_name": null,
+    "last_round_date": null,
+    "schema_version": "2.0.0",
+    "as_of": "2025-11-05",
+    "provenance": [
+      {
+        "source_url": "https://coactive.ai",
+        "crawled_at": "2025-11-05T19:28:57.263282",
+        "snippet": "Extracted from scraped pages"
+      }
+    ]
+  },
+  "events": [],
+  "snapshots": [
+    {
+      "company_id": "coactive_ai",
+      "as_of": "2025-11-05",
+      "headcount_total": null,
+      "job_openings_count": 0,
+      "engineering_openings": null,
+      "sales_openings": null,
+      "hiring_focus": [],
+      "pricing_tiers": [
+        "Basic",
+        "Team",
+        "Business",
+        "Scale"
+      ],
+      "active_products": [],
+      "geo_presence": [],
+      "confidence": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "products": [],
+  "leadership": [
+    {
+      "person_id": "person_coactive_ai_ceo",
+      "company_id": "coactive_ai",
+      "name": "Cody Coleman",
+      "role": "CEO",
+      "is_founder": true,
+      "previous_affiliation": null,
+      "education": null,
+      "linkedin": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "visibility": [
+    {
+      "company_id": "coactive_ai",
+      "as_of": "2025-11-05",
+      "news_mentions_30d": null,
+      "github_stars": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "notes": "Extracted 2025-11-05",
+  "provenance_policy": "Use only scraped sources. If missing: 'Not disclosed.'"
+}
