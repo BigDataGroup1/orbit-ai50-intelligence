@@ -347,6 +347,23 @@ if __name__ == "__main__":
         
         print()
         
+        # Test Tool 2: RAG Search
+        print("🧪 Testing Tool 2: RAG Search...")
+        try:
+            rag_req = RAGSearchRequest(
+                company_id="anthropic",
+                query="What does this company do?"
+            )
+            rag_resp = await rag_search_company(rag_req)
+            if rag_resp.success:
+                print(f"   ✅ RAG search successful: {len(rag_resp.results)} results")
+            else:
+                print(f"   ⚠️  RAG search: {rag_resp.error}")
+        except Exception as e:
+            print(f"   ⚠️  RAG search not available: {e}")
+        
+        print()
+        
         # Test Tool 3: Report Risk
         print("🧪 Testing Tool 3: Report Risk...")
         signal = LayoffSignal(
