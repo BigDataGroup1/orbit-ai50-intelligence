@@ -11,7 +11,7 @@ class TextChunker:
     """Chunks text from GCS bucket with smart initial+daily merge."""
     
     def __init__(self, 
-                 bucket_name: str = "orbit-raw-data-group1-2025",
+                 bucket_name: str = "orbit-raw-data-g1-2025",
                  chunk_size: int = 800, 
                  overlap: int = 100,
                  use_gcs: bool = True):
@@ -310,7 +310,7 @@ def main():
         print("="*70)
         
         chunker = TextChunker(
-            bucket_name="orbit-raw-data-group1-2025",
+            bucket_name="orbit-raw-data-g1-2025",
             use_gcs=True
         )
         

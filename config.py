@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     qdrant_collection: str = "forbes_ai50"
     
     # Google Cloud
-    gcp_project_id: str = "orbit-ai50-intelligence"
+    gcp_project_id: str = "orbit-ai50-intelligence-477922"
     gcs_bucket_name: str = os.getenv("GCS_BUCKET_NAME", "")
     
     # API Settings

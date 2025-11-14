@@ -498,9 +498,8 @@ from app.utils import (
 # API Configuration - use environment variable or default
 API_URL = os.getenv(
     'API_URL',
-    'https://orbit-ai50-intelligence.uc.r.appspot.com'  # Your deployed App Engine URL
+    'https://orbit-api-667820328373.us-central1.run.app'  # FastAPI deployed URL
 )
-
 # Page config
 st.set_page_config(
     page_title="ORBIT PE Dashboard",
@@ -619,8 +618,9 @@ def main():
                 else:
                     st.caption("⚠️ Vector Store: Not Loaded")
                 
-                with st.expander("API Details"):
-                    st.json(api_data)
+                # Show API details without nested expander
+                st.markdown("**API Details:**")
+                st.json(api_data)
             else:
                 st.warning("⚠️ API Offline")
                 st.caption("Using file-based mode")

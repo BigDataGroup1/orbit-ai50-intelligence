@@ -4,10 +4,13 @@ __pycache__/
 *$py.class
 # GCP Credentials - NEVER PUSH!
 gcp-credentials.json
+gcp-service-account.json
 
 # Environment variables
 .env
-
+env-vars.yaml
+*.yaml.env
+data/
 # Data folders (too large, auto-generated)
 
 
@@ -240,21 +243,12 @@ build/
 dist/
 *.egg-info/
 
-# Environment variables
-.env
-.env.local
+
 
 # Data files (we'll store large files in GCS, not Git)
-data/raw/**/*.html
-data/raw/**/*.txt
-data/raw/**/metadata.json
-data/structured/
-data/payloads/
 
 # Keep structure but not content
-!data/raw/.gitkeep
-!data/structured/.gitkeep
-!data/payloads/.gitkeep
+
 
 # Airflow
 logs/

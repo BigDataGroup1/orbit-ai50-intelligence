@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+
+# Data - EXCLUDE LARGE FILES (use GCS instead)
+
+
+
+
+# Git & IDE
+.git/
+.gitignore
+.gitattributes
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker (not needed for App Engine)
+
+# Logs
+*.log
+logs/
+scheduler.log
+scraper.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Secrets (DO NOT UPLOAD)
+gcp-service-account.json
+*.pem
+*.key
+
+# Model caches
+hf_cache/
+.cache/
+
+# Tests
+tests/
+pytest_cache/
+.pytest_cache/
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db

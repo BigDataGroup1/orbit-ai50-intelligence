@@ -242,50 +242,49 @@ class DashboardLoader:
         self.structured_data_dir = self.data_dir / "structured"  # ✅ Source data directory
     
     def get_all_companies(self) -> List[str]:
-        """Get list of ALL companies (from structured JSON files)."""
-        companies = set()
+        """Get list of ALL companies - prioritize RAG dashboards (46 companies)."""
+        companies = {}  # Use dict to track by lowercase key, preserve original casing
         
-        # ✅ PRIMARY SOURCE: Get all companies from structured JSON files (39 companies)
-        if self.structured_data_dir.exists():
-            for file in self.structured_data_dir.glob("*.json"):
-                # Convert filename to display name
-                company = file.stem.replace('_', ' ').title()
-                companies.add(company)
-        
-        # Also check RAG dashboards (add any additional companies)
+        # ✅ PRIMARY SOURCE: Get all companies from RAG dashboards (46 companies)
         if self.rag_dir.exists():
-            for file in self.rag_dir.glob("*_dashboard.md"):
-                company = file.stem.replace('_dashboard', '').replace('_', ' ').title()
-                companies.add(company)
-            
             for file in self.rag_dir.glob("*.md"):
                 if not file.name.endswith('_dashboard.md') and not file.name.startswith('_'):
-                    company = file.stem.replace('_', ' ').title()
-                    companies.add(company)
+                    # Keep original format, just replace underscores with spaces for display
+                    company = file.stem.replace('_', ' ')
+                    # Use lowercase as key to avoid duplicates
+                    companies[company.lower()] = company
+        
+        # Also check structured JSON files (add any additional companies)
+        if self.structured_data_dir.exists():
+            for file in self.structured_data_dir.glob("*.json"):
+                company = file.stem.replace('_', ' ')
+                # Only add if not already in companies (RAG takes priority)
+                if company.lower() not in companies:
+                    companies[company.lower()] = company
         
         # Also check Structured dashboards
         if self.structured_dir.exists():
-            for file in self.structured_dir.glob("*_dashboard.md"):
-                company = file.stem.replace('_dashboard', '').replace('_', ' ').title()
-                companies.add(company)
-            
             for file in self.structured_dir.glob("*.md"):
                 if not file.name.endswith('_dashboard.md') and not file.name.startswith('_'):
-                    company = file.stem.replace('_', ' ').title()
-                    companies.add(company)
+                    company = file.stem.replace('_', ' ')
+                    # Only add if not already in companies (RAG takes priority)
+                    if company.lower() not in companies:
+                        companies[company.lower()] = company
         
-        return sorted(list(companies))
+        # Return sorted list of values (original casing preserved)
+        return sorted(list(companies.values()))
     
     def get_company_id(self, company_name: str) -> str:
-        """Convert company name to file ID."""
-        return company_name.lower().replace(' ', '_')
+        """Convert company name to file ID - preserve original casing."""
+        # Convert back to filename format (with underscores)
+        return company_name.replace(' ', '_')
     
     def load_dashboard(self, company_name: str, pipeline: str) -> Optional[str]:
         """Load dashboard markdown - supports multiple naming patterns."""
         company_id = self.get_company_id(company_name)
         
         if pipeline == 'rag':
-            # Try multiple patterns for RAG
+            # Try multiple patterns for RAG (proper case)
             patterns = [
                 self.rag_dir / f"{company_id}_dashboard.md",
                 self.rag_dir / f"{company_id}.md",
@@ -293,12 +292,18 @@ class DashboardLoader:
                 self.rag_dir / f"{company_name.replace(' ', '_')}.md"
             ]
         else:
-            # Try multiple patterns for Structured
+            # Structured has TWO patterns:
+            # 1. Proper case with _dashboard: "Abridge_dashboard.md" (6 companies)
+            # 2. Lowercase without _dashboard: "abridge.md" (46 companies)
+            base_id_lower = company_id.lower()
             patterns = [
+                # Try proper case first (for the 6 companies with _dashboard)
                 self.structured_dir / f"{company_id}_dashboard.md",
-                self.structured_dir / f"{company_id}.md",
-                self.structured_dir / f"{company_name.replace(' ', '_')}_dashboard.md",
-                self.structured_dir / f"{company_name.replace(' ', '_')}.md"
+                # Try lowercase versions (for the 46 companies)
+                self.structured_dir / f"{base_id_lower}.md",
+                self.structured_dir / f"{base_id_lower}_dashboard.md",
+                # Fallback: original case without _dashboard
+                self.structured_dir / f"{company_id}.md"
             ]
         
         for file_path in patterns:
@@ -317,9 +322,12 @@ class DashboardLoader:
                 self.rag_dir / f"{company_name.replace(' ', '_')}_eval.json"
             ]
         else:
+            # Structured uses lowercase filenames
+            base_id = company_id.lower()
             patterns = [
-                self.structured_dir / f"{company_id}_eval.json",
-                self.structured_dir / f"{company_name.replace(' ', '_')}_eval.json"
+                self.structured_dir / f"{base_id}_eval.json",  # lowercase
+                self.structured_dir / f"{company_id}_eval.json",  # original case
+                self.structured_dir / f"{company_name.replace(' ', '_').lower()}_eval.json"
             ]
         
         for file_path in patterns:
