@@ -1,13 +1,23 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Update Vector DB Workflow
 Builds vector index locally, uploads to GCS, and reloads Cloud Run - all in one go.
 """
 import subprocess
 import sys
+import os
 from pathlib import Path
 import requests
 import time
+
+# Set UTF-8 encoding for Windows console compatibility
+if sys.platform == 'win32':
+    os.environ['PYTHONIOENCODING'] = 'utf-8'
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if hasattr(sys.stderr, 'reconfigure'):
+        sys.stderr.reconfigure(encoding='utf-8')
 
 # Configuration
 PROJECT_ROOT = Path(__file__).resolve().parent
@@ -22,17 +32,21 @@ def run_command(cmd, cwd=None, check=True):
     print(f"Running: {' '.join(cmd) if isinstance(cmd, list) else cmd}")
     print(f"{'='*70}\n")
     
+    # Set UTF-8 encoding environment for subprocess
+    env = os.environ.copy()
+    env['PYTHONIOENCODING'] = 'utf-8'
+    
     if isinstance(cmd, str):
         result = subprocess.run(cmd, shell=True, cwd=cwd, check=check, 
-                              capture_output=True, text=True)
+                              capture_output=True, text=True, encoding='utf-8', env=env)
     else:
         result = subprocess.run(cmd, cwd=cwd, check=check, 
-                              capture_output=True, text=True)
+                              capture_output=True, text=True, encoding='utf-8', env=env)
     
     if result.stdout:
         print(result.stdout)
-    if result.stderr and result.returncode != 0:
-        print(f"Error: {result.stderr}", file=sys.stderr)
+    if result.stderr:
+        print(f"\n⚠️  STDERR:\n{result.stderr}", file=sys.stderr)
     
     return result
 
@@ -45,12 +59,22 @@ def step1_build_index():
     try:
         result = run_command(
             [sys.executable, "build_index.py", "--gcs"],
-            cwd=VECTORDB_DIR
+            cwd=VECTORDB_DIR,
+            check=False  # Don't raise exception, check return code manually
         )
+        
+        if result.returncode != 0:
+            print(f"\n❌ Failed to build vector index (exit code: {result.returncode})")
+            if result.stderr:
+                print(f"\nFull error output:\n{result.stderr}")
+            return False
+        
         print("\n✅ Vector index built successfully!")
         return True
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         print(f"\n❌ Failed to build vector index: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def step2_upload_to_gcs():

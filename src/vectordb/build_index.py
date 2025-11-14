@@ -156,7 +156,7 @@ def build_vector_index(use_docker: bool = False,
     
     # Final message
     print(f"\n{'='*70}")
-    print("✅ VECTOR INDEX BUILT SUCCESSFULLY!")
+    print("[OK] VECTOR INDEX BUILT SUCCESSFULLY!")
     print(f"{'='*70}")
     
     data_dir = Path(__file__).resolve().parents[2] / "data"

@@ -37,10 +37,10 @@ class TextChunker:
         if use_gcs:
             self.storage_client = storage.Client()
             self.bucket = self.storage_client.bucket(bucket_name)
-            print(f"✅ Connected to GCS bucket: {bucket_name}")
+            print(f"[OK] Connected to GCS bucket: {bucket_name}")
         else:
             self.bucket = None
-            print(f"✅ Using local filesystem")
+            print(f"[OK] Using local filesystem")
     
     def count_tokens(self, text: str) -> int:
         """Count tokens in text."""
