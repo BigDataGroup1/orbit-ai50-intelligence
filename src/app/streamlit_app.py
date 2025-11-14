@@ -498,7 +498,7 @@ from app.utils import (
 # API Configuration - use environment variable or default
 API_URL = os.getenv(
     'API_URL',
-    'https://orbit-api-477922.us-central1.run.app'  # ← UPDATE AFTER REDEPLOYING TO NEW PROJECT
+    'https://orbit-api-667820328373.us-central1.run.app'  # FastAPI deployed URL
 )
 # Page config
 st.set_page_config(

@@ -600,6 +600,80 @@ def check_gcs_access():
 #         import traceback
 #         traceback.print_exc()
 
+def download_vector_db_from_gcs(force_refresh: bool = False):
+    """Download vector DB from GCS - always checks for updates"""
+    qdrant_dir = Path("/tmp/qdrant_storage")
+    qdrant_dir.mkdir(parents=True, exist_ok=True)
+    
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(GCS_PROCESSED_BUCKET)
+        
+        # Get all files from qdrant_index/ prefix
+        blobs = list(bucket.list_blobs(prefix="qdrant_index/"))
+        
+        if not blobs:
+            print("❌ No vector DB found in GCS!")
+            return False
+        
+        # Check if we need to download (force or if local DB is missing/older)
+        needs_download = force_refresh
+        
+        if not needs_download:
+            # Check if local DB exists
+            local_db_file = qdrant_dir / "collection" / "pe_companies" / "storage.sqlite"
+            if not local_db_file.exists():
+                needs_download = True
+            else:
+                # Check if GCS version is newer
+                gcs_db_blob = next((b for b in blobs if "storage.sqlite" in b.name), None)
+                if gcs_db_blob and gcs_db_blob.updated:
+                    local_mtime = local_db_file.stat().st_mtime
+                    gcs_mtime = gcs_db_blob.updated.timestamp()
+                    if gcs_mtime > local_mtime:
+                        print(f"   📅 GCS version is newer (GCS: {gcs_db_blob.updated}, Local: {local_db_file.stat().st_mtime})")
+                        needs_download = True
+        
+        if needs_download:
+            print("\n📥 Downloading vector DB from GCS...")
+            print(f"   Found {len(blobs)} files to download...")
+            
+            # Clear existing local DB if forcing refresh
+            if force_refresh and qdrant_dir.exists():
+                import shutil
+                for item in qdrant_dir.iterdir():
+                    if item.is_file():
+                        item.unlink()
+                    elif item.is_dir():
+                        shutil.rmtree(item)
+            
+            for blob in blobs:
+                if blob.name.endswith('/'):
+                    continue  # Skip directory markers
+                
+                # Remove 'qdrant_index/' prefix to get relative path
+                relative_path = blob.name.replace('qdrant_index/', '')
+                local_file = qdrant_dir / relative_path
+                
+                # Create parent directories
+                local_file.parent.mkdir(parents=True, exist_ok=True)
+                
+                # Download
+                blob.download_to_filename(str(local_file))
+                print(f"   ✓ {relative_path}")
+            
+            print(f"   ✅ Downloaded {len(blobs)} files")
+            return True
+        else:
+            print("   ✅ Local vector DB is up to date")
+            return True
+            
+    except Exception as e:
+        print(f"   ❌ Download failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize vector store - DOWNLOAD from GCS"""
@@ -610,45 +684,8 @@ async def startup_event():
     print("="*70)
     
     try:
-        qdrant_dir = Path("/tmp/qdrant_storage")
-        
-        # Download raw files from GCS
-        if not qdrant_dir.exists() or not list(qdrant_dir.glob("**/*.sqlite")):
-            print("\n📥 Downloading vector DB from GCS...")
-            
-            try:
-                client = get_gcs_client()
-                bucket = client.bucket(GCS_PROCESSED_BUCKET)
-                
-                # Download all files from qdrant_index/ prefix
-                blobs = list(bucket.list_blobs(prefix="qdrant_index/"))
-                
-                if not blobs:
-                    print("❌ No vector DB found in GCS!")
-                    return
-                
-                print(f"   Found {len(blobs)} files to download...")
-                
-                for blob in blobs:
-                    if blob.name.endswith('/'):
-                        continue  # Skip directory markers
-                    
-                    # Remove 'qdrant_index/' prefix to get relative path
-                    relative_path = blob.name.replace('qdrant_index/', '')
-                    local_file = qdrant_dir / relative_path
-                    
-                    # Create parent directories
-                    local_file.parent.mkdir(parents=True, exist_ok=True)
-                    
-                    # Download
-                    blob.download_to_filename(str(local_file))
-                    print(f"   ✓ {relative_path}")
-                
-                print(f"   ✅ Downloaded {len(blobs)} files")
-                
-            except Exception as e:
-                print(f"   ❌ Download failed: {e}")
-                return
+        # Always download from GCS (checks if update needed)
+        download_vector_db_from_gcs(force_refresh=False)
         
         # Load vector store
         print("\n📦 Loading vector store...")
@@ -877,28 +914,42 @@ async def get_bucket_files(bucket_type: str, prefix: str = "", max_results: int 
 # ============================================================================
 
 @app.post("/admin/reload-vector-store")
-async def reload_vector_store():
-    """Reload vector store after background build completes"""
+async def reload_vector_store(force_download: bool = True):
+    """
+    Reload vector store from GCS - downloads fresh copy and reloads
+    
+    Query params:
+        force_download: If True (default), always download from GCS even if local exists
+    """
     global vector_store, dashboard_generator
     
     try:
-        print("♻️  Reloading vector store...")
+        print("♻️  Reloading vector store from GCS...")
         
-        vector_store = VectorStore(use_docker=False, data_dir=Path("/tmp/qdrant_storage"))
-        dashboard_generator = RAGDashboardGenerator(vector_store)
-        
-        stats = vector_store.get_stats()
-        companies = vector_store.get_companies()
-        
-        return {
-            "status": "success",
-            "message": "Vector store reloaded",
-            "stats": {
-                "total_companies": len(companies),
-                "total_chunks": stats['total_chunks'],
-                "vector_dimension": stats['vector_dimension']
+        # Download fresh copy from GCS
+        if download_vector_db_from_gcs(force_refresh=force_download):
+            # Reload vector store
+            vector_store = VectorStore(use_docker=False, data_dir=Path("/tmp/qdrant_storage"))
+            dashboard_generator = RAGDashboardGenerator(vector_store)
+            
+            stats = vector_store.get_stats()
+            companies = vector_store.get_companies()
+            
+            return {
+                "status": "success",
+                "message": "Vector store reloaded from GCS",
+                "downloaded": force_download,
+                "stats": {
+                    "total_companies": len(companies),
+                    "total_chunks": stats['total_chunks'],
+                    "vector_dimension": stats['vector_dimension']
+                }
             }
-        }
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to download vector DB from GCS"
+            )
     
     except Exception as e:
         raise HTTPException(
