@@ -1,0 +1,82 @@
+{
+  "company_record": {
+    "company_id": "captions",
+    "legal_name": "ClearCaptions",
+    "brand_name": null,
+    "website": "https://captions.com",
+    "hq_city": "New York",
+    "hq_state": null,
+    "hq_country": "United States",
+    "founded_year": 2021,
+    "categories": [
+      "Telecommunications",
+      "Assistive Technology",
+      "Communication Services"
+    ],
+    "related_companies": [
+      "CaptionCall",
+      "Ava",
+      "Otter.ai"
+    ],
+    "total_raised_usd": 0.0,
+    "last_disclosed_valuation_usd": 0.0,
+    "last_round_name": null,
+    "last_round_date": null,
+    "schema_version": "2.0.0",
+    "as_of": "2025-11-05",
+    "provenance": [
+      {
+        "source_url": "https://captions.com",
+        "crawled_at": "2025-11-05T19:28:47.326311",
+        "snippet": "Extracted from scraped pages"
+      }
+    ]
+  },
+  "events": [],
+  "snapshots": [
+    {
+      "company_id": "captions",
+      "as_of": "2025-11-05",
+      "headcount_total": null,
+      "job_openings_count": 0,
+      "engineering_openings": null,
+      "sales_openings": null,
+      "hiring_focus": [],
+      "pricing_tiers": [
+        "Free"
+      ],
+      "active_products": [],
+      "geo_presence": [],
+      "confidence": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "products": [],
+  "leadership": [
+    {
+      "person_id": "person_captions_ceo",
+      "company_id": "captions",
+      "name": "Gaurav Misra",
+      "role": "CEO",
+      "is_founder": true,
+      "previous_affiliation": null,
+      "education": null,
+      "linkedin": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "visibility": [
+    {
+      "company_id": "captions",
+      "as_of": "2025-11-05",
+      "news_mentions_30d": null,
+      "github_stars": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "notes": "Extracted 2025-11-05",
+  "provenance_policy": "Use only scraped sources. If missing: 'Not disclosed.'"
+}
