@@ -1,0 +1,87 @@
+{
+  "company_record": {
+    "company_id": "notion",
+    "legal_name": "Notion Labs Inc.",
+    "brand_name": null,
+    "website": "https://www.notion.so",
+    "hq_city": "San Francisco",
+    "hq_state": null,
+    "hq_country": "United States",
+    "founded_year": 2013,
+    "categories": [
+      "Productivity Software",
+      "Collaboration Software"
+    ],
+    "related_companies": [
+      "Coda",
+      "Airtable"
+    ],
+    "total_raised_usd": 330000000.0,
+    "last_disclosed_valuation_usd": 10000000000.0,
+    "last_round_name": null,
+    "last_round_date": null,
+    "schema_version": "2.0.0",
+    "as_of": "2025-11-05",
+    "provenance": [
+      {
+        "source_url": "https://www.notion.so",
+        "crawled_at": "2025-11-05T19:30:50.858291",
+        "snippet": "Extracted from scraped pages"
+      }
+    ]
+  },
+  "events": [],
+  "snapshots": [
+    {
+      "company_id": "notion",
+      "as_of": "2025-11-05",
+      "headcount_total": null,
+      "job_openings_count": 0,
+      "engineering_openings": null,
+      "sales_openings": null,
+      "hiring_focus": [],
+      "pricing_tiers": [
+        "Free",
+        "Basic",
+        "Plus",
+        "Pro",
+        "Premium",
+        "Team",
+        "Business",
+        "Enterprise"
+      ],
+      "active_products": [],
+      "geo_presence": [],
+      "confidence": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "products": [],
+  "leadership": [
+    {
+      "person_id": "person_notion_ceo",
+      "company_id": "notion",
+      "name": "Ivan Zhao",
+      "role": "CEO",
+      "is_founder": true,
+      "previous_affiliation": null,
+      "education": null,
+      "linkedin": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "visibility": [
+    {
+      "company_id": "notion",
+      "as_of": "2025-11-05",
+      "news_mentions_30d": null,
+      "github_stars": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "notes": "Extracted 2025-11-05",
+  "provenance_policy": "Use only scraped sources. If missing: 'Not disclosed.'"
+}

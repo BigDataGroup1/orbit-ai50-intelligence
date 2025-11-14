@@ -1,0 +1,72 @@
+{
+  "company_record": {
+    "company_id": "midjourney",
+    "legal_name": "Midjourney, Inc.",
+    "brand_name": null,
+    "website": "https://www.midjourney.com",
+    "hq_city": "San Francisco",
+    "hq_state": null,
+    "hq_country": "United States",
+    "founded_year": 2021,
+    "categories": [],
+    "related_companies": [],
+    "total_raised_usd": null,
+    "last_disclosed_valuation_usd": null,
+    "last_round_name": null,
+    "last_round_date": null,
+    "schema_version": "2.0.0",
+    "as_of": "2025-11-05",
+    "provenance": [
+      {
+        "source_url": "https://www.midjourney.com",
+        "crawled_at": "2025-11-05T19:30:39.369702",
+        "snippet": "Extracted from scraped pages"
+      }
+    ]
+  },
+  "events": [],
+  "snapshots": [
+    {
+      "company_id": "midjourney",
+      "as_of": "2025-11-05",
+      "headcount_total": null,
+      "job_openings_count": 0,
+      "engineering_openings": null,
+      "sales_openings": null,
+      "hiring_focus": [],
+      "pricing_tiers": [],
+      "active_products": [],
+      "geo_presence": [],
+      "confidence": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "products": [],
+  "leadership": [
+    {
+      "person_id": "person_midjourney_ceo",
+      "company_id": "midjourney",
+      "name": "David Holz",
+      "role": "CEO",
+      "is_founder": true,
+      "previous_affiliation": null,
+      "education": null,
+      "linkedin": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "visibility": [
+    {
+      "company_id": "midjourney",
+      "as_of": "2025-11-05",
+      "news_mentions_30d": null,
+      "github_stars": null,
+      "schema_version": "2.0.0",
+      "provenance": []
+    }
+  ],
+  "notes": "Extracted 2025-11-05",
+  "provenance_policy": "Use only scraped sources. If missing: 'Not disclosed.'"
+}
