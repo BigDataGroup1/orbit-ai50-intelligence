@@ -9,11 +9,14 @@ from pathlib import Path
 import os
 
 def get_gcp_client():
-    """Initialize GCP Storage client"""
+    """Get GCP storage client with credentials."""
     credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    if not credentials_path or not Path(credentials_path).exists():
-        raise ValueError("GCP credentials not found! Check .env file")
     
+    # If credentials path is set and not empty, use it
+    if credentials_path and credentials_path.strip():
+        return storage.Client.from_service_account_json(credentials_path)
+    
+    # Otherwise, use application default credentials (gcloud auth)
     return storage.Client()
 
 def list_companies_in_bucket(bucket_name: str = None):

@@ -2,20 +2,20 @@
 Build Qdrant vector index from scraped data (GCS or Local)
 """
 from pathlib import Path
-from vectordb.chunker import TextChunker 
+from src.vectordb.chunker import TextChunker 
 # NOTE: This assumes chunker.py is inside src/vectordb.
 # Based on your file structure, chunker.py is in src/. 
 # The *safest* path is to revert to the absolute import without the '.' or '..'
-from vectordb.embedder import VectorStore
+from src.vectordb.embedder import VectorStore
 import sys
 from typing import List 
 
 def build_vector_index(use_docker: bool = False, 
                       clear_existing: bool = True,
                       use_gcs: bool = True,
-                      bucket_name: str = "orbit-raw-data-group1-2025"):
+                      bucket_name: str = "orbit-raw-data-g1-2025"):
     """
-    Build complete vector index for all companies.
+    Build complete vector index for all companies. 
     
     Args:
         use_docker: Use Docker Qdrant (else in-memory with persistence)
