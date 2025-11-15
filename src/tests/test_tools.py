@@ -136,6 +136,66 @@ async def test_all_companies():
     return results
 
 
+async def test_mcp_integration():
+    """Test MCP integration (Lab 15)."""
+    print("\n" + "="*70)
+    print("LAB 15: MCP INTEGRATION TEST")
+    print("="*70)
+    
+    from src.agents.mcp_integration import get_mcp_integration
+    
+    mcp = get_mcp_integration()
+    
+    if not mcp.is_enabled():
+        print("\n⚠️  MCP is disabled in config. Set enabled=true in mcp_config.json")
+        return
+    
+    print(f"\nMCP Server: {mcp.base_url}")
+    print("⚠️  NOTE: MCP server must be running for this test to work.")
+    print("   Start it with: python src/server/mcp_server.py")
+    
+    # Test health check
+    print("\n1. Health Check...")
+    health = mcp.health_check()
+    status = health.get('status', 'unknown')
+    print(f"   Status: {status}")
+    
+    if status != 'healthy':
+        print(f"   ⚠️  MCP server is not running. Start it to test MCP integration.")
+        print(f"   Error: {health.get('error', 'Connection refused')}")
+        print("\n" + "="*70)
+        print("⚠️  MCP INTEGRATION TEST SKIPPED (Server not running)")
+        print("="*70)
+        return
+    
+    # Test companies resource
+    print("\n2. Get Companies Resource...")
+    companies_resp = mcp.get_companies()
+    if companies_resp.get('success'):
+        print(f"   ✅ Found {companies_resp.get('total', 0)} companies")
+        print(f"   Sample: {companies_resp.get('companies', [])[:5]}")
+    else:
+        print(f"   ❌ Failed: {companies_resp.get('error')}")
+    
+    # Test structured dashboard tool
+    print("\n3. Generate Structured Dashboard (MCP Tool)...")
+    dashboard_resp = mcp.call_tool("generate_structured_dashboard", {"company_id": "anthropic"})
+    if dashboard_resp.get('success'):
+        print(f"   ✅ Generated dashboard")
+        print(f"   Company: {dashboard_resp.get('company_name')}")
+        print(f"   Tokens: {dashboard_resp.get('tokens_used', 0)}")
+    else:
+        print(f"   ❌ Failed: {dashboard_resp.get('error')}")
+    
+    print("\n" + "="*70)
+    print("✅ MCP INTEGRATION TEST COMPLETE")
+    print("="*70)
+
+
 if __name__ == "__main__":
     # Run the comprehensive test
     asyncio.run(test_all_companies())
+    
+    # Run MCP integration test (Lab 15)
+    print("\n")
+    asyncio.run(test_mcp_integration())

@@ -1,0 +1,37 @@
+{
+  "mcp_server": {
+    "base_url": "http://localhost:8001",
+    "timeout": 30,
+    "enabled": true
+  },
+  "tools": {
+    "generate_structured_dashboard": {
+      "endpoint": "/tool/generate_structured_dashboard",
+      "enabled": true
+    },
+    "generate_rag_dashboard": {
+      "endpoint": "/tool/generate_rag_dashboard",
+      "enabled": true
+    }
+  },
+  "resources": {
+    "ai50_companies": {
+      "endpoint": "/resource/ai50/companies",
+      "enabled": true
+    }
+  },
+  "prompts": {
+    "pe_dashboard": {
+      "endpoint": "/prompt/pe-dashboard",
+      "enabled": true
+    }
+  },
+  "security": {
+    "allowed_tools": [
+      "generate_structured_dashboard",
+      "generate_rag_dashboard"
+    ],
+    "require_authentication": false
+  }
+}
+

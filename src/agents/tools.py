@@ -21,6 +21,16 @@ from src.utils.qdrant_client import QdrantHelper
 
 logger = logging.getLogger(__name__)
 
+# Singleton QdrantHelper instance to avoid concurrent access issues
+_qdrant_helper = None
+
+def get_qdrant_helper():
+    """Get or create singleton QdrantHelper instance."""
+    global _qdrant_helper
+    if _qdrant_helper is None:
+        _qdrant_helper = QdrantHelper()
+    return _qdrant_helper
+
 
 # ============================================================
 # Pydantic Models for Tool Inputs/Outputs
@@ -139,8 +149,8 @@ async def get_latest_structured_payload(request: PayloadRequest) -> PayloadRespo
                 error=f"No payload found for company: {request.company_id}"
             )
         
-        # Read payload
-        with open(payload_file, 'r') as f:
+        # Read payload (with UTF-8 encoding for Windows compatibility)
+        with open(payload_file, 'r', encoding='utf-8') as f:
             payload = json.load(f)
         
         logger.info(f"✅ Tool 1: Found payload at {payload_file.name}")
@@ -178,8 +188,8 @@ async def rag_search_company(request: RAGSearchRequest) -> RAGSearchResponse:
     try:
         logger.info(f"🔍 Tool 2: RAG search for '{request.query}' in {request.company_id}")
         
-        # Initialize YOUR Qdrant client
-        qdrant = QdrantHelper()
+        # Use singleton QdrantHelper to avoid concurrent access issues
+        qdrant = get_qdrant_helper()
         
         # Check if collection exists
         if not qdrant.check_collection_exists():

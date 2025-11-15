@@ -62,13 +62,21 @@ class QdrantHelper:
             self.model = SentenceTransformer(model_name)
         
         # Initialize Qdrant client (local mode)
+        # Note: If database is locked, it means another process (e.g., MCP server) has it open
         try:
             self.client = QdrantClient(path=persist_directory)
             self.collection_name = "pe_companies"  # ✅ FIX: Match VectorStore collection name
             logger.info(f"[OK] Connected to Qdrant at {persist_directory}")
         except Exception as e:
-            logger.error(f"❌ Failed to connect to Qdrant: {e}")
-            raise
+            error_msg = str(e)
+            if "already accessed by another instance" in error_msg:
+                logger.warning(f"⚠️ Qdrant database is locked by another process (likely MCP server or VectorStore).")
+                logger.warning(f"   Close other processes or use Qdrant server mode for concurrent access.")
+                # Don't raise - return None client so caller can handle gracefully
+                self.client = None
+            else:
+                logger.error(f"❌ Failed to connect to Qdrant: {e}")
+                raise
     
     def search_company_context(
         self, 
@@ -147,6 +155,10 @@ class QdrantHelper:
         Returns:
             List of all text chunks for the company
         """
+        if self.client is None:
+            logger.error("❌ Qdrant client not initialized (database locked by another process)")
+            return []
+        
         try:
             # ✅ FIX: Find actual company name (handles case mismatch)
             actual_company_name = self._find_company_name(company_id)
@@ -197,6 +209,9 @@ class QdrantHelper:
         Returns:
             Actual company name from DB, or None if not found
         """
+        if self.client is None:
+            return None
+        
         try:
             # Get all companies from vector DB
             scroll_result = self.client.scroll(
