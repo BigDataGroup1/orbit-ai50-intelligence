@@ -49,11 +49,13 @@ async def calculate_financial_metrics(company_id: str) -> Dict:
         if not payload_path.exists():
             return {"error": f"No payload found for {company_id}"}
         
-        with open(payload_path, 'r') as f:
+        with open(payload_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
-        valuation = data.get('valuation')
-        funding = data.get('total_funding')
+        # Extract from nested structure
+        company = data.get('company_record', {})
+        valuation = company.get('last_disclosed_valuation_usd')
+        funding = company.get('total_raised_usd')
         
         # Calculate metrics
         metrics = {
@@ -143,15 +145,16 @@ async def compare_competitors(company_ids: List[str]) -> Dict:
                 comparison["metrics"][company_id] = {"error": "No data"}
                 continue
             
-            with open(payload_path, 'r') as f:
+            with open(payload_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
+            company = data.get('company_record', {})
             comparison["metrics"][company_id] = {
-                "valuation": data.get('valuation'),
-                "funding": data.get('total_funding'),
-                "founded": data.get('year_founded'),
-                "hq": data.get('headquarters', {}).get('city'),
-                "employees": data.get('employee_count')
+                "valuation": company.get('last_disclosed_valuation_usd'),
+                "funding": company.get('total_raised_usd'),
+                "founded": company.get('founded_year'),
+                "hq": company.get('hq_city'),
+                "employees": None  # Not directly available in payload structure
             }
         
         # Determine winner (by valuation)
@@ -203,8 +206,12 @@ async def generate_investment_recommendation(company_id: str) -> Dict:
         if not payload_path.exists():
             return {"error": f"No payload found for {company_id}"}
         
-        with open(payload_path, 'r') as f:
+        with open(payload_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+        
+        company = data.get('company_record', {})
+        snapshots = data.get('snapshots', [])
+        latest_snapshot = snapshots[0] if snapshots else {}
         
         # Scoring system
         score = 50  # Start neutral
@@ -212,7 +219,7 @@ async def generate_investment_recommendation(company_id: str) -> Dict:
         risks = []
         
         # Factor 1: Valuation (20 points)
-        valuation = data.get('valuation', 0)
+        valuation = company.get('last_disclosed_valuation_usd', 0)
         if valuation > 10_000_000_000:
             score += 15
             reasons.append("High valuation indicates market confidence")
@@ -221,7 +228,7 @@ async def generate_investment_recommendation(company_id: str) -> Dict:
             reasons.append("Unicorn status achieved")
         
         # Factor 2: Funding (15 points)
-        funding = data.get('total_funding', 0)
+        funding = company.get('total_raised_usd', 0)
         if funding > 1_000_000_000:
             score += 15
             reasons.append("Well-capitalized with $1B+ funding")
@@ -232,7 +239,7 @@ async def generate_investment_recommendation(company_id: str) -> Dict:
             risks.append("Limited funding may constrain growth")
         
         # Factor 3: Growth indicators (15 points)
-        if data.get('job_openings_count', 0) > 0:
+        if latest_snapshot.get('job_openings_count', 0) > 0:
             score += 10
             reasons.append("Active hiring indicates growth")
         else:
@@ -240,7 +247,9 @@ async def generate_investment_recommendation(company_id: str) -> Dict:
             risks.append("No active hiring - possible freeze")
         
         # Factor 4: Market presence (10 points)
-        if data.get('github_stars', 0) > 10000:
+        visibility = data.get('visibility', [])
+        latest_visibility = visibility[0] if visibility else {}
+        if latest_visibility.get('github_stars', 0) > 10000:
             score += 10
             reasons.append("Strong developer community")
         
@@ -300,23 +309,24 @@ async def analyze_market_trends(sector: str = "AI") -> Dict:
         
         for payload_file in payloads_dir.glob("*.json"):
             try:
-                with open(payload_file, 'r') as f:
+                with open(payload_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 
                 total_companies += 1
                 
-                if val := data.get('valuation'):
+                company = data.get('company_record', {})
+                if val := company.get('last_disclosed_valuation_usd'):
                     total_valuation += val
                 
-                if fund := data.get('total_funding'):
+                if fund := company.get('total_raised_usd'):
                     total_funding += fund
                 
                 # Track categories
-                for cat in data.get('categories', []):
+                for cat in company.get('categories', []):
                     categories[cat] = categories.get(cat, 0) + 1
                 
                 # Track locations
-                if hq := data.get('headquarters', {}).get('city'):
+                if hq := company.get('hq_city'):
                     hq_locations[hq] = hq_locations.get(hq, 0) + 1
                     
             except:
@@ -369,14 +379,18 @@ async def calculate_risk_score(company_id: str) -> Dict:
         if not payload_path.exists():
             return {"error": f"No payload found for {company_id}"}
         
-        with open(payload_path, 'r') as f:
+        with open(payload_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+        
+        company = data.get('company_record', {})
+        snapshots = data.get('snapshots', [])
+        latest_snapshot = snapshots[0] if snapshots else {}
         
         risk_score = 0
         risk_factors = []
         
         # Factor 1: Funding risk (0-25 points)
-        funding = data.get('total_funding', 0)
+        funding = company.get('total_raised_usd', 0)
         if funding == 0:
             risk_score += 25
             risk_factors.append("No disclosed funding (25 pts)")
@@ -385,12 +399,12 @@ async def calculate_risk_score(company_id: str) -> Dict:
             risk_factors.append("Low funding (<$10M) (20 pts)")
         
         # Factor 2: Hiring risk (0-20 points)
-        if data.get('job_openings_count', 0) == 0:
+        if latest_snapshot.get('job_openings_count', 0) == 0:
             risk_score += 15
             risk_factors.append("No active hiring (15 pts)")
         
         # Factor 3: Valuation risk (0-25 points)
-        valuation = data.get('valuation', 0)
+        valuation = company.get('last_disclosed_valuation_usd', 0)
         if valuation > 50_000_000_000:
             risk_score += 20
             risk_factors.append("Very high valuation risk (>$50B) (20 pts)")
@@ -399,14 +413,14 @@ async def calculate_risk_score(company_id: str) -> Dict:
             risk_factors.append("No valuation disclosed (10 pts)")
         
         # Factor 4: Data completeness (0-15 points)
-        required_fields = ['company_name', 'website', 'headquarters', 'ceo']
-        missing = sum(1 for field in required_fields if not data.get(field))
+        required_fields = ['legal_name', 'website', 'hq_city']
+        missing = sum(1 for field in required_fields if not company.get(field))
         risk_score += missing * 3
         if missing > 0:
             risk_factors.append(f"Missing {missing} key fields ({missing*3} pts)")
         
         # Factor 5: Age risk (0-15 points)
-        founded = data.get('year_founded')
+        founded = company.get('founded_year')
         if founded:
             age = 2025 - founded
             if age < 2:

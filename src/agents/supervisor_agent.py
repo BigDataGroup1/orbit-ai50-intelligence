@@ -31,6 +31,13 @@ from src.agents.tools import (
     list_available_companies
 )
 from src.agents.mcp_integration import get_mcp_integration
+from src.agents.advanced_tools import (
+    calculate_financial_metrics,
+    compare_competitors,
+    generate_investment_recommendation,
+    analyze_market_trends,
+    calculate_risk_score
+)
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -60,16 +67,20 @@ class SupervisorAgent:
         # Initialize MCP integration (Lab 15)
         self.mcp = get_mcp_integration()
         
-        # System prompt (includes MCP tools if enabled)
+        # System prompt (includes MCP tools and advanced tools if enabled)
         tools_list = [
             "1. get_latest_structured_payload - Retrieves company data (funding, team, metrics)",
-            "2. report_layoff_signal - Logs high-risk events that need human review"
+            "2. report_layoff_signal - Logs high-risk events that need human review",
+            "3. calculate_financial_metrics - Calculate valuation/funding ratios and efficiency",
+            "4. compare_competitors - Compare multiple companies side-by-side",
+            "5. generate_investment_recommendation - Get BUY/HOLD/PASS recommendation with score",
+            "6. calculate_risk_score - Comprehensive risk assessment (0-100)"
         ]
         
         if self.mcp.is_enabled():
             tools_list.extend([
-                "3. generate_structured_dashboard (via MCP) - Generates structured dashboard from payload",
-                "4. generate_rag_dashboard (via MCP) - Generates RAG dashboard from vector store"
+                "7. generate_structured_dashboard (via MCP) - Generates structured dashboard from payload",
+                "8. generate_rag_dashboard (via MCP) - Generates RAG dashboard from vector store"
             ])
         
         self.system_prompt = f"""You are a PE Due Diligence Supervisor Agent.
@@ -290,13 +301,53 @@ Be concise and focused on investor-relevant insights."""
                         step_num=3
                     )
         
-        # Step 4 (Optional): Generate dashboard via MCP if enabled (Lab 15)
+        # Step 4: Calculate financial metrics (Advanced Tool)
+        thought_4 = "I should calculate financial metrics to understand valuation efficiency and funding health."
+        react_logger.log_thought(thought_4, step_num=4)
+        
+        react_logger.log_action("calculate_financial_metrics", {"company_id": company_id}, step_num=4)
+        financial_metrics = await calculate_financial_metrics(company_id)
+        
+        if financial_metrics.get('error'):
+            react_logger.log_observation(
+                f"Financial metrics calculation failed: {financial_metrics.get('error')}",
+                success=False,
+                step_num=4
+            )
+        else:
+            react_logger.log_observation(
+                f"Financial metrics: {financial_metrics.get('funding_efficiency', 'N/A')} | Ratio: {financial_metrics.get('valuation_to_funding_ratio', 'N/A')}",
+                success=True,
+                step_num=4
+            )
+        
+        # Step 5: Calculate risk score (Advanced Tool)
+        thought_5 = "I should calculate a comprehensive risk score to assess investment risk."
+        react_logger.log_thought(thought_5, step_num=5)
+        
+        react_logger.log_action("calculate_risk_score", {"company_id": company_id}, step_num=5)
+        risk_score_result = await calculate_risk_score(company_id)
+        
+        if risk_score_result.get('error'):
+            react_logger.log_observation(
+                f"Risk score calculation failed: {risk_score_result.get('error')}",
+                success=False,
+                step_num=5
+            )
+        else:
+            react_logger.log_observation(
+                f"Risk Score: {risk_score_result.get('risk_score', 'N/A')}/100 - {risk_score_result.get('risk_level', 'N/A')}",
+                success=True,
+                step_num=5
+            )
+        
+        # Step 6 (Optional): Generate dashboard via MCP if enabled (Lab 15)
         dashboard_info = None
         if self.mcp.is_enabled():
-            thought_4 = "I can generate a structured dashboard via MCP to provide comprehensive analysis."
-            react_logger.log_thought(thought_4, step_num=4)
+            thought_6 = "I can generate a structured dashboard via MCP to provide comprehensive analysis."
+            react_logger.log_thought(thought_6, step_num=6)
             
-            react_logger.log_action("generate_structured_dashboard (MCP)", {"company_id": company_id}, step_num=4)
+            react_logger.log_action("generate_structured_dashboard (MCP)", {"company_id": company_id}, step_num=6)
             mcp_result = self.mcp.call_tool("generate_structured_dashboard", {"company_id": company_id})
             
             if mcp_result.get('success'):
@@ -307,17 +358,23 @@ Be concise and focused on investor-relevant insights."""
                 react_logger.log_observation(
                     f"Generated structured dashboard via MCP ({dashboard_info['tokens_used']} tokens)",
                     success=True,
-                    step_num=4
+                    step_num=6
                 )
             else:
                 react_logger.log_observation(
                     f"MCP dashboard failed: {mcp_result.get('error', 'Unknown error')}",
                     success=False,
-                    step_num=4
+                    step_num=6
                 )
         
-        # Generate final analysis
-        analysis = self._generate_analysis(payload, risks_found, dashboard_info)
+        # Generate final analysis (include financial metrics and risk score)
+        analysis = self._generate_analysis(
+            payload, 
+            risks_found, 
+            dashboard_info,
+            financial_metrics=financial_metrics if not financial_metrics.get('error') else None,
+            risk_score=risk_score_result if not risk_score_result.get('error') else None
+        )
         
         # Save trace
         trace_path = react_logger.save_trace(final_output=analysis)
@@ -335,7 +392,14 @@ Be concise and focused on investor-relevant insights."""
             "run_id": react_logger.run_id
         }
     
-    def _generate_analysis(self, payload: Dict, risks: List[Dict], dashboard_info: Optional[Dict] = None) -> str:
+    def _generate_analysis(
+        self, 
+        payload: Dict, 
+        risks: List[Dict], 
+        dashboard_info: Optional[Dict] = None,
+        financial_metrics: Optional[Dict] = None,
+        risk_score: Optional[Dict] = None
+    ) -> str:
         """
         Generate comprehensive PE analysis summary.
         
@@ -434,6 +498,28 @@ GitHub Stars:        {latest_visibility.get('github_stars', 'Not tracked')}
 6. RISKS AND CHALLENGES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Total Risks Identified: {len(risks)}
+"""
+        
+        # Add financial metrics if available
+        if financial_metrics and not financial_metrics.get('error'):
+            analysis += f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. FINANCIAL METRICS ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Valuation to Funding Ratio: {financial_metrics.get('valuation_to_funding_ratio', 'N/A')}
+Funding Efficiency: {financial_metrics.get('funding_efficiency', 'N/A')}
+Analysis: {financial_metrics.get('analysis', 'N/A')}
+"""
+        
+        # Add risk score if available
+        if risk_score and not risk_score.get('error'):
+            analysis += f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. RISK SCORE ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{risk_score.get('assessment', 'N/A')}
+Risk Factors:
+{chr(10).join(f'  • {factor}' for factor in risk_score.get('risk_factors', []))}
 """
         
         if risks:

@@ -6,6 +6,7 @@ FIXED: Properly uses Pydantic models for tool calls
 
 import os
 import sys
+import json
 from pathlib import Path
 from typing import Optional
 import asyncio
