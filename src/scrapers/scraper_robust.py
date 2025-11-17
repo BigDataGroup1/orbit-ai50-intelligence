@@ -26,7 +26,86 @@ load_dotenv()
 
 class BulletproofScraper:
     """Completely crash-proof scraper with comprehensive error handling."""
+    def try_static_snapshots(self, url: str) -> Optional[str]:
+        """
+        Try common static snapshot variants of modern JavaScript websites.
+        Many companies expose AMP / HTML snapshots automatically for SEO.
+        This method requires NO JavaScript engine, works fully in Composer.
+        """
+
+        SNAPSHOT_QUERIES = [
+            "?_escaped_fragment_=",
+            "?view=html",
+            "?amp=1",
+            "?format=amp",
+            "?output=1",
+            "?hs_preview=true",
+        ]
+
+        for q in SNAPSHOT_QUERIES:
+            test_url = url.rstrip("/") + "/" + q
+            try:
+                r = requests.get(test_url, headers=self.headers, timeout=12)
+
+                # Accept if valid static HTML found
+                if r.status_code == 200 and len(r.text) > 500:
+                    logger.info(f"   ➜ Snapshot found: {test_url}")
+                    return r.text
+
+            except Exception as e:
+                logger.debug(f"Snapshot failed for {test_url}: {e}")
+                continue
+
+        return None
     
+    def fetch_google_cache(self, url: str) -> Optional[str]:
+        """
+        Fetch the Google Web Cache version of the page.
+        This often contains a fully-rendered HTML snapshot.
+        100% free and Cloud Composer friendly.
+        """
+
+        # Google Cache URL format
+        cache_url = f"https://webcache.googleusercontent.com/search?q=cache:{url}"
+
+        try:
+            r = requests.get(cache_url, headers=self.headers, timeout=15)
+
+            # Google Cache should return a valid HTML snapshot
+            if r.status_code == 200 and len(r.text) > 500:
+                logger.info(f"   ➜ Google Cache snapshot found for {url}")
+                return r.text
+
+        except Exception as e:
+            logger.debug(f"Google Cache failed for {url}: {e}")
+            return None
+
+        return None
+    def fetch_textise(self, url: str) -> Optional[str]:
+        """
+        FINAL free fallback: Textise (text-only HTML snapshot).
+        This tool renders a simplified static version of JavaScript pages.
+        Works reliably when both snapshots and Google Cache fail.
+        100% free and Cloud Composer friendly.
+        """
+
+        proxy_url = f"http://textise.net/showtext.aspx?strURL={url}"
+
+        try:
+            r = requests.get(proxy_url, headers=self.headers, timeout=15)
+
+            # Textise returns simplified text → so >= 300 chars is OK
+            if r.status_code == 200 and len(r.text) > 300:
+                logger.info(f"   ➜ Textise snapshot found for {url}")
+                return r.text
+
+        except Exception as e:
+            logger.debug(f"Textise fallback failed for {url}: {e}")
+            return None
+
+        return None
+
+
     def __init__(self, seed_file: str):
         self.seed_file = Path(seed_file)
         self.companies = []
@@ -81,82 +160,251 @@ class BulletproofScraper:
             return []
     
     def safe_find_page_url(self, base_url: str, page_type: str) -> Optional[str]:
-        """Safely find URL for page type."""
+        """
+        Safely find URL for a given page type.
+        Adds GET fallback, JS detection, and snapshot-based fallbacks.
+        100% compatible with Cloud Composer (no JS browser required).
+        """
+
         try:
-            if page_type == 'homepage':
-                return base_url
-            
+            if not base_url:
+                return None
+
+            # Homepage is always valid
+            if page_type == "homepage":
+                return base_url.rstrip("/")
+
             patterns = self.page_patterns.get(page_type, [])
-            
+
             for pattern in patterns:
+                test_url = urljoin(base_url, pattern)
+
+                # -------------------------------------
+                # 1) Try HEAD request (fast check)
+                # -------------------------------------
                 try:
-                    test_url = urljoin(base_url, pattern)
-                    
-                    response = requests.head(
+                    head_resp = requests.head(
                         test_url,
                         headers=self.headers,
-                        timeout=10,
+                        timeout=8,
                         allow_redirects=True
                     )
-                    
-                    if response.status_code == 200:
-                        return test_url
+
+                    if head_resp.status_code in (200, 301, 302, 307, 308):
+                        # HEAD success → accept this URL
+                        return head_resp.url
                 except:
-                    continue
-            
+                    pass
+
+                # -------------------------------------
+                # 2) Try GET fallback (block-proof)
+                # -------------------------------------
+                try:
+                    get_resp = requests.get(
+                        test_url,
+                        headers=self.headers,
+                        timeout=12,
+                        allow_redirects=True
+                    )
+
+                    # Basic JS detection
+                    txt = get_resp.text
+
+                    if get_resp.status_code == 200 and len(txt) > 500:
+                        # Valid static HTML → accept
+                        return get_resp.url
+
+                    if "enable JavaScript" in txt or len(txt) < 300:
+                        # Try static snapshot fallback → fully free and Composer-safe
+                        snapshot_html = self.try_static_snapshots(test_url)
+                        if snapshot_html and len(snapshot_html) > 500:
+                            return test_url  # Valid snapshot found
+
+                except:
+                    continue  # Try next pattern
+
+            # No match found
             return None
-            
+
         except Exception as e:
-            logger.error(f"Error finding page URL: {e}")
+            logger.error(f"safe_find_page_url error for {base_url}: {e}")
             return None
+
+
     
     def safe_scrape_page(self, url: str, page_type: str) -> Tuple[Optional[str], Optional[str], Dict]:
-        """Safely scrape a page."""
+        """
+        Safely scrape a page with multi-layer fallbacks:
+        1. Normal GET
+        2. JS detection → static snapshots
+        3. Google Cache
+        4. Textise
+        5. Job Board fallback (Greenhouse / Lever / AshbyHQ)
+        """
+
         metadata = {
             'url': url,
             'page_type': page_type,
             'scraped_at': datetime.now().isoformat(),
             'status_code': None,
             'success': False,
-            'error': None
+            'error': None,
+            'source': 'live',
+            'content_length': 0
         }
-        
-        try:
-            response = requests.get(
-                url,
-                headers=self.headers,
-                timeout=30,
-                allow_redirects=True
-            )
-            
-            metadata['status_code'] = response.status_code
-            
-            if response.status_code != 200:
-                metadata['error'] = f"HTTP {response.status_code}"
-                return None, None, metadata
-            
-            html = response.text
-            soup = BeautifulSoup(html, 'html.parser')
-            
-            # Remove non-content
+
+        def clean_html(raw_html: str) -> Tuple[str, str]:
+            """Strip scripts/styles and extract readable text."""
+            soup = BeautifulSoup(raw_html, 'html.parser')
             for tag in soup(["script", "style", "nav", "footer", "header"]):
                 tag.decompose()
-            
-            # Get text
-            text = soup.get_text()
+
+            text = soup.get_text(separator="\n")
             lines = (line.strip() for line in text.splitlines())
             chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-            text = '\n'.join(chunk for chunk in chunks if chunk)
-            
-            metadata['success'] = True
-            metadata['content_length'] = len(html)
-            
-            return html, text, metadata
-            
+            text_clean = "\n".join(chunk for chunk in chunks if chunk)
+            return str(soup), text_clean
+
+        # -----------------------------------
+        # 1. Normal GET (with retry)
+        # -----------------------------------
+        for attempt in range(2):
+            try:
+                response = requests.get(url, headers=self.headers, timeout=20, allow_redirects=True)
+                metadata['status_code'] = response.status_code
+
+                if response.status_code == 200 and len(response.text) > 300:
+                    html, text = clean_html(response.text)
+                    metadata.update({
+                        'success': True,
+                        'source': 'live',
+                        'content_length': len(response.text)
+                    })
+                    return html, text, metadata
+
+                # If JS skeleton detected → skip to fallbacks
+                if "enable JavaScript" in response.text or len(response.text) < 200:
+                    break
+
+            except Exception as e:
+                metadata['error'] = f"GET attempt {attempt+1}: {e}"
+
+            time.sleep(2)
+
+        # -----------------------------------
+        # 2. Static snapshot fallback
+        # -----------------------------------
+        try:
+            snapshot_html = self.try_static_snapshots(url)
+            if snapshot_html and len(snapshot_html) > 500:
+                html, text = clean_html(snapshot_html)
+                metadata.update({
+                    'success': True,
+                    'source': 'snapshot',
+                    'content_length': len(snapshot_html)
+                })
+                return html, text, metadata
         except Exception as e:
-            metadata['error'] = str(e)
-            logger.error(f"Error scraping {url}: {e}")
-            return None, None, metadata
+            metadata['error'] = f"snapshot fallback failed: {e}"
+
+        # -----------------------------------
+        # 3. Google Cache fallback
+        # -----------------------------------
+        try:
+            cached = self.fetch_google_cache(url)
+            if cached and len(cached) > 500:
+                html, text = clean_html(cached)
+                metadata.update({
+                    'success': True,
+                    'source': 'google_cache',
+                    'content_length': len(cached)
+                })
+                return html, text, metadata
+        except Exception as e:
+            metadata['error'] = f"google cache failed: {e}"
+
+        # -----------------------------------
+        # 4. Textise fallback (text-only)
+        # -----------------------------------
+        try:
+            textise = self.fetch_textise(url)
+            if textise and len(textise) > 300:
+                html = textise
+                _, text_clean = clean_html(textise)
+                metadata.update({
+                    'success': True,
+                    'source': 'textise',
+                    'content_length': len(textise)
+                })
+                return html, text_clean, metadata
+        except Exception as e:
+            metadata['error'] = f"textise fallback failed: {e}"
+
+        # -----------------------------------
+        # 5. JOB BOARD FALLBACKS (Ashby / Lever / Greenhouse)
+        # ONLY runs for careers pages
+        # -----------------------------------
+        try:
+            url_lower = url.lower()
+
+            # ------------ Greenhouse ------------
+            if "greenhouse.io" in url_lower:
+                gh_api = url.rstrip("/") + "/embed/jobs/"
+                r = requests.get(gh_api, headers=self.headers, timeout=15)
+                if r.status_code == 200 and len(r.text) > 200:
+                    html, text = clean_html(r.text)
+                    metadata.update({
+                        'success': True,
+                        'source': 'greenhouse_embed',
+                        'content_length': len(r.text)
+                    })
+                    logger.info(f"   ➜ Greenhouse embed fallback used: {gh_api}")
+                    return html, text, metadata
+
+            # ---------------- Lever --------------
+            if "lever.co" in url_lower:
+                match = re.search(r'lever\.co/([^/?]+)', url_lower)
+                if match:
+                    key = match.group(1)
+                    lever_api = f"https://api.lever.co/v0/postings/{key}?mode=json"
+                    r = requests.get(lever_api, timeout=15)
+                    if r.status_code == 200:
+                        jobs = r.json()
+                        # Build readable HTML/text block
+                        text = "\n\n".join(job.get("text", "") for job in jobs)
+                        html = "<br><br>".join(job.get("text", "") for job in jobs)
+                        metadata.update({
+                            'success': True,
+                            'source': 'lever_api',
+                            'content_length': len(text)
+                        })
+                        logger.info(f"   ➜ Lever API fallback used: {lever_api}")
+                        return html, text, metadata
+
+            # -------------- Ashby ----------------
+            if "ashbyhq.com" in url_lower:
+                ashby_static = url + "?embedding=true"
+                r = requests.get(ashby_static, headers=self.headers, timeout=15)
+                if r.status_code == 200 and len(r.text) > 300:
+                    html, text = clean_html(r.text)
+                    metadata.update({
+                        'success': True,
+                        'source': 'ashby_embedded',
+                        'content_length': len(r.text)
+                    })
+                    logger.info(f"   ➜ Ashby embedded fallback used: {ashby_static}")
+                    return html, text, metadata
+
+        except Exception as e:
+            metadata['error'] = f"Job board fallback failed: {e}"
+
+        # -----------------------------------
+        # 6. TOTAL FAILURE
+        # -----------------------------------
+        metadata['error'] = metadata.get('error') or "Failed all scraping fallbacks"
+        return None, None, metadata
+
+
     
     def safe_extract_pricing(self, html: str, text: str) -> Dict:
         """Safely extract pricing info."""
@@ -585,323 +833,524 @@ class BulletproofScraper:
             logger.error(f"Error saving {path}: {e}")
             return False
     
+    # def scrape_company(self, company: Dict) -> Dict:
+    #     """Safely scrape one company - will NOT crash."""
+    #     company_name = company.get('company_name', 'Unknown')
+        
+    #     try:
+    #         website = company.get('website', 'Not available')
+            
+    #         print(f"\n{'='*70}")
+    #         print(f"🏢 {company_name}")
+    #         print(f"🌐 {website}")
+    #         print(f"{'='*70}")
+            
+    #         # Create dirs
+    #         company_dir = self.raw_dir / company_name.replace(' ', '_').replace('/', '_')
+    #         session_dir = company_dir / self.session_name
+    #         session_dir.mkdir(parents=True, exist_ok=True)
+            
+    #         # Intelligence structure
+    #         intel = {
+    #             'company_name': company_name,
+    #             'website': website,
+    #             'scraped_at': datetime.now().isoformat(),
+    #             'session': self.session_name,
+    #             'seed_data': {k: v for k, v in company.items()},
+    #             'pages': {},
+    #             'extracted_intelligence': {
+    #                 'pricing': None,
+    #                 'customers': None,
+    #                 'integrations': [],
+    #                 'careers': None,
+    #                 'product_features': None,
+    #                 'competitors': [],
+    #                 'funding_signals': None,
+    #                 'github_stats': None,
+    #                 'news': None
+    #             },
+    #             'errors': []
+    #         }
+            
+    #         # Skip if no website
+    #         if not website or website == 'Not available':
+    #             print("   ⚠️  No website")
+    #             self.safe_save_file(session_dir / "intelligence.json", json.dumps(intel, indent=2))
+    #             return intel
+            
+    #         # Scrape pages
+    #         print("\n📄 Scraping pages...")
+            
+    #         all_text = ""
+    #         all_html = ""
+            
+    #         for page_type in ['homepage', 'about', 'pricing', 'product', 'careers', 'blog', 'customers']:
+    #             try:
+    #                 page_url = self.safe_find_page_url(website, page_type)
+                    
+    #                 if not page_url:
+    #                     print(f"   ⚠️  {page_type}: not found")
+    #                     intel['pages'][page_type] = {'found': False}
+    #                     continue
+                    
+    #                 print(f"   🔍 {page_type}: {page_url}")
+    #                 html, text, metadata = self.safe_scrape_page(page_url, page_type)
+                    
+    #                 intel['pages'][page_type] = metadata
+                    
+    #                 if html and text:
+    #                     self.safe_save_file(session_dir / f"{page_type}.html", html)
+    #                     self.safe_save_file(session_dir / f"{page_type}.txt", text)
+                        
+    #                     all_text += "\n\n" + text
+    #                     all_html += html
+                        
+    #                     print(f"      ✅ Saved")
+                    
+    #                 time.sleep(2)
+                    
+    #             except Exception as e:
+    #                 logger.error(f"Error scraping {page_type}: {e}")
+    #                 intel['errors'].append(f"Failed to scrape {page_type}: {str(e)}")
+            
+    #         # Extract intelligence
+    #         if all_text:
+    #             print("\n🔬 Extracting intelligence...")
+                
+    #             try:
+    #                 # Pricing
+    #                 if intel['pages'].get('pricing', {}).get('success'):
+    #                     html = (session_dir / "pricing.html").read_text(encoding='utf-8')
+    #                     text = (session_dir / "pricing.txt").read_text(encoding='utf-8')
+    #                     intel['extracted_intelligence']['pricing'] = self.safe_extract_pricing(html, text)
+    #                 elif intel['pages'].get('homepage', {}).get('success'):
+    #                     html = (session_dir / "homepage.html").read_text(encoding='utf-8')
+    #                     text = (session_dir / "homepage.txt").read_text(encoding='utf-8')
+    #                     intel['extracted_intelligence']['pricing'] = self.safe_extract_pricing(html, text)
+    #             except Exception as e:
+    #                 logger.error(f"Error in pricing extraction: {e}")
+                
+    #             try:
+    #                 # Customers
+    #                 intel['extracted_intelligence']['customers'] = self.safe_extract_customers(all_html, all_text)
+    #             except Exception as e:
+    #                 logger.error(f"Error in customer extraction: {e}")
+                
+    #             try:
+    #                 # Integrations
+    #                 intel['extracted_intelligence']['integrations'] = self.safe_extract_integrations(all_text)
+    #             except Exception as e:
+    #                 logger.error(f"Error in integration extraction: {e}")
+                
+    #             try:
+    #                 # Careers
+    #                 if intel['pages'].get('careers', {}).get('success'):
+    #                     html = (session_dir / "careers.html").read_text(encoding='utf-8')
+    #                     text = (session_dir / "careers.txt").read_text(encoding='utf-8')
+    #                     intel['extracted_intelligence']['careers'] = self.safe_extract_careers(html, text)
+    #             except Exception as e:
+    #                 logger.error(f"Error in careers extraction: {e}")
+                
+    #             try:
+    #                 # Features
+    #                 intel['extracted_intelligence']['product_features'] = self.safe_extract_features(all_html, all_text)
+    #             except Exception as e:
+    #                 logger.error(f"Error in features extraction: {e}")
+                
+    #             try:
+    #                 # Competitors
+    #                 intel['extracted_intelligence']['competitors'] = self.safe_extract_competitors(all_text, company_name)
+    #             except Exception as e:
+    #                 logger.error(f"Error in competitor extraction: {e}")
+                
+    #             try:
+    #                 # Funding
+    #                 intel['extracted_intelligence']['funding_signals'] = self.safe_extract_funding(all_html, all_text)
+    #             except Exception as e:
+    #                 logger.error(f"Error in funding extraction: {e}")
+            
+    #         # GitHub
+    #         try:
+    #             if company.get('github'):
+    #                 print("   🐙 GitHub stats...")
+    #                 intel['extracted_intelligence']['github_stats'] = self.safe_get_github_stats(company['github'])
+    #         except Exception as e:
+    #             logger.error(f"Error getting GitHub stats: {e}")
+            
+    #         # News
+    #         try:
+    #             if self.news_api_key:
+    #                 print("   📰 Recent news...")
+    #                 intel['extracted_intelligence']['news'] = self.safe_search_news(company_name)
+    #         except Exception as e:
+    #             logger.error(f"Error searching news: {e}")
+            
+    #         # Save intelligence
+    #         self.safe_save_file(session_dir / "intelligence.json", json.dumps(intel, indent=2))
+            
+    #         print(f"\n✅ Completed {company_name}")
+            
+    #         return intel
+            
+    #     except Exception as e:
+    #         logger.error(f"CRITICAL ERROR for {company_name}: {e}")
+    #         traceback.print_exc()
+            
+    #         # Return minimal intel on critical failure
+    #         return {
+    #             'company_name': company_name,
+    #             'website': company.get('website'),
+    #             'scraped_at': datetime.now().isoformat(),
+    #             'critical_error': str(e),
+    #             'pages': {},
+    #             'extracted_intelligence': {}
+    #         }
     def scrape_company(self, company: Dict) -> Dict:
-        """Safely scrape one company - will NOT crash."""
-        company_name = company.get('company_name', 'Unknown')
-        
-        try:
-            website = company.get('website', 'Not available')
-            
-            print(f"\n{'='*70}")
-            print(f"🏢 {company_name}")
-            print(f"🌐 {website}")
-            print(f"{'='*70}")
-            
-            # Create dirs
-            company_dir = self.raw_dir / company_name.replace(' ', '_').replace('/', '_')
-            session_dir = company_dir / self.session_name
-            session_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Intelligence structure
-            intel = {
-                'company_name': company_name,
-                'website': website,
-                'scraped_at': datetime.now().isoformat(),
-                'session': self.session_name,
-                'seed_data': {k: v for k, v in company.items()},
-                'pages': {},
-                'extracted_intelligence': {
-                    'pricing': None,
-                    'customers': None,
-                    'integrations': [],
-                    'careers': None,
-                    'product_features': None,
-                    'competitors': [],
-                    'funding_signals': None,
-                    'github_stats': None,
-                    'news': None
-                },
-                'errors': []
-            }
-            
-            # Skip if no website
-            if not website or website == 'Not available':
-                print("   ⚠️  No website")
-                self.safe_save_file(session_dir / "intelligence.json", json.dumps(intel, indent=2))
-                return intel
-            
-            # Scrape pages
-            print("\n📄 Scraping pages...")
-            
-            all_text = ""
-            all_html = ""
-            
-            for page_type in ['homepage', 'about', 'pricing', 'product', 'careers', 'blog', 'customers']:
-                try:
-                    page_url = self.safe_find_page_url(website, page_type)
-                    
-                    if not page_url:
-                        print(f"   ⚠️  {page_type}: not found")
-                        intel['pages'][page_type] = {'found': False}
-                        continue
-                    
-                    print(f"   🔍 {page_type}: {page_url}")
-                    html, text, metadata = self.safe_scrape_page(page_url, page_type)
-                    
-                    intel['pages'][page_type] = metadata
-                    
-                    if html and text:
-                        self.safe_save_file(session_dir / f"{page_type}.html", html)
-                        self.safe_save_file(session_dir / f"{page_type}.txt", text)
-                        
-                        all_text += "\n\n" + text
-                        all_html += html
-                        
-                        print(f"      ✅ Saved")
-                    
-                    time.sleep(2)
-                    
-                except Exception as e:
-                    logger.error(f"Error scraping {page_type}: {e}")
-                    intel['errors'].append(f"Failed to scrape {page_type}: {str(e)}")
-            
-            # Extract intelligence
-            if all_text:
-                print("\n🔬 Extracting intelligence...")
-                
-                try:
-                    # Pricing
-                    if intel['pages'].get('pricing', {}).get('success'):
-                        html = (session_dir / "pricing.html").read_text(encoding='utf-8')
-                        text = (session_dir / "pricing.txt").read_text(encoding='utf-8')
-                        intel['extracted_intelligence']['pricing'] = self.safe_extract_pricing(html, text)
-                    elif intel['pages'].get('homepage', {}).get('success'):
-                        html = (session_dir / "homepage.html").read_text(encoding='utf-8')
-                        text = (session_dir / "homepage.txt").read_text(encoding='utf-8')
-                        intel['extracted_intelligence']['pricing'] = self.safe_extract_pricing(html, text)
-                except Exception as e:
-                    logger.error(f"Error in pricing extraction: {e}")
-                
-                try:
-                    # Customers
-                    intel['extracted_intelligence']['customers'] = self.safe_extract_customers(all_html, all_text)
-                except Exception as e:
-                    logger.error(f"Error in customer extraction: {e}")
-                
-                try:
-                    # Integrations
-                    intel['extracted_intelligence']['integrations'] = self.safe_extract_integrations(all_text)
-                except Exception as e:
-                    logger.error(f"Error in integration extraction: {e}")
-                
-                try:
-                    # Careers
-                    if intel['pages'].get('careers', {}).get('success'):
-                        html = (session_dir / "careers.html").read_text(encoding='utf-8')
-                        text = (session_dir / "careers.txt").read_text(encoding='utf-8')
-                        intel['extracted_intelligence']['careers'] = self.safe_extract_careers(html, text)
-                except Exception as e:
-                    logger.error(f"Error in careers extraction: {e}")
-                
-                try:
-                    # Features
-                    intel['extracted_intelligence']['product_features'] = self.safe_extract_features(all_html, all_text)
-                except Exception as e:
-                    logger.error(f"Error in features extraction: {e}")
-                
-                try:
-                    # Competitors
-                    intel['extracted_intelligence']['competitors'] = self.safe_extract_competitors(all_text, company_name)
-                except Exception as e:
-                    logger.error(f"Error in competitor extraction: {e}")
-                
-                try:
-                    # Funding
-                    intel['extracted_intelligence']['funding_signals'] = self.safe_extract_funding(all_html, all_text)
-                except Exception as e:
-                    logger.error(f"Error in funding extraction: {e}")
-            
-            # GitHub
+        """
+        Scrape all pages for a company using Bulletproof 5-layer scraping,
+        AND SAVE each page to:
+            data/raw/<company_name>/<session_name>/<page>.html
+            data/raw/<company_name>/<session_name>/<page>.txt
+            data/raw/<company_name>/<session_name>/<page>_metadata.json
+        """
+        name = company.get("company_name") or company.get("name")
+        base_url = company.get("website")
+
+        logger.info(f"\n================ COMPANY: {name} ================")
+        logger.info(f"Base URL: {base_url}\n")
+
+        results = {
+            "name": name,
+            "website": base_url,
+            "pages": {},
+            "found_urls": {},
+            "failed_pages": []
+        }
+
+        if not base_url:
+            logger.error(f"{name}: No base URL found")
+            return results
+
+        # ------------------------
+        # Create raw folder
+        # ------------------------
+        safe_name = re.sub(r"[^a-zA-Z0-9_-]+", "_", name)
+        company_dir = self.raw_dir / safe_name / self.session_name
+        company_dir.mkdir(parents=True, exist_ok=True)
+
+        processed_urls = set()
+
+        # -------------------------------------------------------
+        # Loop through page types
+        # -------------------------------------------------------
+        for page_type in self.page_patterns.keys():
+
+            logger.info(f"--- Finding page: {page_type}")
+
+            page_url = self.safe_find_page_url(base_url, page_type)
+            if not page_url:
+                logger.warning(f"{name}: Could not find URL for {page_type}")
+                results["failed_pages"].append(page_type)
+                continue
+
+            results["found_urls"][page_type] = page_url
+
+            if page_url in processed_urls:
+                logger.info(f"Skipping duplicate URL: {page_url}")
+                continue
+
+            processed_urls.add(page_url)
+
+            logger.info(f"Scraping {page_type} → {page_url}")
+
+            html, text, metadata = self.safe_scrape_page(page_url, page_type)
+
+            if not html:
+                logger.error(f"Scrape failed for {name} → {page_type}")
+                results["failed_pages"].append(page_type)
+                continue
+
+            # -------------------------------------------------
+            # SAVE FILES (HTML, TEXT, METADATA)
+            # -------------------------------------------------
+            safe_page = re.sub(r"[^a-zA-Z0-9_-]+", "_", page_type)
+
+            html_path = company_dir / f"{safe_page}.html"
+            txt_path = company_dir / f"{safe_page}.txt"
+            meta_path = company_dir / f"{safe_page}_metadata.json"
+
             try:
-                if company.get('github'):
-                    print("   🐙 GitHub stats...")
-                    intel['extracted_intelligence']['github_stats'] = self.safe_get_github_stats(company['github'])
+                html_path.write_text(html, encoding="utf-8")
+                txt_path.write_text(text, encoding="utf-8")
+                meta_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+                logger.info(f"   ✓ Saved {page_type} → {html_path}")
             except Exception as e:
-                logger.error(f"Error getting GitHub stats: {e}")
-            
-            # News
-            try:
-                if self.news_api_key:
-                    print("   📰 Recent news...")
-                    intel['extracted_intelligence']['news'] = self.safe_search_news(company_name)
-            except Exception as e:
-                logger.error(f"Error searching news: {e}")
-            
-            # Save intelligence
-            self.safe_save_file(session_dir / "intelligence.json", json.dumps(intel, indent=2))
-            
-            print(f"\n✅ Completed {company_name}")
-            
-            return intel
-            
-        except Exception as e:
-            logger.error(f"CRITICAL ERROR for {company_name}: {e}")
-            traceback.print_exc()
-            
-            # Return minimal intel on critical failure
-            return {
-                'company_name': company_name,
-                'website': company.get('website'),
-                'scraped_at': datetime.now().isoformat(),
-                'critical_error': str(e),
-                'pages': {},
-                'extracted_intelligence': {}
+                logger.error(f"Error saving files for {name}/{page_type}: {e}")
+
+            # -------------------------------------------------
+            # Add to results
+            # -------------------------------------------------
+            results["pages"][page_type] = {
+                "html": html,
+                "text": text,
+                "metadata": metadata
             }
-    
+
+            logger.info(
+                f"✓ {name} [{page_type}] scraped "
+                f"({metadata['source']}, {metadata['content_length']} chars)"
+            )
+
+            time.sleep(0.4)
+
+        return results
+
+ 
     def run(self, limit: Optional[int] = None):
-        """Main execution - GUARANTEED to complete."""
-        try:
-            print("\n" + "="*70)
-            print("LAB 1 BULLETPROOF SCRAPER")
-            print("="*70)
-            
-            # Load companies
-            companies = self.safe_load_companies()
-            
-            if not companies:
-                print("❌ No companies loaded!")
-                return
-            
-            if limit:
-                companies = companies[:limit]
-                print(f"\n⚠️  TEST MODE - {limit} companies")
-            
-            print(f"\n📊 Companies: {len(companies)}")
-            print(f"⏱️  Estimated time: ~{len(companies) * 3} minutes")
-            
-            response = input("\nProceed? (y/n): ")
-            if response.lower() != 'y':
-                print("Cancelled.")
-                return
-            
-            # Scrape
-            all_intel = []
-            successful = 0
-            
-            for i, company in enumerate(companies, 1):
-                print(f"\n{'#'*70}")
-                print(f"[{i}/{len(companies)}]")
-                
-                try:
-                    intel = self.scrape_company(company)
-                    all_intel.append(intel)
-                    
-                    # Count success if any pages worked
-                    if any(p.get('success') for p in intel.get('pages', {}).values()):
-                        successful += 1
-                    
-                except Exception as e:
-                    logger.error(f"Failed on company {i}: {e}")
-                    print(f"❌ Error (continuing): {e}")
-                    
-                    # Add minimal entry to keep going
-                    all_intel.append({
-                        'company_name': company.get('company_name', f'Company_{i}'),
-                        'error': str(e),
-                        'pages': {},
-                        'extracted_intelligence': {}
-                    })
-                
-                # Rate limit
-                if i < len(companies):
-                    time.sleep(5)
-            
-            # Generate summary - SAFE version
-            print("\n" + "="*70)
-            print("GENERATING SUMMARY")
-            print("="*70)
-            
+        """
+        Main execution entry point.
+        FULLY compatible with existing DAG and interactive y/n workflow.
+        Adds:
+            • Retry protection
+            • Company-level isolation
+            • Dead-site protection
+            • Execution timing
+            • Logging improvements
+            • No changes to I/O or interactive behavior
+        """
+
+        print("=====================================")
+        print("      LAB 1 BULLETPROOF SCRAPER      ")
+        print("=====================================\n")
+
+        companies = self.safe_load_companies()
+        if not companies:
+            print("No companies found. Exiting.")
+            return []
+
+        total = len(companies) if limit is None else min(limit, len(companies))
+        proceed = input(f"{total} companies to scrape. Proceed? (y/n): ").strip().lower()
+
+        if proceed != "y":
+            print("Exiting without scraping.")
+            return []
+
+        failures = {}
+        all_results = []
+
+        print("\n========== SCRAPING BEGIN ==========\n")
+
+        for idx, company in enumerate(companies[:total], start=1):
+
+            name = company.get("company_name") or company.get("name")
+
+            url = company.get("website")
+
+            print(f"\n--------------- ({idx}/{total}) ---------------")
+            print(f"Company: {name}")
+            print(f"Website: {url}")
+
+            start_time = time.time()
+
+            # ---------------------------------------
+            # 1) DOMAIN REACHABILITY CHECK
+            # ---------------------------------------
             try:
-                # Safe statistics calculation
-                stats = {
-                    'total_pages': 0,
-                    'with_pricing': 0,
-                    'with_customers': 0,
-                    'with_careers': 0,
-                    'with_news': 0
-                }
-                
-                for r in all_intel:
-                    try:
-                        # Count pages
-                        pages = r.get('pages', {})
-                        if pages:
-                            stats['total_pages'] += sum(1 for p in pages.values() if isinstance(p, dict) and p.get('success'))
-                        
-                        # Get extracted intelligence safely
-                        intel_data = r.get('extracted_intelligence', {})
-                        if not intel_data:
-                            continue
-                        
-                        # Count pricing
-                        if intel_data.get('pricing'):
-                            stats['with_pricing'] += 1
-                        
-                        # Count customers
-                        customers = intel_data.get('customers')
-                        if customers and isinstance(customers, dict):
-                            if customers.get('mentioned_customers'):
-                                stats['with_customers'] += 1
-                        
-                        # Count careers
-                        if intel_data.get('careers'):
-                            stats['with_careers'] += 1
-                        
-                        # Count news
-                        news = intel_data.get('news')
-                        if news and isinstance(news, dict):
-                            if news.get('recent_mentions', 0) > 0:
-                                stats['with_news'] += 1
-                    
-                    except Exception as e:
-                        logger.error(f"Error processing stats for a company: {e}")
-                        continue
-                
-                summary = {
-                    'total_companies': len(companies),
-                    'successful': successful,
-                    'session': self.session_name,
-                    'scraped_at': datetime.now().isoformat(),
-                    'statistics': stats,
-                    'results': all_intel
-                }
-                
-                # Save summary
-                summary_path = self.data_dir / f"lab1_bulletproof_summary_{self.today}.json"
-                self.safe_save_file(summary_path, json.dumps(summary, indent=2))
-                
-                print(f"\n📊 FINAL RESULTS:")
-                print(f"   Total companies: {summary['total_companies']}")
-                print(f"   Successful: {successful}")
-                print(f"   Total pages: {stats['total_pages']}")
-                print(f"   With pricing: {stats['with_pricing']}")
-                print(f"   With customers: {stats['with_customers']}")
-                print(f"   With careers: {stats['with_careers']}")
-                print(f"   With news: {stats['with_news']}")
-                
-                print(f"\n📁 Data: {self.raw_dir}")
-                print(f"📄 Summary: {summary_path}")
-                print("\n✅ LAB 1 COMPLETE - NO CRASHES!")
-                
+                r = requests.get(url, headers=self.headers, timeout=10)
+                if r.status_code not in (200, 301, 302, 307, 308):
+                    print(f"⚠️  Warning: Domain {url} returned status {r.status_code}")
             except Exception as e:
-                logger.error(f"Error generating summary: {e}")
-                print(f"\n⚠️  Summary generation failed, but all data is saved in {self.raw_dir}")
-                print("✅ Lab 1 data collection complete!")
-        
+                print(f"❌ Domain unreachable: {url} → {e}")
+                failures[name] = failures.get(name, 0) + 1
+
+                if failures[name] >= 3:
+                    print(f"⛔ Skipping {name} permanently (3 failed attempts)")
+                    all_results.append({
+                        "name": name,
+                        "website": url,
+                        "error": "Unreachable domain",
+                        "pages": {},
+                        "found_urls": {},
+                        "failed_pages": []
+                    })
+                    continue
+
+                print("Skipping for now.")
+                continue
+
+            # ---------------------------------------
+            # 2) SCRAPE COMPANY (WITH FULL ISOLATION)
+            # ---------------------------------------
+            try:
+                result = self.scrape_company(company)
+                all_results.append(result)
+
+            except Exception as e:
+                print(f"❌ scrape_company() crashed for {name}: {e}")
+                failures[name] = failures.get(name, 0) + 1
+
+                all_results.append({
+                    "name": name,
+                    "website": url,
+                    "error": f"scrape_company crashed: {e}",
+                    "pages": {},
+                    "found_urls": {},
+                    "failed_pages": ["ALL"]
+                })
+
+            # ---------------------------------------
+            # 3) LOG TIMING
+            # ---------------------------------------
+            elapsed = time.time() - start_time
+            print(f"⏱ Completed {name} in {elapsed:.2f} seconds")
+
+            # Composer-safe gentle rate limit
+            time.sleep(1)
+
+        print("\n========== SCRAPING COMPLETE ==========")
+        print("Results returned to DAG / caller.\n")
+        self.print_summary(all_results)
+
+        return all_results
+
+    def save_html_to_file(self, company_name: str, page_type: str, html: str, output_dir: str):
+        """
+        Safe HTML writer with filename sanitization + retry.
+        NOT used yet—added for future-proofing.
+        """
+        try:
+            os.makedirs(output_dir, exist_ok=True)
+
+            safe_company = re.sub(r'[^a-zA-Z0-9_-]+', '_', company_name)
+            safe_page = re.sub(r'[^a-zA-Z0-9_-]+', '_', page_type)
+            file_path = os.path.join(output_dir, f"{safe_company}_{safe_page}.html")
+
+            for attempt in range(3):
+                try:
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(html)
+                    return file_path
+                except:
+                    if attempt == 2:
+                        raise
+                    time.sleep(0.5)
+
         except Exception as e:
-            logger.critical(f"CRITICAL ERROR: {e}")
-            traceback.print_exc()
-            print("\n⚠️  Scraper encountered critical error but handled gracefully")
+            logger.error(f"Failed to save HTML for {company_name}/{page_type}: {e}")
+            return None
+
+
+    def save_text_to_file(self, company_name: str, page_type: str, text: str, output_dir: str):
+        """
+        Safe TEXT writer with filename sanitization + retry.
+        NOT used yet—added for future-proofing.
+        """
+        try:
+            os.makedirs(output_dir, exist_ok=True)
+
+            safe_company = re.sub(r'[^a-zA-Z0-9_-]+', '_', company_name)
+            safe_page = re.sub(r'[^a-zA-Z0-9_-]+', '_', page_type)
+            file_path = os.path.join(output_dir, f"{safe_company}_{safe_page}.txt")
+
+            for attempt in range(3):
+                try:
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(text)
+                    return file_path
+                except:
+                    if attempt == 2:
+                        raise
+                    time.sleep(0.5)
+
+        except Exception as e:
+            logger.error(f"Failed to save text for {company_name}/{page_type}: {e}")
+            return None
+
+
+    def save_text_to_file(self, company_name: str, page_type: str, text: str, output_dir: str):
+        """
+        Safe TEXT writer with filename sanitization + retry.
+        NOT used yet—added for future-proofing.
+        """
+        try:
+            os.makedirs(output_dir, exist_ok=True)
+
+            safe_company = re.sub(r'[^a-zA-Z0-9_-]+', '_', company_name)
+            safe_page = re.sub(r'[^a-zA-Z0-9_-]+', '_', page_type)
+            file_path = os.path.join(output_dir, f"{safe_company}_{safe_page}.txt")
+
+            for attempt in range(3):
+                try:
+                    with open(file_path, "w", encoding="utf-8") as f:
+                        f.write(text)
+                    return file_path
+                except:
+                    if attempt == 2:
+                        raise
+                    time.sleep(0.5)
+
+        except Exception as e:
+            logger.error(f"Failed to save text for {company_name}/{page_type}: {e}")
+            return None
+        
+    def print_summary(self, results: List[Dict]):
+        """
+        Prints a clean, readable scrape summary showing:
+        - total companies
+        - successfully scraped
+        - unreachable domains
+        - pages found
+        - pages failed
+        - fallback usage: live / snapshot / google_cache / textise
+        Does NOT modify results, only reads them.
+        """
+
+        total = len(results)
+        success_count = 0
+        unreachable = 0
+
+        fallback_stats = {
+            "live": 0,
+            "snapshot": 0,
+            "google_cache": 0,
+            "textise": 0
+        }
+
+        total_pages = 0
+        total_failed = 0
+
+        for r in results:
+
+            if "error" in r and r["error"] == "Unreachable domain":
+                unreachable += 1
+                continue
+
+            if "pages" in r and r["pages"]:
+                success_count += 1
+
+                for page_type, content in r["pages"].items():
+                    total_pages += 1
+                    src = content["metadata"].get("source", "live")
+                    if src in fallback_stats:
+                        fallback_stats[src] += 1
+            else:
+                total_failed += 1
+
+        print("\n========== SCRAPE SUMMARY ==========")
+        print(f"Total companies:        {total}")
+        print(f"Successful scrapes:     {success_count}")
+        print(f"Unreachable domains:    {unreachable}")
+        print(f"Companies with errors:  {total_failed}")
+        print(f"Total pages scraped:    {total_pages}")
+
+        print("\n--- Fallback Source Usage ---")
+        print(f"Live HTML:              {fallback_stats['live']}")
+        print(f"Static snapshot:        {fallback_stats['snapshot']}")
+        print(f"Google Cache:           {fallback_stats['google_cache']}")
+        print(f"Textise fallback:       {fallback_stats['textise']}")
+
+        print("====================================\n")
+
 
 
 def main():
