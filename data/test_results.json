@@ -1,10 +1,10 @@
 {
-  "test_run_timestamp": "2025-11-13T17:06:54.558771",
+  "test_run_timestamp": "2025-11-15T00:15:11.015211",
   "total_companies": 46,
   "tests_per_company": 2,
   "companies": [
     {
-      "company_id": "Abridge",
+      "company_id": "abridge",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -12,14 +12,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Anthropic",
+      "company_id": "anthropic",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -27,14 +27,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Anysphere",
+      "company_id": "anysphere",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -42,14 +42,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Baseten",
+      "company_id": "baseten",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -57,14 +57,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Captions",
+      "company_id": "captions",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -72,14 +72,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 2,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Clay",
+      "company_id": "clay",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -87,29 +87,29 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Coactive Ai",
+      "company_id": "coactive_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Coactive Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1503,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Cohere",
+      "company_id": "cohere",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -117,14 +117,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Crusoe",
+      "company_id": "crusoe",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -132,14 +132,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 1,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Databricks",
+      "company_id": "databricks",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -147,14 +147,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Decagon",
+      "company_id": "decagon",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -162,14 +162,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Deepl",
+      "company_id": "deepl",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -177,14 +177,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Elevenlabs",
+      "company_id": "elevenlabs",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -192,44 +192,44 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Figure Ai",
+      "company_id": "figure_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Figure Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1452,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Fireworks Ai",
+      "company_id": "fireworks_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Fireworks Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1520,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Glean",
+      "company_id": "glean",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -237,14 +237,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Harvey",
+      "company_id": "harvey",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -252,14 +252,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Hebbia",
+      "company_id": "hebbia",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -267,29 +267,29 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Hugging Face",
+      "company_id": "hugging_face",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Hugging Face"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1532,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Lambda",
+      "company_id": "lambda",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -297,14 +297,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Langchain",
+      "company_id": "langchain",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -312,14 +312,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Luminance",
+      "company_id": "luminance",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -327,14 +327,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Mercor",
+      "company_id": "mercor",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -342,14 +342,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 3,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Midjourney",
+      "company_id": "midjourney",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -357,29 +357,29 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 3,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Mistral Ai",
+      "company_id": "mistral_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Mistral Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1476,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Notion",
+      "company_id": "notion",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -387,14 +387,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Openevidence",
+      "company_id": "openevidence",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -402,14 +402,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Photoroom",
+      "company_id": "photoroom",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -417,14 +417,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Pika",
+      "company_id": "pika",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -432,14 +432,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Runway",
+      "company_id": "runway",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -447,29 +447,29 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Sakana Ai",
+      "company_id": "sakana_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Sakana Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1437,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Sambanova",
+      "company_id": "sambanova",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -477,29 +477,29 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Scale Ai",
+      "company_id": "scale_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Scale Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1536,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Sierra",
+      "company_id": "sierra",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -507,44 +507,44 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Skild Ai",
+      "company_id": "skild_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Skild Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1476,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 1,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Snorkel Ai",
+      "company_id": "snorkel_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Snorkel Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1490,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Speak",
+      "company_id": "speak",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -552,14 +552,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Stackblitz",
+      "company_id": "stackblitz",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -567,14 +567,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 4,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Suno",
+      "company_id": "suno",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -582,14 +582,14 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 2,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Synthesia",
+      "company_id": "synthesia",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -597,59 +597,59 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Together Ai",
+      "company_id": "together_ai",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Together Ai"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1516,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Vannevar Labs",
+      "company_id": "vannevar_labs",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Vannevar Labs"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1507,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Vast Data",
+      "company_id": "vast_data",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: Vast Data"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1441,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Windsurf",
+      "company_id": "windsurf",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -657,29 +657,29 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "World Labs",
+      "company_id": "world_labs",
       "test_1_payload": {
-        "success": false,
-        "has_data": false,
-        "payload_size_bytes": 0,
-        "error": "No payload found for company: World Labs"
+        "success": true,
+        "has_data": true,
+        "payload_size_bytes": 1461,
+        "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 1,
+        "has_results": true,
+        "error": null
       }
     },
     {
-      "company_id": "Writer",
+      "company_id": "writer",
       "test_1_payload": {
         "success": true,
         "has_data": true,
@@ -687,18 +687,18 @@
         "error": null
       },
       "test_2_rag_search": {
-        "success": false,
-        "results_count": 0,
-        "has_results": false,
-        "error": "Qdrant collection not found. Run vector indexing first."
+        "success": true,
+        "results_count": 5,
+        "has_results": true,
+        "error": null
       }
     }
   ],
   "summary": {
-    "tool_1_success_count": 33,
-    "tool_2_success_count": 0,
-    "tool_1_success_rate": 71.73913043478261,
-    "tool_2_success_rate": 0.0,
-    "companies_with_both_working": 0
+    "tool_1_success_count": 46,
+    "tool_2_success_count": 46,
+    "tool_1_success_rate": 100.0,
+    "tool_2_success_rate": 100.0,
+    "companies_with_both_working": 46
   }
 }

@@ -30,6 +30,14 @@ from src.agents.tools import (
     LayoffSignal,
     list_available_companies
 )
+from src.agents.mcp_integration import get_mcp_integration
+from src.agents.advanced_tools import (
+    calculate_financial_metrics,
+    compare_competitors,
+    generate_investment_recommendation,
+    analyze_market_trends,
+    calculate_risk_score
+)
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -56,14 +64,31 @@ class SupervisorAgent:
         self.model = model
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         
-        # System prompt
-        self.system_prompt = """You are a PE Due Diligence Supervisor Agent.
+        # Initialize MCP integration (Lab 15)
+        self.mcp = get_mcp_integration()
+        
+        # System prompt (includes MCP tools and advanced tools if enabled)
+        tools_list = [
+            "1. get_latest_structured_payload - Retrieves company data (funding, team, metrics)",
+            "2. report_layoff_signal - Logs high-risk events that need human review",
+            "3. calculate_financial_metrics - Calculate valuation/funding ratios and efficiency",
+            "4. compare_competitors - Compare multiple companies side-by-side",
+            "5. generate_investment_recommendation - Get BUY/HOLD/PASS recommendation with score",
+            "6. calculate_risk_score - Comprehensive risk assessment (0-100)"
+        ]
+        
+        if self.mcp.is_enabled():
+            tools_list.extend([
+                "7. generate_structured_dashboard (via MCP) - Generates structured dashboard from payload",
+                "8. generate_rag_dashboard (via MCP) - Generates RAG dashboard from vector store"
+            ])
+        
+        self.system_prompt = f"""You are a PE Due Diligence Supervisor Agent.
 
 Your job is to analyze companies and generate insights for private equity investors.
 
 You have access to these tools:
-1. get_latest_structured_payload - Retrieves company data (funding, team, metrics)
-2. report_layoff_signal - Logs high-risk events that need human review
+{chr(10).join(tools_list)}
 
 Use ReAct reasoning:
 - THINK about what you need to do
@@ -75,7 +100,8 @@ When analyzing a company:
 1. Get the company payload
 2. Analyze for risks (layoffs, funding issues, leadership changes)
 3. Report any critical risks
-4. Provide a concise PE analysis
+4. Optionally generate dashboards using MCP tools
+5. Provide a concise PE analysis
 
 Be concise and focused on investor-relevant insights."""
         
@@ -275,8 +301,80 @@ Be concise and focused on investor-relevant insights."""
                         step_num=3
                     )
         
-        # Generate final analysis
-        analysis = self._generate_analysis(payload, risks_found)
+        # Step 4: Calculate financial metrics (Advanced Tool)
+        thought_4 = "I should calculate financial metrics to understand valuation efficiency and funding health."
+        react_logger.log_thought(thought_4, step_num=4)
+        
+        react_logger.log_action("calculate_financial_metrics", {"company_id": company_id}, step_num=4)
+        financial_metrics = await calculate_financial_metrics(company_id)
+        
+        if financial_metrics.get('error'):
+            react_logger.log_observation(
+                f"Financial metrics calculation failed: {financial_metrics.get('error')}",
+                success=False,
+                step_num=4
+            )
+        else:
+            react_logger.log_observation(
+                f"Financial metrics: {financial_metrics.get('funding_efficiency', 'N/A')} | Ratio: {financial_metrics.get('valuation_to_funding_ratio', 'N/A')}",
+                success=True,
+                step_num=4
+            )
+        
+        # Step 5: Calculate risk score (Advanced Tool)
+        thought_5 = "I should calculate a comprehensive risk score to assess investment risk."
+        react_logger.log_thought(thought_5, step_num=5)
+        
+        react_logger.log_action("calculate_risk_score", {"company_id": company_id}, step_num=5)
+        risk_score_result = await calculate_risk_score(company_id)
+        
+        if risk_score_result.get('error'):
+            react_logger.log_observation(
+                f"Risk score calculation failed: {risk_score_result.get('error')}",
+                success=False,
+                step_num=5
+            )
+        else:
+            react_logger.log_observation(
+                f"Risk Score: {risk_score_result.get('risk_score', 'N/A')}/100 - {risk_score_result.get('risk_level', 'N/A')}",
+                success=True,
+                step_num=5
+            )
+        
+        # Step 6 (Optional): Generate dashboard via MCP if enabled (Lab 15)
+        dashboard_info = None
+        if self.mcp.is_enabled():
+            thought_6 = "I can generate a structured dashboard via MCP to provide comprehensive analysis."
+            react_logger.log_thought(thought_6, step_num=6)
+            
+            react_logger.log_action("generate_structured_dashboard (MCP)", {"company_id": company_id}, step_num=6)
+            mcp_result = self.mcp.call_tool("generate_structured_dashboard", {"company_id": company_id})
+            
+            if mcp_result.get('success'):
+                dashboard_info = {
+                    'tokens_used': mcp_result.get('tokens_used', 0),
+                    'company_name': mcp_result.get('company_name', company_id)
+                }
+                react_logger.log_observation(
+                    f"Generated structured dashboard via MCP ({dashboard_info['tokens_used']} tokens)",
+                    success=True,
+                    step_num=6
+                )
+            else:
+                react_logger.log_observation(
+                    f"MCP dashboard failed: {mcp_result.get('error', 'Unknown error')}",
+                    success=False,
+                    step_num=6
+                )
+        
+        # Generate final analysis (include financial metrics and risk score)
+        analysis = self._generate_analysis(
+            payload, 
+            risks_found, 
+            dashboard_info,
+            financial_metrics=financial_metrics if not financial_metrics.get('error') else None,
+            risk_score=risk_score_result if not risk_score_result.get('error') else None
+        )
         
         # Save trace
         trace_path = react_logger.save_trace(final_output=analysis)
@@ -294,7 +392,14 @@ Be concise and focused on investor-relevant insights."""
             "run_id": react_logger.run_id
         }
     
-    def _generate_analysis(self, payload: Dict, risks: List[Dict]) -> str:
+    def _generate_analysis(
+        self, 
+        payload: Dict, 
+        risks: List[Dict], 
+        dashboard_info: Optional[Dict] = None,
+        financial_metrics: Optional[Dict] = None,
+        risk_score: Optional[Dict] = None
+    ) -> str:
         """
         Generate comprehensive PE analysis summary.
         
@@ -395,6 +500,28 @@ GitHub Stars:        {latest_visibility.get('github_stars', 'Not tracked')}
 Total Risks Identified: {len(risks)}
 """
         
+        # Add financial metrics if available
+        if financial_metrics and not financial_metrics.get('error'):
+            analysis += f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. FINANCIAL METRICS ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Valuation to Funding Ratio: {financial_metrics.get('valuation_to_funding_ratio', 'N/A')}
+Funding Efficiency: {financial_metrics.get('funding_efficiency', 'N/A')}
+Analysis: {financial_metrics.get('analysis', 'N/A')}
+"""
+        
+        # Add risk score if available
+        if risk_score and not risk_score.get('error'):
+            analysis += f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. RISK SCORE ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{risk_score.get('assessment', 'N/A')}
+Risk Factors:
+{chr(10).join(f'  • {factor}' for factor in risk_score.get('risk_factors', []))}
+"""
+        
         if risks:
             for i, risk in enumerate(risks, 1):
                 severity_emoji = {
@@ -457,6 +584,15 @@ Total Risks Identified: {len(risks)}
             analysis += "\n".join(gaps)
         else:
             analysis += "✅ All critical data points disclosed"
+        
+        # Add MCP dashboard info if available (Lab 15)
+        if dashboard_info:
+            analysis += "\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            analysis += "\n9. GENERATED DASHBOARDS (via MCP)"
+            analysis += "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            analysis += f"\n✅ Structured dashboard generated via MCP server"
+            analysis += f"\n   Company: {dashboard_info.get('company_name', 'Unknown')}"
+            analysis += f"\n   Tokens used: {dashboard_info.get('tokens_used', 0)}"
         
         analysis += "\n\n" + "═"*70
         
@@ -583,7 +719,8 @@ Total Risks Identified: {len(risks)}
     
     def _save_markdown_report(self, summary: Dict, filepath: Path):
         """Save a markdown report of the analysis."""
-        with open(filepath, 'w') as f:
+        # ✅ FIX: Use UTF-8 encoding to handle any special characters
+        with open(filepath, 'w', encoding='utf-8') as f:
             f.write("# PE Due Diligence - Agent Analysis Report\n\n")
             f.write(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}  \n")
             f.write(f"**Total Companies:** {summary['total_companies']}  \n\n")
@@ -592,16 +729,16 @@ Total Risks Identified: {len(risks)}
             f.write("## Summary Statistics\n\n")
             total = summary['total_companies']
             success = summary['successful']
-            f.write(f"- ✅ Successful: {success}/{total} ({success/total*100:.1f}%)  \n")
-            f.write(f"- ❌ Failed: {summary['failed']}/{total}  \n")
-            f.write(f"- 🚨 Total Risks: {summary['total_risks_found']}  \n\n")
+            f.write(f"- [OK] Successful: {success}/{total} ({success/total*100:.1f}%)  \n")
+            f.write(f"- [FAIL] Failed: {summary['failed']}/{total}  \n")
+            f.write(f"- [RISK] Total Risks: {summary['total_risks_found']}  \n\n")
             
             f.write("### Risk Severity Breakdown\n\n")
             rb = summary['risk_breakdown']
-            f.write(f"- 🔴 Critical: {rb['critical']}  \n")
-            f.write(f"- 🟠 High: {rb['high']}  \n")
-            f.write(f"- 🟡 Medium: {rb['medium']}  \n")
-            f.write(f"- 🟢 Low: {rb['low']}  \n\n")
+            f.write(f"- [CRITICAL] Critical: {rb['critical']}  \n")
+            f.write(f"- [HIGH] High: {rb['high']}  \n")
+            f.write(f"- [MEDIUM] Medium: {rb['medium']}  \n")
+            f.write(f"- [LOW] Low: {rb['low']}  \n\n")
             
             f.write("---\n\n")
             f.write("## Company Analysis\n\n")
@@ -612,9 +749,9 @@ Total Risks Identified: {len(risks)}
                     f.write(f"**Risks Found:** {len(company['risks'])}  \n\n")
                     
                     for risk in company['risks']:
-                        emoji = {'critical': '🔴', 'high': '🟠', 'medium': '🟡', 'low': '🟢'}.get(risk['severity'].lower(), '⚪')
-                        f.write(f"{emoji} **[{risk['severity'].upper()}]** {risk['type']}  \n")
-                        f.write(f"└─ {risk['description']}  \n\n")
+                        severity_label = {'critical': '[CRITICAL]', 'high': '[HIGH]', 'medium': '[MEDIUM]', 'low': '[LOW]'}.get(risk['severity'].lower(), '[UNKNOWN]')
+                        f.write(f"{severity_label} **[{risk['severity'].upper()}]** {risk['type']}  \n")
+                        f.write(f"  - {risk['description']}  \n\n")
                     
                     f.write(f"**Trace File:** `{Path(company['trace_file']).name}`  \n\n")
                     f.write("---\n\n")
