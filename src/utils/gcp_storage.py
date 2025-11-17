@@ -137,8 +137,12 @@ def download_company_files(bucket_name: str, company_name: str):
         intel = json.loads(intel_blob.download_as_text())
         print(f"    ✅ intelligence.json (from initial)")
     
+    # Extract folder name for metadata
+    content_folder_name = content_path.split('/')[-2] 
     return {
         'texts': texts,
         'intelligence': intel,
-        'company_name': company_name
+        'company_name': company_name,
+        'source_folder': content_folder_name,  # NEW!
+        'data_files_used': list(texts.keys())  # NEW! e.g., ["blog", "careers", "news"]
     }
