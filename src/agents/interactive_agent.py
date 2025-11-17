@@ -25,6 +25,7 @@ from src.agents.tools import (
     LayoffSignal
 )
 from src.agents.react_logger import ReActLogger
+from src.workflows.due_diligence_graph import run_workflow
 
 # Initialize OpenAI
 client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -72,6 +73,43 @@ class InteractivePEAgent:
                 signal = LayoffSignal(**kwargs.get('signal_data', {}))
                 result = await report_layoff_signal(signal)
                 return result.model_dump() if hasattr(result, 'model_dump') else result.dict()
+            
+            elif tool_name == "generate_dashboard" or tool_name == "run_due_diligence":
+                # Run the due diligence workflow
+                company_id = kwargs.get('company_id')
+                auto_approve = kwargs.get('auto_approve', False)  # HITL enabled by default
+                
+                if not company_id:
+                    return {"error": "company_id is required"}
+                
+                print(f"\n🔄 Running due diligence workflow for {company_id}...")
+                print("   (This may take 10-30 seconds)")
+                if not auto_approve:
+                    print("   ⚠️  HITL enabled - workflow will pause for human approval if risks detected\n")
+                else:
+                    print("   (Auto-approve mode enabled)\n")
+                
+                # Run workflow (HITL enabled by default)
+                workflow_result = await run_workflow(company_id, auto_approve=auto_approve)
+                
+                # Extract key information
+                result = {
+                    "success": workflow_result.get("error") is None,
+                    "company_id": company_id,
+                    "dashboard_generated": workflow_result.get("dashboard_markdown") is not None,
+                    "dashboard_score": workflow_result.get("dashboard_score"),
+                    "risks_detected": len(workflow_result.get("risk_keywords", [])),
+                    "branch_taken": workflow_result.get("branch_taken"),
+                    "requires_hitl": workflow_result.get("requires_hitl", False),
+                    "dashboard_file": workflow_result.get("metadata", {}).get("dashboard_file"),
+                    "trace_file": workflow_result.get("metadata", {}).get("trace_file"),
+                    "dashboard_preview": workflow_result.get("dashboard_markdown", "")[:500] + "..." if workflow_result.get("dashboard_markdown") else None
+                }
+                
+                if workflow_result.get("error"):
+                    result["error"] = workflow_result["error"]
+                
+                return result
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
         except Exception as e:
@@ -99,20 +137,34 @@ You have access to the following tools:
    - Use when user asks specific questions that need detailed context
    - Example: "What did they say about their AI model?"
 
+3. **generate_dashboard(company_id)**: Run full due diligence workflow and generate comprehensive dashboard
+   - Use when user asks for: "dashboard", "due diligence", "full analysis", "generate report", "comprehensive analysis"
+   - This runs the complete workflow: retrieves data, generates dashboard, evaluates quality, detects risks
+   - If risks are detected, workflow will pause for human approval (HITL)
+   - Returns: dashboard file path, score, risks detected, execution trace
+   - Takes 10-30 seconds to complete (may take longer if HITL pause occurs)
+
 **Available companies:** {', '.join(AVAILABLE_COMPANIES[:10])}... and 36 more.
 
 **Guidelines:**
 - Start with get_payload to get basic info
 - Use rag_search for detailed questions
+- Use generate_dashboard when user explicitly asks for dashboard, due diligence, or full analysis
 - If company not in Forbes AI 50, say so politely
 - Always cite data from tools
 - Be concise and data-driven
+- When dashboard is generated, mention the file path and key metrics (score, risks)
 
-**Example flow:**
+**Example flows:**
 User: "What is Anthropic's valuation?"
 → Call get_payload(company_id="anthropic")
 → Extract valuation from payload
 → Respond: "Anthropic is valued at $X billion according to the latest data."
+
+User: "Generate a dashboard for Anthropic" or "I need a dashboard on Anthropic"
+→ Call generate_dashboard(company_id="anthropic")
+→ Wait for completion
+→ Respond with dashboard summary, score, risks, and file location
 """
 
         messages = [
@@ -157,6 +209,28 @@ User: "What is Anthropic's valuation?"
                             }
                         },
                         "required": ["company_id", "query"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "generate_dashboard",
+                    "description": "Run full due diligence workflow and generate comprehensive dashboard for a company. Use when user asks for dashboard, due diligence, full analysis, or comprehensive report. This executes the complete workflow including data retrieval, dashboard generation, quality evaluation, and risk detection.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "company_id": {
+                                "type": "string",
+                                "description": "Company identifier (lowercase, underscores for spaces)"
+                            },
+                            "auto_approve": {
+                                "type": "boolean",
+                                "description": "Auto-approve HITL checkpoints (default: false - HITL enabled)",
+                                "default": False
+                            }
+                        },
+                        "required": ["company_id"]
                     }
                 }
             }
@@ -239,7 +313,9 @@ async def interactive_chat():
     print("  • What is Anthropic's valuation?")
     print("  • Tell me about OpenAI's funding history")
     print("  • What are the risks for Cohere?")
-    print("  • Compare Anthropic and Mistral AI")
+    print("  • Generate a dashboard for Anthropic")
+    print("  • I need a due diligence report on Cohere")
+    print("  • Run full analysis on Mistral AI")
     print("\nType 'exit' to quit, 'companies' to see all companies\n")
     
     while True:

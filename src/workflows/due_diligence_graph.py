@@ -714,6 +714,20 @@ async def run_workflow(company_id: str, auto_approve: bool = False) -> Dict:
         trace_path = save_execution_trace(final_state)
         final_state["metadata"]["trace_file"] = str(trace_path)
     
+    # Save dashboard if generated
+    if final_state.get("dashboard_markdown"):
+        dashboard_dir = project_root / "data" / "dashboards" / "workflow"
+        dashboard_dir.mkdir(parents=True, exist_ok=True)
+        
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        dashboard_file = dashboard_dir / f"{company_id}_workflow_{timestamp}.md"
+        
+        with open(dashboard_file, 'w', encoding='utf-8') as f:
+            f.write(final_state["dashboard_markdown"])
+        
+        final_state["metadata"]["dashboard_file"] = str(dashboard_file)
+        print(f"📄 Dashboard saved: {dashboard_file}")
+    
     # Print summary
     print("\n" + "="*70)
     print("✅ WORKFLOW COMPLETE")
