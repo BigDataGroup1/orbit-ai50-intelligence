@@ -1,6 +1,6 @@
 # PE Due Diligence - Agent Analysis Report
 
-**Generated:** 2025-11-14 23:34 UTC  
+**Generated:** 2025-11-17 00:26 UTC  
 **Total Companies:** 3  
 
 ---
@@ -35,7 +35,7 @@
 [LOW] **[LOW]** minor_data_gaps  
   - Some data gaps: legal_name, categories  
 
-**Trace File:** `react_trace_abridge_20251114_233449.json`  
+**Trace File:** `react_trace_abridge_20251117_002621.json`  
 
 ---
 
@@ -55,7 +55,7 @@
 [LOW] **[LOW]** minor_data_gaps  
   - Some data gaps: categories  
 
-**Trace File:** `react_trace_anthropic_20251114_233449.json`  
+**Trace File:** `react_trace_anthropic_20251117_002622.json`  
 
 ---
 
@@ -72,7 +72,7 @@
 [LOW] **[LOW]** minor_data_gaps  
   - Some data gaps: categories  
 
-**Trace File:** `react_trace_anysphere_20251114_233450.json`  
+**Trace File:** `react_trace_anysphere_20251117_002622.json`  
 
 ---
 
