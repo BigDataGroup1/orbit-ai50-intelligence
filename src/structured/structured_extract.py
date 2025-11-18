@@ -26,6 +26,8 @@ load_dotenv()
 class Provenance(BaseModel):
     source_url: str
     crawled_at: str
+    source_folder: Optional[str] = None  # NEW!
+    data_files_used: Optional[List[str]] = None  # NEW!
     snippet: Optional[str] = None
 
 
@@ -247,10 +249,13 @@ If missing: None. Don't invent."""
             except:
                 pass
         
+        # UPDATED: Include metadata in provenance
         company.provenance = [Provenance(
             source_url=seed.get('website', 'Not available'),
             crawled_at=datetime.now().isoformat(),
-            snippet="Extracted from scraped pages"
+            source_folder=getattr(self, 'source_folder', 'local'),
+            data_files_used=getattr(self, 'data_files_used', []),
+            snippet=f"Extracted from {getattr(self, 'source_folder', 'scraped')} data"
         )]
         
         return company

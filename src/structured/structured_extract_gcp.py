@@ -30,7 +30,18 @@ class GCPStructuredExtractor(StructuredExtractor):
     
     def load_company_data(self, company_name: str):
         """Load scraped data from GCP bucket"""
-        return download_company_files(self.bucket_name, company_name)
+        result = download_company_files(self.bucket_name, company_name)
+        
+        # Store metadata for provenance
+        self.source_folder = result.get('source_folder', 'unknown')
+        self.data_files_used = result.get('data_files_used', [])
+        
+        # Return data in expected format
+        return {
+            'texts': result['texts'],
+            'intelligence': result['intelligence'],
+            'company_name': result['company_name']
+        }
     
     def extract_all(self, company_name: str):
         """Extract from GCP (same logic as parent class)"""
