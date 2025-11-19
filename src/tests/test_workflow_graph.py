@@ -8,6 +8,7 @@ import json
 import sys
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
+import pytest
 
 # Add project root to path
 project_root = Path(__file__).resolve().parents[2]
@@ -39,7 +40,8 @@ class TestPlannerNode:
             "requires_hitl": False,
             "branch_taken": None,
             "error": None,
-            "metadata": {}
+            "metadata": {},
+            "execution_path": []
         }
         
         result = planner_node(state)
@@ -54,6 +56,7 @@ class TestPlannerNode:
 class TestDataGeneratorNode:
     """Test Data Generator node."""
     
+    @pytest.mark.asyncio
     @patch('src.workflows.due_diligence_graph.get_latest_structured_payload')
     @patch('src.workflows.due_diligence_graph.get_mcp_integration')
     async def test_data_generator_success(self, mock_mcp_class, mock_get_payload):
@@ -84,7 +87,8 @@ class TestDataGeneratorNode:
             "requires_hitl": False,
             "branch_taken": None,
             "error": None,
-            "metadata": {}
+            "metadata": {},
+            "execution_path": []
         }
         
         result = await data_generator_node(state)
@@ -134,7 +138,8 @@ class TestEvaluatorNode:
             "requires_hitl": False,
             "branch_taken": None,
             "error": None,
-            "metadata": {}
+            "metadata": {},
+            "execution_path": []
         }
         
         result = evaluator_node(state)
@@ -156,7 +161,8 @@ class TestEvaluatorNode:
             "requires_hitl": False,
             "branch_taken": None,
             "error": None,
-            "metadata": {}
+            "metadata": {},
+            "execution_path": []
         }
         
         result = evaluator_node(state)
@@ -187,7 +193,8 @@ class TestRiskDetectorNode:
             "requires_hitl": False,
             "branch_taken": None,
             "error": None,
-            "metadata": {}
+            "metadata": {},
+            "execution_path": []
         }
         
         result = risk_detector_node(state)
@@ -216,7 +223,8 @@ class TestRiskDetectorNode:
             "requires_hitl": False,
             "branch_taken": None,
             "error": None,
-            "metadata": {}
+            "metadata": {},
+            "execution_path": []
         }
         
         result = risk_detector_node(state)
@@ -232,7 +240,8 @@ class TestRiskDetectorNode:
 class TestHITLNode:
     """Test HITL node."""
     
-    def test_hitl_node_executes(self):
+    @patch('builtins.input', return_value='y')  # Mock user input
+    def test_hitl_node_executes(self, mock_input):
         """Test HITL node execution."""
         state: WorkflowState = {
             "company_id": "test_company",
@@ -244,7 +253,8 @@ class TestHITLNode:
             "requires_hitl": True,
             "branch_taken": "hitl",
             "error": None,
-            "metadata": {}
+            "metadata": {},
+            "execution_path": []
         }
         
         result = hitl_node(state)
@@ -256,6 +266,7 @@ class TestHITLNode:
 class TestWorkflowIntegration:
     """Integration tests for full workflow."""
     
+    @pytest.mark.asyncio
     @patch('src.workflows.due_diligence_graph.get_latest_structured_payload')
     @patch('src.workflows.due_diligence_graph.get_mcp_integration')
     async def test_normal_flow(self, mock_mcp_class, mock_get_payload):
@@ -276,13 +287,14 @@ class TestWorkflowIntegration:
         }
         mock_mcp_class.return_value = mock_mcp
         
-        result = await run_workflow("test_company")
+        result = await run_workflow("test_company", auto_approve=True)
         
         assert result["branch_taken"] == "normal"
         assert result["requires_hitl"] is False
         assert result["dashboard_score"] is not None
         assert result["plan"] is not None
     
+    @pytest.mark.asyncio
     @patch('src.workflows.due_diligence_graph.get_latest_structured_payload')
     @patch('src.workflows.due_diligence_graph.get_mcp_integration')
     async def test_hitl_flow(self, mock_mcp_class, mock_get_payload):
@@ -306,7 +318,7 @@ class TestWorkflowIntegration:
         }
         mock_mcp_class.return_value = mock_mcp
         
-        result = await run_workflow("test_company")
+        result = await run_workflow("test_company", auto_approve=True)
         
         assert result["branch_taken"] == "hitl"
         assert result["requires_hitl"] is True
@@ -367,4 +379,3 @@ def run_tests():
 
 if __name__ == "__main__":
     run_tests()
-

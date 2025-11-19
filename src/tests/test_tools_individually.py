@@ -8,6 +8,8 @@ import os
 import sys
 import asyncio
 from pathlib import Path
+import pytest
+from unittest.mock import patch
 
 # Add project root to path
 project_root = Path(__file__).resolve().parents[2]
@@ -24,7 +26,9 @@ from src.agents.tools import (
 import json
 
 
-async def test_tool_1_payload():
+@pytest.mark.asyncio
+@patch('builtins.input', side_effect=['anthropic'])
+async def test_tool_1_payload(mock_input):
     """Test Tool 1: Get Company Payload"""
     print("=" * 70)
     print("🔧 TOOL 1: get_latest_structured_payload()")
@@ -80,7 +84,9 @@ async def test_tool_1_payload():
         traceback.print_exc()
 
 
-async def test_tool_2_rag():
+@pytest.mark.asyncio
+@patch('builtins.input', side_effect=['anthropic', 'What does this company do?'])
+async def test_tool_2_rag(mock_input):
     """Test Tool 2: RAG Search"""
     print("=" * 70)
     print("🔧 TOOL 2: rag_search_company()")
@@ -129,7 +135,9 @@ async def test_tool_2_rag():
         traceback.print_exc()
 
 
-async def test_tool_3_risk():
+@pytest.mark.asyncio
+@patch('builtins.input', side_effect=['test_company', 'layoff', 'Test layoff', 'medium'])
+async def test_tool_3_risk(mock_input):
     """Test Tool 3: Report Risk Signal"""
     print("=" * 70)
     print("🔧 TOOL 3: report_layoff_signal()")
