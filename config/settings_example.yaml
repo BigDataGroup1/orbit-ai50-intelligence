@@ -1,0 +1,172 @@
+# ============================================================================
+# ORBIT AI50 Intelligence - Configuration Settings
+# ============================================================================
+# Copy this file to config/settings.yaml and customize
+# cp config/settings_example.yaml config/settings.yaml
+
+# ============================================================================
+# Company Configuration
+# ============================================================================
+companies:
+  # List of AI 50 companies to process
+  # If empty, will load from forbes_ai50_seed.json
+  ai50_companies: []
+  
+  # Limit processing to specific companies (for testing)
+  limit: null  # Set to number to limit, or null for all
+  
+  # Companies to skip
+  skip_companies: []
+
+# ============================================================================
+# Workflow Configuration
+# ============================================================================
+workflow:
+  # Maximum steps in ReAct loop
+  max_steps: 5
+  
+  # Auto-approve HITL (Human-in-the-Loop)
+  auto_approve_hitl: true
+  
+  # Risk keywords that trigger HITL
+  risk_keywords:
+    - "layoff"
+    - "layoffs"
+    - "firing"
+    - "termination"
+    - "downsizing"
+    - "bankruptcy"
+    - "insolvency"
+    - "default"
+    - "lawsuit"
+    - "litigation"
+    - "breach"
+    - "security incident"
+    - "data breach"
+    - "hack"
+    - "funding round failed"
+    - "investor pullout"
+    - "valuation drop"
+    - "ceo resignation"
+    - "executive departure"
+
+# ============================================================================
+# Dashboard Configuration
+# ============================================================================
+dashboard:
+  # RAG dashboard settings
+  rag:
+    max_chunks: 20
+    min_score: 0.5
+  
+  # Structured dashboard settings
+  structured:
+    include_metadata: true
+    include_provenance: true
+
+# ============================================================================
+# Vector DB Configuration
+# ============================================================================
+vectordb:
+  # Chunk size for text chunking
+  chunk_size: 800
+  
+  # Overlap between chunks
+  chunk_overlap: 100
+  
+  # Collection name
+  collection_name: "pe_companies"
+  
+  # Vector dimension (384 for all-MiniLM-L6-v2)
+  vector_dimension: 384
+
+# ============================================================================
+# Retry Configuration
+# ============================================================================
+retry:
+  # Maximum retries for API calls
+  max_retries: 3
+  
+  # Delay between retries (seconds)
+  retry_delay: 5
+  
+  # Exponential backoff
+  exponential_backoff: true
+
+# ============================================================================
+# Timeout Configuration
+# ============================================================================
+timeout:
+  # API request timeout (seconds)
+  api_timeout: 30
+  
+  # Workflow execution timeout (seconds)
+  workflow_timeout: 3600
+  
+  # Vector DB operation timeout (seconds)
+  vectordb_timeout: 60
+
+# ============================================================================
+# DAG Configuration
+# ============================================================================
+dags:
+  # Initial load DAG
+  initial_load:
+    enabled: true
+    schedule: "@once"  # Manual trigger only
+  
+  # Daily update DAG
+  daily_update:
+    enabled: true
+    schedule: "0 3 * * *"  # Daily at 3 AM UTC
+  
+  # Agentic dashboard DAG
+  agentic_dashboard:
+    enabled: true
+    schedule: "0 4 * * *"  # Daily at 4 AM UTC
+    # Process companies in batches
+    batch_size: 10
+    # Delay between batches (seconds)
+    batch_delay: 60
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/orbit.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+
+# ============================================================================
+# GCS Configuration
+# ============================================================================
+gcs:
+  # Upload settings
+  upload:
+    # Use parallel upload
+    parallel: true
+    # Number of parallel workers
+    workers: 4
+  
+  # Download settings
+  download:
+    # Use parallel download
+    parallel: true
+    # Number of parallel workers
+    workers: 4
+
+# ============================================================================
+# Performance Configuration
+# ============================================================================
+performance:
+  # Enable caching
+  enable_cache: true
+  
+  # Cache TTL (seconds)
+  cache_ttl: 3600
+  
+  # Max concurrent requests
+  max_concurrent: 10
+

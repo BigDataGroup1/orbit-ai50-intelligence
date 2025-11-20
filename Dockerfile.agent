@@ -1,0 +1,37 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8081
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Pre-download embedding model to avoid rate limits at runtime
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
+# Copy source code
+COPY src/ ./src/
+COPY data/ ./data/
+COPY config/ ./config/
+COPY mcp_config.json ./
+
+# Create necessary __init__.py files
+RUN touch src/__init__.py src/agents/__init__.py src/workflows/__init__.py \
+    src/vectordb/__init__.py src/structured/__init__.py src/utils/__init__.py
+
+# Create directories for vector DB and logs
+RUN mkdir -p /tmp/qdrant_storage logs/react_traces logs/risk_signals data/dashboards/workflow
+
+EXPOSE 8081
+
+# Default command: Run supervisor agent (can be overridden)
+CMD ["python", "-m", "src.agents.supervisor_agent"]
+

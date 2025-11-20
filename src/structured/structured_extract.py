@@ -16,6 +16,13 @@ from pydantic import BaseModel, Field
 import time
 import sys
 
+# Fix encoding for Windows
+import sys
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
 load_dotenv()
 
 
@@ -160,55 +167,117 @@ class StructuredExtractor:
         print(f"📂 Output: {self.structured_dir}")
     
     def load_company_data(self, company_name: str):
-        """Load scraped data for a company"""
+        """Load scraped data for a company - combines latest initial + latest daily"""
         company_folder = company_name.replace(' ', '_')
         company_dir = self.raw_dir / company_folder
         
         if not company_dir.exists():
             raise FileNotFoundError(f"Not found: {company_dir}")
         
-        # Get latest session
+        # Get all sessions
         sessions = [d for d in company_dir.iterdir() if d.is_dir()]
-        session_dir = max(sessions, key=lambda x: x.name)
         
-        print(f"  📂 {session_dir.name}")
+        # Find latest initial date
+        initial_sessions = [s for s in sessions if '_initial' in s.name]
+        latest_initial = None
+        latest_initial_date = None
+        if initial_sessions:
+            latest_initial = max(initial_sessions, key=lambda x: x.name)
+            latest_initial_date = latest_initial.name.replace('_initial', '')
+            print(f"  📂 Latest Initial: {latest_initial.name}")
         
-        # Load text files
+        # Find latest daily date
+        daily_sessions = [s for s in sessions if '_daily' in s.name]
+        latest_daily = None
+        latest_daily_date = None
+        if daily_sessions:
+            latest_daily = max(daily_sessions, key=lambda x: x.name)
+            latest_daily_date = latest_daily.name.replace('_daily', '')
+            print(f"  📂 Latest Daily: {latest_daily.name}")
+        
+        # Load ALL text files - start with initial, then add/overwrite with daily
+        # This ensures we get ALL data: homepage, product, about, careers, etc. from both sources
         texts = {}
-        for txt in session_dir.glob("*.txt"):
-            content = txt.read_text(encoding='utf-8')
-            if content.strip():
-                texts[txt.stem] = content
-                print(f"    ✅ {txt.stem} ({len(content)} chars)")
         
-        # Load intelligence
-        intel_file = session_dir / "intelligence.json"
+        # Load ALL files from latest initial (if exists)
+        if latest_initial and latest_initial.exists():
+            for txt in latest_initial.glob("*.txt"):
+                content = txt.read_text(encoding='utf-8')
+                if content.strip():
+                    texts[txt.stem] = content
+                    print(f"    ✅ {txt.stem} from initial ({len(content)} chars)")
+        
+        # Load ALL files from latest daily (if exists)
+        # Daily overwrites initial if same file, but also adds new files
+        if latest_daily and latest_daily.exists():
+            for txt in latest_daily.glob("*.txt"):
+                content = txt.read_text(encoding='utf-8')
+                if content.strip():
+                    if txt.stem in texts:
+                        # Daily overwrites initial for same file
+                        texts[txt.stem] = content
+                        print(f"    ✅ {txt.stem} from daily (overwrites initial) ({len(content)} chars)")
+                    else:
+                        # Daily adds new file that initial doesn't have
+                        texts[txt.stem] = content
+                        print(f"    ✅ {txt.stem} from daily (new file) ({len(content)} chars)")
+        
+        # Load intelligence - prefer daily, fallback to initial
         intel = {}
-        if intel_file.exists():
-            with open(intel_file, 'r', encoding='utf-8') as f:
-                intel = json.load(f)
+        if latest_daily and latest_daily.exists():
+            intel_file = latest_daily / "intelligence.json"
+            if intel_file.exists():
+                with open(intel_file, 'r', encoding='utf-8') as f:
+                    intel = json.load(f)
+        
+        if not intel and latest_initial and latest_initial.exists():
+            intel_file = latest_initial / "intelligence.json"
+            if intel_file.exists():
+                with open(intel_file, 'r', encoding='utf-8') as f:
+                    intel = json.load(f)
         
         return {'texts': texts, 'intelligence': intel, 'company_name': company_name}
     
     def extract_company(self, data: dict) -> Company:
-        """Extract Company using LLM"""
+        """Extract Company using LLM - uses ALL available files"""
+        # Combine ALL available files (not just homepage, about, product)
         combined = ""
-        for page in ['homepage', 'about', 'product']:
-            if page in data['texts']:
-                combined += f"\n{data['texts'][page][:1500]}"
+        file_list = []
+        for page_name, content in data['texts'].items():
+            # Use more content from each file (up to 3000 chars per file)
+            combined += f"\n\n=== {page_name.upper()} ===\n{content[:3000]}"
+            file_list.append(page_name)
         
         seed = data['intelligence'].get('seed_data', {})
         company_id = data['company_name'].lower().replace(' ', '_')
         
+        # Use more content (up to 8000 chars total instead of 3000)
+        content_to_use = combined[:8000]
+        
         prompt = f"""Extract company data for {data['company_name']}.
 
-Seed: CEO={seed.get('ceo')}, Founded={seed.get('founded_year')}, HQ={seed.get('hq_city')}, Funding={seed.get('total_funding')}, Valuation={seed.get('valuation')}
+Available files: {', '.join(file_list)}
 
-Content: {combined[:3000]}
+Seed data: CEO={seed.get('ceo')}, Founded={seed.get('founded_year')}, HQ={seed.get('hq_city')}, Funding={seed.get('total_funding')}, Valuation={seed.get('valuation')}
 
-Extract: company_id="{company_id}", legal_name, website, hq_city, hq_country, founded_year, total_raised_usd (convert $100M→100000000.0, $1B→1000000000.0), last_disclosed_valuation_usd
+Content from all files:
+{content_to_use}
 
-If missing: None. Don't invent."""
+Extract ALL available information:
+- company_id="{company_id}"
+- legal_name (company's official name)
+- brand_name (if different from legal name)
+- website (full URL)
+- hq_city, hq_state, hq_country (headquarters location)
+- founded_year (year company was founded)
+- categories (list of business categories/industries)
+- total_raised_usd (convert $100M→100000000.0, $1B→1000000000.0)
+- last_disclosed_valuation_usd (latest valuation)
+- last_round_name (e.g., "Series A", "Series B")
+- last_round_date (date of latest funding round)
+- related_companies (any mentioned related/partner companies)
+
+Extract everything you can find. If information is not in the content, use None. Don't invent data."""
         
         company = self.client.chat.completions.create(
             model="gpt-4o-mini",
@@ -261,35 +330,64 @@ If missing: None. Don't invent."""
         return company
     
     def extract_snapshot(self, data: dict, company_id: str) -> Snapshot:
-        """Extract snapshot - NULL SAFE VERSION"""
+        """Extract snapshot using LLM from text files"""
         
-        # Get intelligence safely
-        intel = data.get('intelligence', {})
-        extracted = intel.get('extracted_intelligence', {})
+        # Get text content from relevant files
+        careers_text = data['texts'].get('careers', '')
+        pricing_text = data['texts'].get('pricing', '')
+        product_text = data['texts'].get('product', '')
+        homepage_text = data['texts'].get('homepage', '')
+        about_text = data['texts'].get('about', '')
         
-        # Check if extracted_intelligence exists and is not None
-        if not extracted or not isinstance(extracted, dict):
-            # No extracted intelligence - return minimal snapshot
+        # Combine relevant content for extraction
+        combined_snapshot = f"""
+CAREERS PAGE:
+{careers_text[:4000]}
+
+PRICING PAGE:
+{pricing_text[:4000]}
+
+PRODUCT PAGE:
+{product_text[:2000]}
+
+HOMEPAGE:
+{homepage_text[:2000]}
+"""
+        
+        prompt = f"""Extract snapshot data for {data['company_name']}.
+
+Content:
+{combined_snapshot[:10000]}
+
+Extract:
+- job_openings_count (count of job openings from careers page)
+- engineering_openings (engineering job count if available)
+- sales_openings (sales job count if available)
+- hiring_focus (list of departments/roles they're hiring for)
+- pricing_tiers (list of pricing tiers/plans from pricing page, e.g., ["Free", "Pro", "Enterprise"])
+- active_products (list of product names from product/homepage pages)
+- geo_presence (list of countries/regions they operate in)
+- headcount_total (total employees if mentioned)
+
+Extract everything you can find. If not found, use None or empty list."""
+        
+        try:
+            snapshot = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                response_model=Snapshot,
+                messages=[{"role": "user", "content": prompt}],
+                max_retries=2
+            )
+            snapshot.as_of = datetime.now().strftime('%Y-%m-%d')
+            return snapshot
+        except Exception as e:
+            # Fallback to minimal snapshot
             return Snapshot(
                 company_id=company_id,
                 as_of=datetime.now().strftime('%Y-%m-%d'),
                 job_openings_count=0,
                 pricing_tiers=[]
             )
-        
-        # Safe access to careers (might be null)
-        careers_intel = extracted.get('careers')
-        pricing_intel = extracted.get('pricing')
-        
-        # Get job count - handle None
-        job_count = 0
-        if careers_intel and isinstance(careers_intel, dict):
-            job_count = careers_intel.get('open_positions', 0)
-        
-        # Get pricing tiers - handle None
-        pricing_tiers = []
-        if pricing_intel and isinstance(pricing_intel, dict):
-            pricing_tiers = pricing_intel.get('tiers', [])
         
         return Snapshot(
             company_id=company_id,
@@ -333,6 +431,88 @@ If missing: None. Don't invent."""
             ))
         
         return leaders
+    
+    def extract_products(self, data: dict, company_id: str) -> List[Product]:
+        """Extract products from text files"""
+        products = []
+        
+        # Get text content from product and homepage
+        product_text = data['texts'].get('product', '')
+        homepage_text = data['texts'].get('homepage', '')
+        pricing_text = data['texts'].get('pricing', '')
+        customers_text = data['texts'].get('customers', '')
+        
+        combined = f"""
+PRODUCT PAGE:
+{product_text[:4000]}
+
+HOMEPAGE:
+{homepage_text[:3000]}
+
+PRICING PAGE:
+{pricing_text[:2000]}
+
+CUSTOMERS PAGE:
+{customers_text[:2000]}
+"""
+        
+        prompt = f"""Extract product information for {data['company_name']}.
+
+Content:
+{combined[:10000]}
+
+Extract all products mentioned. For each product, extract:
+- name (product name)
+- description (what the product does)
+- pricing_model (e.g., "Subscription", "Usage-based", "Free", "Enterprise")
+- pricing_tiers_public (list of public pricing tiers if mentioned)
+- integration_partners (list of integration partners if mentioned)
+- reference_customers (list of customer names if mentioned)
+
+Extract all products you can find. If no products found, return empty list."""
+        
+        try:
+            # Use LLM to extract products
+            products_response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                max_tokens=2000
+            )
+            
+            # Parse products from response (simple extraction)
+            response_text = products_response.choices[0].message.content
+            
+            # Try to extract product names from text
+            # Look for common patterns like "Product Name:", "Discover X", etc.
+            product_names = []
+            lines = response_text.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line and (':' in line or line.startswith('-') or line.startswith('*')):
+                    # Try to extract product name
+                    if ':' in line:
+                        name = line.split(':')[0].strip().replace('-', '').replace('*', '').strip()
+                        if name and len(name) > 2 and len(name) < 50:
+                            product_names.append(name)
+            
+            # Create Product objects
+            for i, name in enumerate(set(product_names[:10])):  # Limit to 10 products
+                products.append(Product(
+                    product_id=f"product_{company_id}_{i+1}",
+                    company_id=company_id,
+                    name=name,
+                    description=None,
+                    pricing_model=None,
+                    pricing_tiers_public=[],
+                    integration_partners=[],
+                    reference_customers=[]
+                ))
+        except Exception as e:
+            # If extraction fails, return empty list
+            pass
+        
+        return products
     
     def extract_all(self, company_name: str) -> Payload:
         """Extract complete payload for one company - SKIP IF NO DATA"""

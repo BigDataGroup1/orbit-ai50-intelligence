@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # MCP Server - FastAPI service for MCP tools
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    container_name: orbit-mcp-server
+    ports:
+      - "8001:8080"
+    environment:
+      - PORT=8080
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-orbit-ai50-intelligence}
+      - GCS_RAW_BUCKET=${GCS_RAW_BUCKET:-orbit-raw-data-g1-2025}
+      - GCS_PROCESSED_BUCKET=${GCS_PROCESSED_BUCKET:-orbit-processed-data-g1-2025}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - orbit-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Supervisor Agent + Workflow Service
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    container_name: orbit-agent
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MCP_SERVER_URL=${MCP_SERVER_URL:-http://mcp-server:8080}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID:-orbit-ai50-intelligence}
+      - GCS_RAW_BUCKET=${GCS_RAW_BUCKET:-orbit-raw-data-g1-2025}
+      - GCS_PROCESSED_BUCKET=${GCS_PROCESSED_BUCKET:-orbit-processed-data-g1-2025}
+      - HITL_AUTO_APPROVE=${HITL_AUTO_APPROVE:-true}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+    networks:
+      - orbit-network
+    depends_on:
+      - mcp-server
+    restart: unless-stopped
+
+  # Optional: Qdrant Vector DB (if not using GCS-hosted)
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: orbit-qdrant
+    ports:
+      - "6333:6333"  # REST API
+      - "6334:6334"  # gRPC
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    networks:
+      - orbit-network
+    restart: unless-stopped
+    profiles:
+      - vector-db  # Only start with --profile vector-db
+
+volumes:
+  qdrant_storage:
+    driver: local
+
+networks:
+  orbit-network:
+    driver: bridge
+
