@@ -17,6 +17,8 @@ data/dashboards/
 data/profiles/
 data/qdrant_storage/
 data/raw/
+data/
+
 # Data folders (too large, auto-generated)
 /data
 data/
