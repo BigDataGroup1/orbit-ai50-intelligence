@@ -26,6 +26,8 @@ A production-grade, cloud-native system that automatically scrapes, processes, a
   <img src="https://img.shields.io/badge/Qdrant-FF6B6B?style=for-the-badge" alt="Qdrant"/>
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
   <img src="https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white" alt="Pydantic"/>
+  <img src="https://img.shields.io/badge/LangGraph-FF6B6B?style=for-the-badge" alt="LangGraph"/>
+  <img src="https://img.shields.io/badge/MCP-4285F4?style=for-the-badge" alt="MCP"/>
 </p>
 
 ---
@@ -122,6 +124,34 @@ ORBIT-AI50-INTELLIGENCE/
 │       ├── chunker.py
 │       ├── embedder.py
 │       └── build_index.py
+│   ├── agents/
+│   │   ├── supervisor_agent.py
+│   │   ├── tools.py
+│   │   ├── mcp_integration.py
+│   │   ├── react_logger.py
+│   │   ├── advanced_tools.py
+│   │   ├── interactive_agent.py
+│   │   └── interactive_agent_enhanced.py
+│   ├── server/
+│   │   └── mcp_server.py
+│   ├── workflows/
+│   │   └── due_diligence_graph.py
+│   └── tests/
+│       ├── test_tools.py
+│       ├── test_mcp_server.py
+│       └── test_workflow_graph.py
+├── airflow/
+│   ├── dags/
+│   │   ├── orbit_initial_load_dag.py
+│   │   ├── orbit_daily_update_dag.py
+│   │   └── orbit_agentic_dashboard_dag.py
+│   └── README.md
+├── docs/
+│   ├── execution_trace_*.md
+│   └── ASSIGNMENT_5_SUMMARY.md
+├── logs/
+│   └── react_traces/
+├── mcp_config.json
 ├── .dockerignore
 ├── .env
 ├── .gitignore
@@ -399,6 +429,33 @@ https://orbit-api-xxxxx.us-central1.run.app/docs
 - Streamlit polls /stats endpoint every 5 minutes for refresh detection
 - End-to-end: Daily DAG runs → rebuilds index → updates timestamp → UI shows refresh badge
 
+### Phase 5: Agent Infrastructure & MCP Integration
+
+**Agent Tools & Supervisor:**
+- Built three core async tools: `get_latest_structured_payload`, `rag_search_company`, `report_layoff_signal`
+- Created Supervisor Agent using ReAct pattern (Think → Act → Observe)
+- Integrated advanced tools: financial metrics, risk scoring, competitor comparison, investment recommendations
+- Structured ReAct logging with correlation IDs (`run_id`, `company_id`) saved to JSON traces
+
+**Model Context Protocol (MCP) Server:**
+- FastAPI-based MCP server exposing tools, resources, and prompts via HTTP
+- Endpoints: `/tool/generate_structured_dashboard`, `/tool/generate_rag_dashboard`, `/resource/ai50/companies`, `/prompt/pe-dashboard`
+- Secure tool filtering and configuration via `mcp_config.json`
+- Client-side integration for agents to consume MCP tools
+
+**Graph-Based Workflow with HITL:**
+- LangGraph workflow with 5 nodes: Planner → Data Generator → Evaluator → Risk Detector → HITL
+- Conditional branching: normal flow vs. human-in-the-loop (HITL) based on risk detection
+- CLI-based HITL pause for human approval when risks detected
+- Execution path tracking with timestamps, status, and metadata
+- Mermaid diagram visualization of workflow execution paths
+- Complete execution traces saved to `docs/execution_trace_*.md`
+
+**Interactive Chatbot:**
+- User-friendly chatbot interface using OpenAI function calling
+- Triggers full due diligence workflow with HITL support
+- Returns dashboard results, scores, and risk assessments
+
 ---
 
 ## 🎯 Usage
@@ -453,6 +510,44 @@ python generate_eval_structured.py  # For 6 evaluation companies
 python generate_all_dashboard.py    # For all 39 companies
 ```
 
+### Agent & Workflow Usage
+
+**1. Start MCP Server:**
+```bash
+python src/server/mcp_server.py
+# Server runs on http://localhost:8001
+# Swagger UI: http://localhost:8001/docs
+```
+
+**2. Run Supervisor Agent:**
+```bash
+python src/agents/supervisor_agent.py --company anthropic
+```
+
+**3. Run Due Diligence Workflow:**
+```bash
+# Normal mode (with HITL if risks detected)
+python src/workflows/due_diligence_graph.py --company anthropic
+
+# Auto-approve mode (testing only)
+python src/workflows/due_diligence_graph.py --company anthropic --auto-approve
+```
+
+**4. Interactive Chatbot:**
+```bash
+python src/agents/interactive_agent.py
+# Then type: "Generate dashboard for anthropic"
+```
+
+**5. View Execution Traces:**
+```bash
+# Execution traces with Mermaid diagrams saved in:
+docs/execution_trace_*.md
+
+# ReAct logs saved in:
+logs/react_traces/react_trace_*.json
+```
+
 ---
 
 ## 📈 Key Features
@@ -475,6 +570,14 @@ python generate_all_dashboard.py    # For all 39 companies
 - Streamlit for user interface
 - Docker containerization
 - GCP Cloud Run deployment
+
+### Agentic Intelligence & Observability
+- **ReAct Pattern:** Structured logging of agent reasoning (Thought → Action → Observation)
+- **MCP Integration:** Secure, standardized tool access via Model Context Protocol
+- **Graph Workflows:** LangGraph-based orchestration with conditional branching
+- **Human-in-the-Loop:** CLI pause for risk approval, ensuring critical decisions are reviewed
+- **Execution Visualization:** Mermaid diagrams showing workflow paths and decision trees
+- **Full Traceability:** Complete execution traces with timestamps, scores, and metadata
 
 ### Automated Evaluation
 - LLM-as-judge auto-scoring on 5 criteria
@@ -555,6 +658,59 @@ gcloud run services update orbit-api --timeout 300
 pip install -r requirements.txt --force-reinstall
 ```
 
+**MCP Server connection errors:**
+```bash
+# Ensure MCP server is running on port 8001
+python src/server/mcp_server.py
+
+# Check configuration
+cat mcp_config.json
+```
+
+**Workflow payload not found:**
+```bash
+# Generate structured payloads from GCS
+python src/structured/structured_extract_gcp.py --company anthropic
+# OR for all companies
+python src/structured/structured_extract_gcp.py --all
+```
+
+**Qdrant lock file errors:**
+```bash
+# Close any processes using Qdrant (MCP server, Streamlit, etc.)
+# Then remove lock file
+Remove-Item data\qdrant_storage\.lock -Force
+```
+
 ---
 
 **Note:** This is a complete cloud-native application. All services (Airflow, API, Frontend, Vector DB) can run on GCP managed services with no local infrastructure required.
+
+## 🤖 Agent Architecture
+
+The system includes intelligent agents for automated due diligence:
+
+**Supervisor Agent:**
+- Uses ReAct pattern for transparent reasoning
+- Orchestrates due diligence workflows
+- Integrates with MCP server for dashboard generation
+- Logs all decisions with structured traces
+
+**Workflow Nodes:**
+1. **Planner:** Constructs execution plan
+2. **Data Generator:** Calls MCP tools to generate dashboards
+3. **Evaluator:** Scores dashboard quality (0-100)
+4. **Risk Detector:** Scans for risk keywords (layoffs, breaches, lawsuits)
+5. **HITL:** Pauses for human approval if risks detected
+
+**MCP Server:**
+- Exposes dashboard generation tools via HTTP
+- Provides company resources and prompt templates
+- Enables secure, distributed tool access
+- Swagger UI available at `/docs` endpoint
+
+**Execution Traces:**
+- Complete workflow execution paths with Mermaid diagrams
+- ReAct logs showing agent reasoning steps
+- Risk detection and HITL decision records
+- Saved to `docs/execution_trace_*.md` for full observability
