@@ -28,7 +28,7 @@ A production-grade, cloud-native platform that combines automated data ingestion
 ## 📋 Project Resources
 
 * **Google Codelab**: [Project ORBIT Tutorial](https://codelabs-preview.appspot.com/?file_id=1J2wywiaEeSrTKwo606GT0mz2sGQO-gLPnByV4lKj4Fk)
-* **YouTube Demo**: https://youtu.be/ZOiY655wVBI
+* **YouTube Demo**: [Assignment4](https://youtu.be/ZOiY655wVBI)    [Assignment5](https://youtu.be/N4ZsOyeyGws)
 * **GitHub Repository**: https://github.com/BigDataGroup1/orbit-ai50-intelligence
 
 ---
