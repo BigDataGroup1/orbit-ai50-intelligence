@@ -374,9 +374,12 @@ gcloud run deploy orbit-streamlit \
 
 **Production URLs:**
 
-- **Streamlit Frontend:** https://orbit-streamlit-823575734493.us-central1.run.app
-- **FastAPI Backend:** https://orbit-api-aksh-823575734493.us-central1.run.app/health
-- **API Documentation:** https://orbit-api-aksh-823575734493.us-central1.run.app/docs
+- **Streamlit Frontend:** https://orbit-streamlit-667820328373.us-central1.run.app
+- **FastAPI Backend:** https://orbit-api-667820328373.us-central1.run.app
+- **API Documentation (Swagger):** https://orbit-api-667820328373.us-central1.run.app/docs
+- **Health Check:** https://orbit-api-667820328373.us-central1.run.app/health
+- **Stats:** https://orbit-api-667820328373.us-central1.run.app/stats
+- **Companies List:** https://orbit-api-667820328373.us-central1.run.app/companies
 - **Airflow Web UI:** Access via GCP Console → Cloud Composer → orbit-airflow-env
 
 **Cloud Infrastructure:**
@@ -431,9 +434,12 @@ python src/agents/interactive_agent.py
 ### Option 2: Cloud Deployment
 
 **Access Production URLs:**
-- **Streamlit Frontend:** https://orbit-streamlit-823575734493.us-central1.run.app
-- **FastAPI Backend:** https://orbit-api-aksh-823575734493.us-central1.run.app/health
-- **API Documentation:** https://orbit-api-aksh-823575734493.us-central1.run.app/docs
+- **Streamlit Frontend:** https://orbit-streamlit-667820328373.us-central1.run.app
+- **FastAPI Backend:** https://orbit-api-667820328373.us-central1.run.app
+- **API Documentation (Swagger):** https://orbit-api-667820328373.us-central1.run.app/docs
+- **Health Check:** https://orbit-api-667820328373.us-central1.run.app/health
+- **Stats:** https://orbit-api-667820328373.us-central1.run.app/stats
+- **Companies List:** https://orbit-api-667820328373.us-central1.run.app/companies
 
 **Test the system:**
 1. Select a company from dropdown (e.g., "Anthropic")
@@ -442,10 +448,13 @@ python src/agents/interactive_agent.py
 4. View 8-section investor dashboard with evaluation scores
 
 **API Testing:**
-- `GET /companies` - List all 50 indexed companies
+- `GET /companies` - List all 50 indexed companies (https://orbit-api-667820328373.us-central1.run.app/companies)
+- `GET /stats` - System statistics (https://orbit-api-667820328373.us-central1.run.app/stats)
+- `GET /health` - Health check (https://orbit-api-667820328373.us-central1.run.app/health)
 - `POST /rag/search` - Semantic search test
 - `POST /dashboard/rag` - Generate RAG dashboard
 - `POST /dashboard/structured` - Generate structured dashboard
+- **Full API Docs:** https://orbit-api-667820328373.us-central1.run.app/docs
 
 ---
 
