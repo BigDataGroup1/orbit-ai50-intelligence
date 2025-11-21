@@ -479,6 +479,9 @@ import requests
 from pathlib import Path
 import sys
 import os
+from datetime import datetime
+import json
+import pandas as pd
 
 # Add parent to path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -488,6 +491,20 @@ from app.utils import (
     format_score_display, 
     compare_dashboards
 )
+
+# Import enhanced agent for chat
+import sys
+from pathlib import Path
+project_root = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(project_root))
+
+try:
+    from src.agents.interactive_agent_enhanced import EnhancedInteractivePEAgent, AVAILABLE_COMPANIES
+    AGENT_AVAILABLE = True
+except ImportError as e:
+    AGENT_AVAILABLE = False
+    EnhancedInteractivePEAgent = None
+    AVAILABLE_COMPANIES = []
 
 # # API Configuration - use environment variable or default
 # API_URL = os.getenv(
@@ -567,7 +584,7 @@ def main():
         # Mode selection
         mode = st.radio(
             "📊 View Mode",
-            ["Dashboard Viewer", "Comparison Mode", "Statistics"],
+            ["Dashboard Viewer", "Comparison Mode", "Statistics", "🤖 AI Chat Assistant", "📊 Agentic Reports", "🔍 Backend Requests"],
             help="Choose how to view the dashboards"
         )
         
@@ -636,6 +653,15 @@ def main():
     
     elif mode == "Statistics":
         show_statistics(loader)
+    
+    elif mode == "🤖 AI Chat Assistant":
+        show_chat_assistant()
+    
+    elif mode == "📊 Agentic Reports":
+        show_agentic_reports(loader)
+    
+    elif mode == "🔍 Backend Requests":
+        show_backend_requests()
 
 
 def show_dashboard_viewer(loader, company_name, availability):
@@ -940,6 +966,483 @@ def show_statistics(loader):
                 st.success("✅ Structured")
             else:
                 st.error("❌ Structured")
+
+
+def show_chat_assistant():
+    """Show AI Chat Assistant interface with tool usage tracking."""
+    
+    if not AGENT_AVAILABLE:
+        st.error("⚠️ AI Chat Assistant is not available. Please check dependencies.")
+        return
+    
+    st.markdown("## 🤖 AI Chat Assistant - PE Due Diligence")
+    st.markdown("Ask questions about Forbes AI 50 companies. The agent will use tools to find answers.")
+    
+    # Initialize session state - check if agent exists first
+    try:
+        if "agent" not in st.session_state:
+            if EnhancedInteractivePEAgent is None:
+                st.error("Agent class not available. Please check imports.")
+                return
+            st.session_state.agent = EnhancedInteractivePEAgent()
+        
+        if "messages" not in st.session_state:
+            st.session_state.messages = []
+        
+        if "tool_calls" not in st.session_state:
+            st.session_state.tool_calls = []
+    except Exception as e:
+        st.error(f"Failed to initialize chat assistant: {e}")
+        import traceback
+        with st.expander("Error Details"):
+            st.code(traceback.format_exc())
+        return
+    
+    # Display chat history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            
+            # Show tool calls for assistant messages
+            if message["role"] == "assistant" and message.get("tool_calls"):
+                with st.expander(f"🔧 Tools Used ({len(message['tool_calls'])} tool(s))"):
+                    for i, tool_call in enumerate(message["tool_calls"], 1):
+                        st.markdown(f"**Tool {i}: {tool_call['tool_name']}**")
+                        st.json({
+                            "Arguments": tool_call.get("arguments", {}),
+                            "Success": tool_call.get("success", False),
+                            "Timestamp": tool_call.get("timestamp", "N/A")
+                        })
+                        
+                        # Show result preview
+                        result = tool_call.get("result", {})
+                        if isinstance(result, dict):
+                            if "error" in result:
+                                st.error(f"❌ Error: {result['error']}")
+                            else:
+                                # Show key fields
+                                preview_keys = ["company_id", "company_name", "valuation", "total_funding", 
+                                              "recommendation", "score", "risk_score", "success"]
+                                preview = {k: v for k, v in result.items() if k in preview_keys and v is not None}
+                                if preview:
+                                    st.json(preview)
+                                else:
+                                    st.info("✅ Tool executed successfully")
+                        else:
+                            st.info(f"✅ Result: {str(result)[:200]}...")
+    
+    # Chat input
+    user_query = st.chat_input("Ask about a company (e.g., 'What is Anthropic's valuation?')")
+    
+    if user_query:
+        # Check if agent is initialized
+        if "agent" not in st.session_state:
+            st.error("⚠️ Agent not initialized. Please refresh the page.")
+            return
+        
+        # Add user message
+        st.session_state.messages.append({"role": "user", "content": user_query})
+        
+        # Display user message
+        with st.chat_message("user"):
+            st.markdown(user_query)
+        
+        # Process with agent
+        with st.chat_message("assistant"):
+            with st.spinner("🤔 Agent thinking..."):
+                try:
+                    import asyncio
+                    import concurrent.futures
+                    
+                    # Check agent exists before running
+                    if "agent" not in st.session_state or st.session_state.agent is None:
+                        st.error("⚠️ Agent not initialized. Please refresh the page.")
+                        return
+                    
+                    # Store agent reference before threading
+                    agent = st.session_state.agent
+                    
+                    # Run async function in a thread to avoid event loop conflicts
+                    def run_async():
+                        return asyncio.run(agent.process_query(user_query))
+                    
+                    with concurrent.futures.ThreadPoolExecutor() as executor:
+                        future = executor.submit(run_async)
+                        response, tool_calls = future.result(timeout=300)  # 5 min timeout
+                    
+                    # Display response
+                    st.markdown(response)
+                    
+                    # Store message with tool calls
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": response,
+                        "tool_calls": tool_calls
+                    })
+                    
+                    # Show tool usage
+                    if tool_calls:
+                        st.markdown("---")
+                        st.markdown(f"### 🔧 Tools Used ({len(tool_calls)})")
+                        
+                        for i, tool_call in enumerate(tool_calls, 1):
+                            with st.expander(f"Tool {i}: **{tool_call['tool_name']}**"):
+                                col1, col2 = st.columns(2)
+                                
+                                with col1:
+                                    st.markdown("**Arguments:**")
+                                    st.json(tool_call.get("arguments", {}))
+                                
+                                with col2:
+                                    status = "✅ Success" if tool_call.get("success") else "❌ Failed"
+                                    st.markdown(f"**Status:** {status}")
+                                    if tool_call.get("timestamp"):
+                                        st.caption(f"Time: {tool_call['timestamp']}")
+                                
+                                # Show result
+                                result = tool_call.get("result", {})
+                                if isinstance(result, dict):
+                                    if "error" in result:
+                                        st.error(f"Error: {result['error']}")
+                                    else:
+                                        st.markdown("**Result:**")
+                                        # Show formatted result
+                                        if "company_name" in result:
+                                            st.info(f"Company: {result.get('company_name')}")
+                                        if "valuation" in result:
+                                            st.info(f"Valuation: ${result.get('valuation'):,.0f}" if result.get('valuation') else "N/A")
+                                        if "recommendation" in result:
+                                            st.success(f"Recommendation: {result.get('recommendation')}")
+                                        if "score" in result:
+                                            st.metric("Score", result.get('score'))
+                                        
+                                        # Show full result in expander
+                                        with st.expander("View Full Result"):
+                                            st.json(result)
+                                else:
+                                    st.info(f"Result: {str(result)[:500]}...")
+                    
+                except Exception as e:
+                    error_msg = f"❌ Error: {str(e)}"
+                    st.error(error_msg)
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": error_msg
+                    })
+                    import traceback
+                    st.code(traceback.format_exc())
+    
+    # Sidebar controls
+    with st.sidebar:
+        st.markdown("---")
+        st.markdown("### 💡 Example Queries")
+        example_queries = [
+            "What is Anthropic's valuation?",
+            "Compare Anthropic, OpenAI, and Cohere",
+            "What are the financial metrics for Anthropic?",
+            "Generate an investment recommendation for Anthropic",
+            "Calculate risk score for Anthropic",
+            "Generate a dashboard for Anthropic"
+        ]
+        
+        for query in example_queries:
+            if st.button(query, key=f"example_{query}", use_container_width=True):
+                st.session_state.example_query = query
+                st.rerun()
+        
+        if "example_query" in st.session_state:
+            # This will be processed in the next rerun
+            pass
+        
+        st.markdown("---")
+        st.markdown("### 📋 Available Companies")
+        st.caption(f"{len(AVAILABLE_COMPANIES)} companies available")
+        
+        if st.button("Clear Chat History", use_container_width=True):
+            st.session_state.messages = []
+            st.session_state.agent.clear_history()
+            st.rerun()
+
+
+def show_agentic_reports(loader):
+    """Show agentic workflow reports generated by DAG."""
+    st.markdown("## 📊 Agentic Workflow Reports")
+    st.markdown("View reports generated by the agentic dashboard DAG")
+    
+    # Check for reports
+    reports_dir = Path("data/airflow_reports")
+    if not reports_dir.exists():
+        st.warning("⚠️ No reports directory found. Run the DAG first to generate reports.")
+        st.info("""
+        **To generate reports:**
+        1. Run the standalone script: `python orbit_agentic_dashboard_local.py --limit 3`
+        2. Or run the Airflow DAG: `orbit_agentic_dashboard_dag_local`
+        
+        Reports will be saved in `data/airflow_reports/`
+        """)
+        return
+    
+    # List all report files
+    report_files = sorted(reports_dir.glob("agentic_dashboard_*.json"), reverse=True)
+    
+    if not report_files:
+        st.info("No reports found. Run the DAG to generate reports.")
+        return
+    
+    # Select report
+    report_names = [f.name for f in report_files]
+    selected_report = st.selectbox("Select Report", report_names)
+    
+    if selected_report:
+        report_path = reports_dir / selected_report
+        with open(report_path, 'r', encoding='utf-8') as f:
+            import json
+            report = json.load(f)
+        
+        # Display summary
+        st.markdown("### 📈 Report Summary")
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Companies", report.get('summary', {}).get('total_companies', 0))
+        with col2:
+            st.metric("Successful", report.get('summary', {}).get('successful', 0))
+        with col3:
+            st.metric("Failed", report.get('summary', {}).get('failed', 0))
+        with col4:
+            success_rate = report.get('summary', {}).get('success_rate', 0)
+            st.metric("Success Rate", f"{success_rate:.1f}%")
+        
+        # Workflow stats
+        st.markdown("### 📊 Workflow Statistics")
+        workflow_stats = report.get('workflow_stats', {})
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.metric("Avg Dashboard Score", f"{workflow_stats.get('avg_dashboard_score', 0):.1f}/100")
+        with col2:
+            st.metric("Total Risks", workflow_stats.get('total_risks_detected', 0))
+        
+        # Results table
+        st.markdown("### 📋 Company Results")
+        results = report.get('results', [])
+        
+        if results:
+            import pandas as pd
+            df_data = []
+            for r in results:
+                df_data.append({
+                    "Company": r.get('company_name', 'N/A'),
+                    "Status": "✅" if r.get('success') else "❌",
+                    "Branch": r.get('branch_taken', 'N/A'),
+                    "Score": r.get('dashboard_score', 0),
+                    "Risks": r.get('risks_detected', 0)
+                })
+            
+            df = pd.DataFrame(df_data)
+            st.dataframe(df, use_container_width=True)
+            
+            # Detailed view
+            st.markdown("### 🔍 Detailed Results")
+            selected_company = st.selectbox("Select Company for Details", [r.get('company_name') for r in results])
+            
+            if selected_company:
+                company_result = next((r for r in results if r.get('company_name') == selected_company), None)
+                if company_result:
+                    st.json(company_result)
+        
+        # Full report
+        with st.expander("View Full Report JSON"):
+            st.json(report)
+
+
+def show_backend_requests():
+    """Show backend request logs and monitoring."""
+    st.markdown("## 🔍 Backend Request Monitor")
+    st.markdown("View all requests made to the FastAPI backend")
+    
+    # Get API URL - use same API_URL as rest of app, or default to localhost:8080 (FastAPI port)
+    # Check if API_URL is set to Cloud Run URL, otherwise use local
+    if 'orbit-api' in API_URL or 'run.app' in API_URL:
+        api_url = API_URL  # Use Cloud Run URL
+    else:
+        api_url = 'http://localhost:8080'  # Local FastAPI runs on 8080
+    
+    if api_url.endswith('/'):
+        api_url = api_url[:-1]
+    
+    # Show API URL being used
+    st.info(f"🔗 Connecting to: `{api_url}`")
+    
+    # Fetch request logs
+    try:
+        response = requests.get(f"{api_url}/admin/requests?limit=200", timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Show statistics
+            st.markdown("### 📊 Request Statistics")
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("Total Requests", data.get('total_requests', 0))
+            with col2:
+                st.metric("Showing", data.get('showing', 0))
+            with col3:
+                logs = data.get('logs', [])
+                if logs:
+                    avg_duration = sum(log.get('duration_ms', 0) for log in logs) / len(logs)
+                    st.metric("Avg Duration", f"{avg_duration:.1f}ms")
+                else:
+                    st.metric("Avg Duration", "N/A")
+            
+            # Status code breakdown
+            stats = data.get('statistics', {})
+            if stats.get('status_codes'):
+                st.markdown("### 📈 Status Code Breakdown")
+                status_items = list(stats['status_codes'].items())
+                status_cols = st.columns(len(status_items))
+                for i, (status, count) in enumerate(status_items):
+                    with status_cols[i]:
+                        color = "🟢" if 200 <= status < 300 else "🔴" if status >= 400 else "🟡"
+                        st.metric(f"{color} {status}", count)
+            
+            # Top paths
+            if stats.get('top_paths'):
+                st.markdown("### 🔝 Top Requested Paths")
+                top_paths_df = pd.DataFrame([
+                    {"Path": path, "Count": count}
+                    for path, count in list(stats['top_paths'].items())[:10]
+                ])
+                st.dataframe(top_paths_df, use_container_width=True, hide_index=True)
+            
+            # Request logs table
+            st.markdown("### 📋 Recent Requests")
+            
+            logs = data.get('logs', [])
+            if logs:
+                # Create DataFrame
+                logs_df = pd.DataFrame(logs)
+                
+                # Format timestamp
+                if 'timestamp' in logs_df.columns:
+                    logs_df['time'] = pd.to_datetime(logs_df['timestamp']).dt.strftime('%H:%M:%S')
+                
+                # Select columns to show
+                display_cols = ['time', 'method', 'path', 'status_code', 'duration_ms', 'client_ip']
+                available_cols = [col for col in display_cols if col in logs_df.columns]
+                
+                # Show table
+                st.dataframe(
+                    logs_df[available_cols].tail(50),  # Show last 50
+                    use_container_width=True,
+                    hide_index=True
+                )
+                
+                # Filter options
+                with st.expander("🔍 Filter Requests"):
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        filter_method = st.multiselect(
+                            "Filter by Method",
+                            options=list(logs_df['method'].unique()) if 'method' in logs_df.columns else [],
+                            default=[]
+                        )
+                    
+                    with col2:
+                        filter_status = st.multiselect(
+                            "Filter by Status",
+                            options=sorted(logs_df['status_code'].unique()) if 'status_code' in logs_df.columns else [],
+                            default=[]
+                        )
+                    
+                    # Apply filters
+                    filtered_df = logs_df.copy()
+                    if filter_method and 'method' in filtered_df.columns:
+                        filtered_df = filtered_df[filtered_df['method'].isin(filter_method)]
+                    if filter_status and 'status_code' in filtered_df.columns:
+                        filtered_df = filtered_df[filtered_df['status_code'].isin(filter_status)]
+                    
+                    if len(filtered_df) < len(logs_df):
+                        st.dataframe(
+                            filtered_df[available_cols],
+                            use_container_width=True,
+                            hide_index=True
+                        )
+                
+                # Detailed view
+                st.markdown("### 🔍 Request Details")
+                if len(logs) > 0:
+                    selected_idx = st.selectbox(
+                        "Select Request to View Details",
+                        range(len(logs)),
+                        format_func=lambda x: f"{logs[x].get('timestamp', '')[:19]} - {logs[x].get('method', '')} {logs[x].get('path', '')} ({logs[x].get('status_code', '')})"
+                    )
+                    
+                    if selected_idx is not None:
+                        selected_log = logs[selected_idx]
+                        st.json(selected_log)
+            else:
+                st.info("No requests logged yet. Make some requests to see them here!")
+        elif response.status_code == 404:
+            st.warning(f"⚠️ Endpoint not found: `/admin/requests`")
+            st.info(f"""
+            **The `/admin/requests` endpoint is not available on this backend.**
+            
+            This might mean:
+            - The FastAPI server is an older version
+            - The endpoint hasn't been deployed yet
+            
+            **To enable request logging:**
+            1. Make sure you're running the latest version of `src/api/main.py`
+            2. The endpoint should be available at: `{api_url}/admin/requests`
+            3. Check the API docs at: `{api_url}/docs`
+            """)
+        else:
+            st.error(f"❌ Failed to fetch request logs: HTTP {response.status_code}")
+            # Try to show response text if not JSON
+            try:
+                error_data = response.json()
+                st.json(error_data)
+            except (ValueError, requests.exceptions.JSONDecodeError):
+                st.code(response.text[:500] if response.text else "No response body")
+    
+    except requests.exceptions.ConnectionError:
+        st.error(f"❌ Cannot connect to backend at {api_url}")
+        
+        # Show correct port based on URL
+        if 'localhost' in api_url or '127.0.0.1' in api_url:
+            port = api_url.split(':')[-1] if ':' in api_url else '8080'
+            st.info(f"""
+            **Make sure FastAPI is running:**
+            1. Open Terminal
+            2. cd orbit-ai50-intelligence
+            3. Run: `python src/api/main.py` OR use: `.\\START_CHAT.bat`
+            4. Wait for "Uvicorn running on http://0.0.0.0:{port}"
+            5. Refresh this page
+            """)
+        else:
+            st.info(f"Trying to connect to: {api_url}")
+            st.info("If this is a Cloud Run URL, make sure it's deployed and accessible.")
+    except requests.exceptions.JSONDecodeError as e:
+        st.error(f"❌ Invalid JSON response from backend")
+        st.info("The backend returned a response that couldn't be parsed as JSON.")
+        with st.expander("Error Details"):
+            st.code(str(e))
+    except Exception as e:
+        st.error(f"❌ Error fetching request logs: {str(e)}")
+        import traceback
+        with st.expander("Error Details"):
+            st.code(traceback.format_exc())
+    
+    # Auto-refresh option
+    st.markdown("---")
+    auto_refresh = st.checkbox("🔄 Auto-refresh every 5 seconds", value=False)
+    if auto_refresh:
+        import time
+        time.sleep(5)
+        st.rerun()
 
 
 if __name__ == "__main__":

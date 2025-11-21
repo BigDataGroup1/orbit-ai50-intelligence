@@ -5,6 +5,7 @@ __pycache__/
 # GCP Credentials - NEVER PUSH!
 gcp-credentials.json
 gcp-service-account.json
+adc-credentials.json
 
 # Environment variables
 .env
@@ -17,8 +18,8 @@ data/profiles/
 data/qdrant_storage/
 data/raw/
 # Data folders (too large, auto-generated)
-
-
+/data
+data/
 # Python cache
 __pycache__/
 *.pyc

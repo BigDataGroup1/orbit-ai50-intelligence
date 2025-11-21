@@ -3,6 +3,7 @@ Lab 15: MCP Integration for Supervisor Agent
 Handles MCP server communication and tool invocation
 """
 import json
+import os
 import requests
 from typing import Dict, Optional
 from pathlib import Path
@@ -23,7 +24,10 @@ class MCPIntegration:
         """Initialize MCP integration with config."""
         self.config = self._load_config()
         self.enabled = self.config.get("mcp_server", {}).get("enabled", False)
-        self.base_url = self.config.get("mcp_server", {}).get("base_url", "http://localhost:8001")
+        
+        # Check environment variable first (for Docker), then fall back to config file
+        self.base_url = os.getenv("MCP_SERVER_URL") or self.config.get("mcp_server", {}).get("base_url", "http://localhost:8001")
+        
         self.allowed_tools = self.config.get("security", {}).get("allowed_tools", [])
         self.timeout = self.config.get("mcp_server", {}).get("timeout", 30)
         

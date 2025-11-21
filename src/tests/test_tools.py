@@ -8,12 +8,13 @@ import json
 from pathlib import Path
 import sys
 from datetime import datetime
+import pytest
 
 # Add project root to path
-project_root = Path(__file__).resolve().parents[1]
+project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
 
-from agents.tools import (
+from src.agents.tools import (
     get_latest_structured_payload,
     rag_search_company,
     list_available_companies,
@@ -22,6 +23,7 @@ from agents.tools import (
 )
 
 
+@pytest.mark.asyncio
 async def test_all_companies():
     """Run all tools on all companies and generate comprehensive results."""
     
@@ -136,6 +138,7 @@ async def test_all_companies():
     return results
 
 
+@pytest.mark.asyncio
 async def test_mcp_integration():
     """Test MCP integration (Lab 15)."""
     print("\n" + "="*70)

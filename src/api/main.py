@@ -429,6 +429,8 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 from vectordb.embedder import VectorStore
 from dashboard.rag_generator import RAGDashboardGenerator
 from structured.structured_dashboard import generate_dashboard as generate_structured_dashboard
+# MCP Integration imports
+from agents.tools import list_available_companies
 
 # GCP Configuration
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "orbit-ai50-intelligence-477922")
@@ -456,6 +458,10 @@ vector_store = None
 dashboard_generator = None
 build_in_progress = False
 storage_client = None
+
+# Request logging
+request_logs = []
+MAX_LOG_ENTRIES = 1000  # Keep last 1000 requests
 
 
 def get_gcs_client():
@@ -755,6 +761,57 @@ class DashboardResponse(BaseModel):
 
 
 # ============================================================================
+# MCP (Model Context Protocol) Models
+# ============================================================================
+
+class StructuredDashboardRequest(BaseModel):
+    """Request model for structured dashboard generation (MCP)."""
+    company_id: str
+
+
+class StructuredDashboardResponse(BaseModel):
+    """Response model for structured dashboard (MCP)."""
+    success: bool
+    company_id: str
+    company_name: Optional[str] = None
+    markdown: Optional[str] = None
+    tokens_used: Optional[int] = None
+    error: Optional[str] = None
+
+
+class RAGDashboardRequest(BaseModel):
+    """Request model for RAG dashboard generation (MCP)."""
+    company_name: str
+    max_chunks: Optional[int] = 20
+
+
+class RAGDashboardResponse(BaseModel):
+    """Response model for RAG dashboard (MCP)."""
+    success: bool
+    company_name: str
+    dashboard: Optional[str] = None
+    chunks_used: Optional[int] = None
+    page_types: Optional[List[str]] = None
+    error: Optional[str] = None
+
+
+class CompaniesResponse(BaseModel):
+    """Response model for companies list (MCP)."""
+    success: bool
+    companies: List[str]
+    total: int
+    error: Optional[str] = None
+
+
+class PromptResponse(BaseModel):
+    """Response model for prompt template (MCP)."""
+    success: bool
+    prompt_type: str
+    content: Optional[str] = None
+    error: Optional[str] = None
+
+
+# ============================================================================
 # API Endpoints
 # ============================================================================
 
@@ -792,7 +849,17 @@ async def root():
                 "gcs_buckets": "/gcs/buckets",
                 "gcs_files": "/gcs/files/{bucket_type}",
                 "admin_status": "/admin/status",
-                "admin_reload": "/admin/reload-vector-store"
+                "admin_reload": "/admin/reload-vector-store",
+                "mcp_tools": {
+                    "generate_structured_dashboard": "/tool/generate_structured_dashboard",
+                    "generate_rag_dashboard": "/tool/generate_rag_dashboard"
+                },
+                "mcp_resources": {
+                    "ai50_companies": "/resource/ai50/companies"
+                },
+                "mcp_prompts": {
+                    "pe_dashboard": "/prompt/pe-dashboard"
+                }
             }
         }
     else:
@@ -994,6 +1061,49 @@ async def admin_status():
     }
 
 
+@app.get("/admin/requests")
+async def get_request_logs(limit: int = 100):
+    """
+    Get request logs - see all requests made to the backend.
+    
+    Args:
+        limit: Maximum number of logs to return (default: 100, max: 1000)
+    
+    Returns:
+        List of request logs with timestamps, methods, paths, status codes, etc.
+    """
+    limit = min(limit, 1000)  # Cap at 1000
+    
+    # Return most recent logs
+    recent_logs = request_logs[-limit:] if len(request_logs) > limit else request_logs
+    
+    # Calculate statistics
+    total_requests = len(request_logs)
+    status_counts = {}
+    method_counts = {}
+    path_counts = {}
+    
+    for log in request_logs:
+        status = log.get('status_code', 0)
+        method = log.get('method', 'UNKNOWN')
+        path = log.get('path', '')
+        
+        status_counts[status] = status_counts.get(status, 0) + 1
+        method_counts[method] = method_counts.get(method, 0) + 1
+        path_counts[path] = path_counts.get(path, 0) + 1
+    
+    return {
+        "total_requests": total_requests,
+        "showing": len(recent_logs),
+        "statistics": {
+            "status_codes": status_counts,
+            "methods": method_counts,
+            "top_paths": dict(sorted(path_counts.items(), key=lambda x: x[1], reverse=True)[:10])
+        },
+        "logs": recent_logs
+    }
+
+
 # ============================================================================
 # RAG Pipeline Endpoints
 # ============================================================================
@@ -1143,6 +1253,170 @@ async def get_stats():
 
 
 # ============================================================================
+# MCP (Model Context Protocol) Endpoints
+# ============================================================================
+
+@app.post("/tool/generate_structured_dashboard", response_model=StructuredDashboardResponse)
+async def tool_generate_structured_dashboard(request: StructuredDashboardRequest):
+    """
+    MCP Tool: Generate structured dashboard from payload.
+    
+    Args:
+        request: Company ID to generate dashboard for
+        
+    Returns:
+        Dashboard markdown and metadata
+    """
+    try:
+        print(f"\n🔧 MCP Tool: generate_structured_dashboard({request.company_id})")
+        
+        result = generate_structured_dashboard(request.company_id)
+        
+        if result.get('success'):
+            return StructuredDashboardResponse(
+                success=True,
+                company_id=result.get('company_id', request.company_id),
+                company_name=result.get('company_name'),
+                markdown=result.get('markdown'),
+                tokens_used=result.get('tokens_used')
+            )
+        else:
+            return StructuredDashboardResponse(
+                success=False,
+                company_id=request.company_id,
+                error=result.get('error', 'Unknown error')
+            )
+            
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating structured dashboard: {str(e)}"
+        )
+
+
+@app.post("/tool/generate_rag_dashboard", response_model=RAGDashboardResponse)
+async def tool_generate_rag_dashboard(request: RAGDashboardRequest):
+    """
+    MCP Tool: Generate RAG dashboard from vector store.
+    
+    Args:
+        request: Company name and optional max_chunks
+        
+    Returns:
+        Dashboard markdown and metadata
+    """
+    try:
+        print(f"\n🔧 MCP Tool: generate_rag_dashboard({request.company_name})")
+        
+        if not dashboard_generator:
+            raise HTTPException(
+                status_code=503,
+                detail="RAG generator not initialized. Check server startup logs."
+            )
+        
+        result = dashboard_generator.generate_dashboard(
+            company_name=request.company_name,
+            max_chunks=request.max_chunks or 20
+        )
+        
+        if result.get('success'):
+            return RAGDashboardResponse(
+                success=True,
+                company_name=result.get('company_name', request.company_name),
+                dashboard=result.get('dashboard'),
+                chunks_used=result.get('chunks_used'),
+                page_types=result.get('page_types')
+            )
+        else:
+            return RAGDashboardResponse(
+                success=False,
+                company_name=request.company_name,
+                error=result.get('error', 'Unknown error')
+            )
+            
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating RAG dashboard: {str(e)}"
+        )
+
+
+@app.get("/resource/ai50/companies", response_model=CompaniesResponse)
+async def resource_ai50_companies():
+    """
+    MCP Resource: List all available AI50 company IDs.
+    
+    Returns:
+        List of company IDs
+    """
+    try:
+        print("\n📚 MCP Resource: ai50/companies")
+        
+        # Get companies from both sources
+        companies = list_available_companies()
+        
+        return CompaniesResponse(
+            success=True,
+            companies=companies,
+            total=len(companies)
+        )
+        
+    except Exception as e:
+        return CompaniesResponse(
+            success=False,
+            companies=[],
+            total=0,
+            error=str(e)
+        )
+
+
+@app.get("/prompt/pe-dashboard", response_model=PromptResponse)
+async def prompt_pe_dashboard(prompt_type: str = "rag"):
+    """
+    MCP Prompt: Get PE dashboard generation prompt template.
+    
+    Args:
+        prompt_type: "rag" (default) or "structured"
+        
+    Returns:
+        Prompt template content
+    """
+    try:
+        print(f"\n💬 MCP Prompt: pe-dashboard (type={prompt_type})")
+        
+        # Determine which prompt file to load
+        project_root = Path(__file__).resolve().parents[2]
+        if prompt_type.lower() == "structured":
+            prompt_file = project_root / "src" / "prompts" / "dashboard_system_structured.md"
+            prompt_type_name = "structured"
+        else:
+            prompt_file = project_root / "src" / "prompts" / "dashboard_system.md"
+            prompt_type_name = "rag"
+        
+        if not prompt_file.exists():
+            return PromptResponse(
+                success=False,
+                prompt_type=prompt_type_name,
+                error=f"Prompt file not found: {prompt_file}"
+            )
+        
+        content = prompt_file.read_text(encoding='utf-8')
+        
+        return PromptResponse(
+            success=True,
+            prompt_type=prompt_type_name,
+            content=content
+        )
+        
+    except Exception as e:
+        return PromptResponse(
+            success=False,
+            prompt_type=prompt_type or "unknown",
+            error=str(e)
+        )
+
+
+# ============================================================================
 # Main Entry Point (for local testing)
 # ============================================================================
 
@@ -1171,6 +1445,7 @@ Endpoints:
   GET  /companies           - List companies
   GET  /gcs/buckets         - GCS bucket info
   GET  /admin/status        - System status
+  GET  /admin/requests      - View request logs
     """)
     
     uvicorn.run(app, host="0.0.0.0", port=port)
