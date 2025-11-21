@@ -1,8 +1,27 @@
 # PROJECT ORBIT - AI50 Intelligence Platform
 
-**Automated Private-Equity Intelligence for the Forbes AI 50**
+**Intelligent Agentic System for Private-Equity Due Diligence**
 
-A production-grade, cloud-native system that automatically scrapes, processes, and generates investor-focused dashboards for all 50 companies in the Forbes AI 50 list using dual pipelines: RAG (Retrieval-Augmented Generation) and Structured (Pydantic-based extraction).
+A production-grade, cloud-native platform that combines automated data ingestion, intelligent agent orchestration, and human-in-the-loop workflows to deliver comprehensive due diligence intelligence for all 50 companies in the Forbes AI 50 list.
+
+## 🎯 What This System Does
+
+**Core Capabilities:**
+- **Automated Data Pipeline:** Web scraping, structured extraction, and vector database indexing
+- **Dual Dashboard Generation:** RAG (Retrieval-Augmented Generation) and Structured (Pydantic-based) pipelines
+- **Intelligent Agents:** Supervisor agents using ReAct pattern for transparent reasoning
+- **Model Context Protocol (MCP):** Secure, standardized tool access via HTTP
+- **Graph-Based Workflows:** LangGraph orchestration with conditional branching
+- **Human-in-the-Loop (HITL):** Risk detection with human approval gates
+- **Full Observability:** Execution traces, ReAct logs, and Mermaid diagram visualizations
+
+**Key Features:**
+- 🤖 **Agentic Intelligence:** LLM-powered agents that reason, plan, and execute due diligence workflows
+- 🔒 **Secure Tool Access:** MCP server exposing dashboard generation, company resources, and prompts
+- 📊 **Risk Management:** Automatic risk detection (layoffs, breaches, lawsuits) with human oversight
+- 📈 **Transparent Reasoning:** Complete ReAct logs showing agent decision-making process
+- 🎨 **Visual Workflows:** Mermaid diagrams visualizing execution paths and decision trees
+- ☁️ **Cloud-Native:** Fully deployed on GCP with Airflow orchestration, Cloud Run services, and GCS storage
 
 ---
 
@@ -167,11 +186,12 @@ ORBIT-AI50-INTELLIGENCE/
 ## 🚀 Installation & Setup
 
 ### Prerequisites
-- Python 3.11 or higher
+- Python 3.10 or higher (3.11+ recommended)
 - Google Cloud Platform account with billing enabled
 - OpenAI API key
-- Docker Desktop (for local testing)
-- Cloud Composer environment (for Airflow orchestration)
+- Docker Desktop (optional, for containerized deployment)
+- Google Cloud SDK (for GCS access)
+- Git
 
 ### Installation Steps
 
@@ -184,28 +204,79 @@ cd orbit-ai50-intelligence
 2. **Create Virtual Environment**
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Activate virtual environment
+# On Windows:
+venv\Scripts\activate
+# On Linux/Mac:
+source venv/bin/activate
 ```
 
 3. **Install Dependencies**
 ```bash
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+**Key Dependencies:**
+- `fastapi`, `uvicorn` - API framework
+- `openai` - LLM integration
+- `langgraph` - Workflow orchestration
+- `qdrant-client` - Vector database
+- `sentence-transformers` - Embeddings
+- `google-cloud-storage` - GCS access
+- `streamlit` - Web UI
+- `instructor` - Structured extraction
+- `pydantic` - Data validation
+
 4. **Set up Environment Variables**
+
+Create a `.env` file in the project root:
 ```bash
-# Create .env file with:
-OPENAI_API_KEY=your_openai_key
-GCS_BUCKET_NAME=orbit-raw-data-group1-2025
-GCP_PROJECT_ID=orbit-ai50-intelligence
+# OpenAI API
+OPENAI_API_KEY=your_openai_api_key_here
+
+# GCP Configuration
+GCP_BUCKET_NAME=orbit-raw-data-g1-2025
+GCP_PROJECT_ID=your-gcp-project-id
+GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json
+
+# Optional: Hugging Face token (for embeddings)
+HF_TOKEN=your_hf_token_here
+
+# MCP Server Configuration (optional)
+MCP_SERVER_URL=http://localhost:8001
+PORT=8001
+
+# HITL Configuration (optional)
+HITL_AUTO_APPROVE=false
 ```
 
-5. **Build Vector Database (Local Testing)**
+5. **Set up GCP Credentials (if using GCS)**
 ```bash
-cd src/vectordb
-python build_index.py --local  # Use local data
-# OR
-python build_index.py --gcs    # Use GCS bucket (default)
+# Option 1: Use service account JSON
+export GOOGLE_APPLICATION_CREDENTIALS="path/to/service-account-key.json"
+
+# Option 2: Use gcloud auth
+gcloud auth application-default login
+```
+
+6. **Build Vector Database**
+```bash
+# From GCS (recommended for production)
+python src/vectordb/build_index.py --gcs
+
+# From local data (if you have data/raw/ directory)
+python src/vectordb/build_index.py --local
+```
+
+7. **Generate Structured Payloads (Optional)**
+```bash
+# From GCS
+python src/structured/structured_extract_gcp.py --all
+
+# From local data
+python src/structured/structured_extract.py --all
 ```
 
 ---
@@ -215,16 +286,16 @@ python build_index.py --gcs    # Use GCS bucket (default)
 **Our application is deployed on GCP project: `orbit-ai50-intelligence`**
 
 ### GCS Buckets
-- **Raw Data:** `orbit-raw-data-group1-2025` (scraped HTML/text)
-- **Processed Data:** `orbit-processed-data-group1-2025` (reports, seed files)
+- **Raw Data:** `orbit-raw-data-g1-2025` (scraped HTML/text)
+- **Processed Data:** `orbit-processed-data-g1-2025` (reports, seed files, Qdrant index)
 
 ### 1. Setup GCS Buckets
 ```bash
 gcloud config set project orbit-ai50-intelligence
 
 # Create buckets
-gsutil mb -l us-central1 gs://orbit-raw-data-group1-2025
-gsutil mb -l us-central1 gs://orbit-processed-data-group1-2025
+gsutil mb -l us-central1 gs://orbit-raw-data-g1-2025
+gsutil mb -l us-central1 gs://orbit-processed-data-g1-2025
 ```
 
 ### 2. Setup Cloud Composer (Airflow)
@@ -319,10 +390,50 @@ gcloud run deploy orbit-streamlit \
 
 ## 🎯 Quick Start
 
-**No installation required - fully cloud-deployed!**
+### Option 1: Local Development (Recommended for Testing)
 
-**Open the application:**
-https://orbit-streamlit-xxxxx.us-central1.run.app
+**1. Start MCP Server (Terminal 1)**
+```bash
+python src/server/mcp_server.py
+# Server runs on http://localhost:8001
+# Swagger UI: http://localhost:8001/docs
+```
+
+**2. Start FastAPI (Terminal 2 - Optional)**
+```bash
+cd src/api
+python main.py
+# API runs on http://localhost:8080
+# Docs: http://localhost:8080/docs
+```
+
+**3. Start Streamlit (Terminal 3 - Optional)**
+```bash
+streamlit run src/app/streamlit_app.py
+# UI runs on http://localhost:8501
+```
+
+**4. Run Due Diligence Workflow**
+```bash
+# Normal mode (with HITL if risks detected)
+python src/workflows/due_diligence_graph.py --company openai
+
+# View execution trace
+# File saved to: docs/execution_trace_openai_*.md
+```
+
+**5. Or Use Interactive Chatbot**
+```bash
+python src/agents/interactive_agent.py
+# Then type: "Generate dashboard for openai"
+```
+
+### Option 2: Cloud Deployment
+
+**Access Production URLs:**
+- **Streamlit Frontend:** https://orbit-streamlit-823575734493.us-central1.run.app
+- **FastAPI Backend:** https://orbit-api-aksh-823575734493.us-central1.run.app/health
+- **API Documentation:** https://orbit-api-aksh-823575734493.us-central1.run.app/docs
 
 **Test the system:**
 1. Select a company from dropdown (e.g., "Anthropic")
@@ -331,9 +442,6 @@ https://orbit-streamlit-xxxxx.us-central1.run.app
 4. View 8-section investor dashboard with evaluation scores
 
 **API Testing:**
-https://orbit-api-xxxxx.us-central1.run.app/docs
-
-**Try these endpoints:**
 - `GET /companies` - List all 50 indexed companies
 - `POST /rag/search` - Semantic search test
 - `POST /dashboard/rag` - Generate RAG dashboard
@@ -458,94 +566,203 @@ https://orbit-api-xxxxx.us-central1.run.app/docs
 
 ---
 
-## 🎯 Usage
+## 🎯 Complete Usage Guide
 
-### Local Development
+### 1. Data Pipeline Setup
 
-**1. Build Vector Index (Local):**
+**Step 1: Extract Structured Data from GCS**
 ```bash
-cd src/vectordb
-python build_index.py --local
+# Extract all companies from GCS
+python src/structured/structured_extract_gcp.py --all
+
+# Extract specific company
+python src/structured/structured_extract_gcp.py --company anthropic
+
+# Assemble payloads
+python src/structured/structured_payload_lab6.py
 ```
 
-**2. Start FastAPI:**
+**Step 2: Build Vector Database**
+```bash
+# From GCS (recommended)
+python src/vectordb/build_index.py --gcs
+
+# From local data
+python src/vectordb/build_index.py --local
+```
+
+**Step 3: Generate Dashboards (Pre-generation for Streamlit)**
+```bash
+# RAG Dashboards
+python src/dashboard/generate_dashboards.py
+
+# Structured Dashboards
+python src/structured/generate_all_dashboard.py
+```
+
+### 2. Running Services
+
+**MCP Server (Required for Agents)**
+```bash
+# Start MCP server
+python src/server/mcp_server.py
+
+# Server will run on http://localhost:8001
+# Swagger UI: http://localhost:8001/docs
+# Health check: http://localhost:8001/health
+
+# Test endpoints:
+# - POST /tool/generate_structured_dashboard
+# - POST /tool/generate_rag_dashboard
+# - GET /resource/ai50/companies
+# - GET /prompt/pe-dashboard
+```
+
+**FastAPI Backend (Optional)**
 ```bash
 cd src/api
 python main.py
-# Access: http://localhost:8000/docs
+
+# API runs on http://localhost:8080
+# Docs: http://localhost:8080/docs
 ```
 
-**3. Start Streamlit:**
+**Streamlit Frontend (Optional)**
 ```bash
-cd src/app
-streamlit run streamlit_app.py
-# Access: http://localhost:8501
+streamlit run src/app/streamlit_app.py
+
+# UI runs on http://localhost:8501
+# Requires pre-generated dashboards in data/dashboards/
 ```
 
-### Docker Deployment
+### 3. Agent & Workflow Operations
+
+**Supervisor Agent (Standalone)**
 ```bash
-# Build and run both services
+# Analyze a company using ReAct pattern
+python src/agents/supervisor_agent.py --company openai
+
+# Output:
+# - ReAct logs in logs/react_traces/
+# - Analysis report in console
+```
+
+**Due Diligence Workflow (Full Pipeline)**
+```bash
+# Normal mode - pauses for human approval if risks detected
+python src/workflows/due_diligence_graph.py --company openai
+
+# Auto-approve mode (testing only)
+python src/workflows/due_diligence_graph.py --company openai --auto-approve
+
+# Output:
+# - Execution trace in docs/execution_trace_*.md
+# - Mermaid diagram in trace file
+# - Dashboard in data/dashboards/workflow/
+```
+
+**Interactive Chatbot**
+```bash
+python src/agents/interactive_agent.py
+
+# Example commands:
+# "Generate dashboard for openai"
+# "What is the risk score for anthropic?"
+# "Compare openai and anthropic"
+# "Get financial metrics for databricks"
+```
+
+### 4. Testing
+
+**Test Core Tools**
+```bash
+python src/tests/test_tools.py
+```
+
+**Test MCP Server**
+```bash
+# Ensure MCP server is running first
+python src/tests/test_mcp_server.py
+```
+
+**Test Workflow**
+```bash
+python src/tests/test_workflow_graph.py
+```
+
+### 5. Viewing Results
+
+**Execution Traces**
+```bash
+# View latest execution trace
+Get-ChildItem docs\execution_trace_*.md | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+# Open in VS Code or any markdown viewer
+# Contains: Execution path, Mermaid diagram, complete state
+```
+
+**ReAct Logs**
+```bash
+# View latest ReAct trace
+Get-ChildItem logs\react_traces\*.json | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+# JSON format with Thought/Action/Observation triplets
+```
+
+**Generated Dashboards**
+```bash
+# RAG dashboards
+data/dashboards/rag/
+
+# Structured dashboards
+data/dashboards/structured/
+
+# Workflow-generated dashboards
+data/dashboards/workflow/
+```
+
+### 6. Docker Deployment (Optional)
+
+**Using Docker Compose**
+```bash
+# Build and run all services
 docker-compose up --build
 
-# Access:
-# - FastAPI: http://localhost:8000
+# Services:
+# - MCP Server: http://localhost:8001
+# - FastAPI: http://localhost:8080
 # - Streamlit: http://localhost:8501
 ```
 
-### Generate Dashboards
-
-**RAG Pipeline:**
+**Individual Docker Containers**
 ```bash
-cd src/dashboard
-python generate_eval_dashboard.py  # For 6 evaluation companies
-# OR
-python generate_dashboards.py      # For all companies
+# Build MCP server
+docker build -f Dockerfile.mcp -t orbit-mcp .
+
+# Build agent
+docker build -f Dockerfile.agent -t orbit-agent .
 ```
 
-**Structured Pipeline:**
+### 7. Airflow DAGs (Production Orchestration)
+
+**Local Airflow (Docker)**
 ```bash
-cd src/structured
-python generate_eval_structured.py  # For 6 evaluation companies
-# OR
-python generate_all_dashboard.py    # For all 39 companies
+# Start Airflow
+docker-compose -f docker-compose.airflow.yml up
+
+# Access Airflow UI: http://localhost:8080
+# Login: admin / admin
 ```
 
-### Agent & Workflow Usage
+**Available DAGs:**
+- `orbit_initial_load_dag` - Full data ingestion
+- `orbit_daily_update_dag` - Daily refresh
+- `orbit_agentic_dashboard_dag` - Agentic workflow execution
 
-**1. Start MCP Server:**
+**Run DAGs:**
 ```bash
-python src/server/mcp_server.py
-# Server runs on http://localhost:8001
-# Swagger UI: http://localhost:8001/docs
-```
-
-**2. Run Supervisor Agent:**
-```bash
-python src/agents/supervisor_agent.py --company anthropic
-```
-
-**3. Run Due Diligence Workflow:**
-```bash
-# Normal mode (with HITL if risks detected)
-python src/workflows/due_diligence_graph.py --company anthropic
-
-# Auto-approve mode (testing only)
-python src/workflows/due_diligence_graph.py --company anthropic --auto-approve
-```
-
-**4. Interactive Chatbot:**
-```bash
-python src/agents/interactive_agent.py
-# Then type: "Generate dashboard for anthropic"
-```
-
-**5. View Execution Traces:**
-```bash
-# Execution traces with Mermaid diagrams saved in:
-docs/execution_trace_*.md
-
-# ReAct logs saved in:
-logs/react_traces/react_trace_*.json
+# Trigger via Airflow UI or CLI
+airflow dags trigger orbit_agentic_dashboard_dag
 ```
 
 ---
@@ -665,14 +882,60 @@ python src/server/mcp_server.py
 
 # Check configuration
 cat mcp_config.json
+
+# Test connection
+curl http://localhost:8001/health
 ```
 
 **Workflow payload not found:**
 ```bash
 # Generate structured payloads from GCS
-python src/structured/structured_extract_gcp.py --company anthropic
+python src/structured/structured_extract_gcp.py --company openai
 # OR for all companies
 python src/structured/structured_extract_gcp.py --all
+
+# Then assemble payloads
+python src/structured/structured_payload_lab6.py
+```
+
+**Vector DB lock errors:**
+```bash
+# Close all Python processes using Qdrant
+# Then remove lock file
+Remove-Item data\qdrant_storage\.lock -Force
+
+# Or use Dockerized Qdrant for concurrent access
+```
+
+**Workflow payload not found:**
+```bash
+# Generate structured payloads from GCS
+python src/structured/structured_extract_gcp.py --company openai
+# OR for all companies
+python src/structured/structured_extract_gcp.py --all
+
+# Then assemble payloads
+python src/structured/structured_payload_lab6.py
+```
+
+**MCP Server not connecting:**
+```bash
+# Check if server is running
+curl http://localhost:8001/health
+
+# Check configuration
+cat mcp_config.json
+
+# Verify port matches (should be 8001)
+```
+
+**Vector DB lock errors:**
+```bash
+# Close all Python processes using Qdrant
+# Then remove lock file
+Remove-Item data\qdrant_storage\.lock -Force
+
+# Or use Dockerized Qdrant for concurrent access
 ```
 
 **Qdrant lock file errors:**
@@ -685,6 +948,79 @@ Remove-Item data\qdrant_storage\.lock -Force
 ---
 
 **Note:** This is a complete cloud-native application. All services (Airflow, API, Frontend, Vector DB) can run on GCP managed services with no local infrastructure required.
+
+## 🔄 Complete Workflow Example
+
+### End-to-End Due Diligence Process
+
+**1. Prepare Data**
+```bash
+# Extract structured data from GCS
+python src/structured/structured_extract_gcp.py --all
+
+# Assemble payloads
+python src/structured/structured_payload_lab6.py
+
+# Build vector database
+python src/vectordb/build_index.py --gcs
+```
+
+**2. Start MCP Server**
+```bash
+# Terminal 1
+python src/server/mcp_server.py
+# Keep this running - agents need it
+```
+
+**3. Run Due Diligence Workflow**
+```bash
+# Terminal 2
+python src/workflows/due_diligence_graph.py --company openai
+
+# Workflow will:
+# 1. Plan execution steps
+# 2. Retrieve payload
+# 3. Generate dashboard via MCP
+# 4. Evaluate dashboard quality
+# 5. Detect risks
+# 6. Pause for approval if risks found (HITL)
+# 7. Save execution trace with Mermaid diagram
+```
+
+**4. View Results**
+```bash
+# Execution trace (with Mermaid diagram)
+docs/execution_trace_openai_*.md
+
+# Generated dashboard
+data/dashboards/workflow/openai_*.md
+
+# ReAct logs
+logs/react_traces/react_trace_openai_*.json
+```
+
+### Alternative: Interactive Chatbot Workflow
+
+**1. Start Services**
+```bash
+# Terminal 1: MCP Server
+python src/server/mcp_server.py
+
+# Terminal 2: Chatbot
+python src/agents/interactive_agent.py
+```
+
+**2. Chat Commands**
+```
+You: Generate dashboard for openai
+Agent: [Runs workflow, shows results]
+
+You: What is the risk score for anthropic?
+Agent: [Calculates and returns risk score]
+
+You: Compare openai and anthropic
+Agent: [Performs competitor comparison]
+```
 
 ## 🤖 Agent Architecture
 
@@ -714,3 +1050,97 @@ The system includes intelligent agents for automated due diligence:
 - ReAct logs showing agent reasoning steps
 - Risk detection and HITL decision records
 - Saved to `docs/execution_trace_*.md` for full observability
+
+## 📋 Available Commands Reference
+
+### Data Pipeline Commands
+
+```bash
+# Structured Extraction
+python src/structured/structured_extract_gcp.py --all          # All companies from GCS
+python src/structured/structured_extract_gcp.py --company openai # Single company
+python src/structured/structured_extract.py --all              # From local data
+
+# Payload Assembly
+python src/structured/structured_payload_lab6.py               # Assemble all payloads
+
+# Vector Database
+python src/vectordb/build_index.py --gcs                        # Build from GCS
+python src/vectordb/build_index.py --local                      # Build from local
+
+# Dashboard Generation
+python src/dashboard/generate_dashboards.py                      # RAG dashboards
+python src/structured/generate_all_dashboard.py                # Structured dashboards
+```
+
+### Agent & Workflow Commands
+
+```bash
+# MCP Server
+python src/server/mcp_server.py                                 # Start MCP server (port 8001)
+
+# Supervisor Agent
+python src/agents/supervisor_agent.py --company openai          # Analyze company
+
+# Due Diligence Workflow
+python src/workflows/due_diligence_graph.py --company openai    # Normal mode (HITL enabled)
+python src/workflows/due_diligence_graph.py --company openai --auto-approve  # Testing mode
+
+# Interactive Chatbot
+python src/agents/interactive_agent.py                          # Start chatbot
+python src/agents/interactive_agent_enhanced.py                 # Enhanced version
+```
+
+### Service Commands
+
+```bash
+# FastAPI Backend
+cd src/api && python main.py                                    # Start API (port 8080)
+
+# Streamlit Frontend
+streamlit run src/app/streamlit_app.py                          # Start UI (port 8501)
+```
+
+### Testing Commands
+
+```bash
+# Test Tools
+python src/tests/test_tools.py                                  # Test core tools
+
+# Test MCP Server (requires server running)
+python src/tests/test_mcp_server.py                             # Test MCP endpoints
+
+# Test Workflow
+python src/tests/test_workflow_graph.py                         # Test workflow graph
+
+# Test Individual Tools
+python src/tests/test_tools_individually.py                     # Interactive tool testing
+```
+
+### Utility Commands
+
+```bash
+# Update Vector DB (local → GCS → Cloud Run)
+python update_vector_db.py                                      # Full update workflow
+
+# Download Daily Data from GCS
+python download_daily_from_gcs.py                               # Download latest daily data
+
+# Check Airflow
+python check_airflow.py                                         # Verify Airflow setup
+```
+
+### Windows Batch Scripts (if available)
+
+```bash
+# Start services
+scripts\START_CHAT.bat                                          # Start chatbot
+scripts\START_STREAMLIT.bat                                     # Start Streamlit
+scripts\START_AIRFLOW_DOCKER.bat                                # Start Airflow
+
+# Run workflows
+scripts\RUN_LAB5.bat                                           # Run Lab 5
+scripts\RUN_LAB6.bat                                           # Run Lab 6
+scripts\RUN_LAB8.bat                                           # Run Lab 8
+scripts\RUN_DAG.bat                                            # Run Airflow DAG
+```
