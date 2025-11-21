@@ -53,7 +53,7 @@ A production-grade, cloud-native platform that combines automated data ingestion
 
 ## 🏗️ Architecture Diagram
 
-![Architecture Flow](diag.png) 
+![Architecture Flow](diagram.png) 
 
 ---
 
